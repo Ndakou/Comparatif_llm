@@ -648,12 +648,19 @@ function applyFiltersAndRender() {
 }
 
 function hasActiveFilters() {
+  // Defensive: ensure filter arrays are defined
+  const competencies = state.filters.competencies || [];
+  const tiers = state.filters.tiers || [];
+  const difficulties = state.filters.difficulties || [];
+  const accessTypes = state.filters.accessTypes || [];
+  const contextSizes = state.filters.contextSizes || [];
+
   return (
-    state.filters.competencies.length > 0 ||
-    state.filters.tiers.length > 0 ||
-    state.filters.difficulties.length > 0 ||
-    state.filters.accessTypes.length > 0 ||
-    state.filters.contextSizes.length > 0 ||
+    competencies.length > 0 ||
+    tiers.length > 0 ||
+    difficulties.length > 0 ||
+    accessTypes.length > 0 ||
+    contextSizes.length > 0 ||
     state.filters.minScore > 0 ||
     state.filters.category !== '' ||
     state.filters.useCase !== ''
@@ -4430,32 +4437,39 @@ function applyPreferencesToUI() {
     toggleBtn.setAttribute('aria-expanded', 'true');
   }
 
+  // Defensive: ensure filter arrays are defined
+  const competencies = state.filters.competencies || [];
+  const tiers = state.filters.tiers || [];
+  const difficulties = state.filters.difficulties || [];
+  const accessTypes = state.filters.accessTypes || [];
+  const contextSizes = state.filters.contextSizes || [];
+
   // Apply competency checkboxes
-  state.filters.competencies.forEach(comp => {
+  competencies.forEach(comp => {
     const checkbox = document.querySelector(`input[name="competency"][value="${comp}"]`);
     if (checkbox) checkbox.checked = true;
   });
 
   // Apply tier checkboxes
-  state.filters.tiers.forEach(tier => {
+  tiers.forEach(tier => {
     const checkbox = document.querySelector(`input[name="tier"][value="${tier}"]`);
     if (checkbox) checkbox.checked = true;
   });
 
   // Apply difficulty checkboxes
-  state.filters.difficulties.forEach(diff => {
+  difficulties.forEach(diff => {
     const checkbox = document.querySelector(`input[name="difficulty"][value="${diff}"]`);
     if (checkbox) checkbox.checked = true;
   });
 
   // Apply access type checkboxes
-  state.filters.accessTypes.forEach(access => {
+  accessTypes.forEach(access => {
     const checkbox = document.querySelector(`input[name="access"][value="${access}"]`);
     if (checkbox) checkbox.checked = true;
   });
 
   // Apply context size checkboxes
-  state.filters.contextSizes.forEach(ctx => {
+  contextSizes.forEach(ctx => {
     const checkbox = document.querySelector(`input[name="context"][value="${ctx}"]`);
     if (checkbox) checkbox.checked = true;
   });

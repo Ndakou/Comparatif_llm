@@ -1,6 +1,6 @@
 /**
  * AI Reference Hub - Main Application
- * Version: 3.0.0 - Enhanced with Phase 1 Features
+ * Version: 3.1.0 - Phase 2: Animations, Responsive & Enhanced Comparator
  * Author: MR Tech Lab
  */
 
@@ -714,69 +714,362 @@ function openComparator() {
     [...state.data.llms, ...state.data.tools].find(item => item.id === id)
   ).filter(Boolean);
 
+  // Get scores for all items
+  const itemsWithScores = items.map(item => ({
+    ...item,
+    scores: getScoreForLLM(item.id),
+    badges: calculateBadges(item.id)
+  }));
+
+  // Colors for each item in comparison
+  const comparisonColors = [
+    { primary: '#a855f7', secondary: '#c084fc', name: 'violet' },
+    { primary: '#3b82f6', secondary: '#60a5fa', name: 'bleu' },
+    { primary: '#22c55e', secondary: '#4ade80', name: 'vert' },
+    { primary: '#f97316', secondary: '#fb923c', name: 'orange' }
+  ];
+
   const modalHTML = `
-    <div class="modal__header">
-      <h2 class="modal__title">Comparateur</h2>
-      <button class="modal__close" onclick="closeModal()">&times;</button>
+    <div class="modal__header comparator-header">
+      <h2 class="modal__title">⚖️ Comparateur LLMs</h2>
+      <div class="comparator-header__actions">
+        <button class="btn btn--sm btn--secondary" onclick="exportComparison()">📥 Exporter</button>
+        <button class="modal__close" onclick="closeModal()">&times;</button>
+      </div>
     </div>
-    <table class="comparison-table">
-      <thead>
-        <tr>
-          <th>Caracteristique</th>
-          ${items.map(item => `<th>${item.name}</th>`).join('')}
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Provider</td>
-          ${items.map(item => `<td>${item.provider}</td>`).join('')}
-        </tr>
-        <tr>
-          <td>Tier</td>
-          ${items.map(item => `<td>${getTierLabel(item.tier) || '-'}</td>`).join('')}
-        </tr>
-        ${items[0]?.specs ? `
-          <tr>
-            <td>Contexte</td>
-            ${items.map(item => `<td>${item.specs?.contextWindow || '-'}</td>`).join('')}
-          </tr>
-          <tr>
-            <td>Vitesse</td>
-            ${items.map(item => `<td>${item.specs?.speed || '-'}</td>`).join('')}
-          </tr>
-          <tr>
-            <td>Prix Input</td>
-            ${items.map(item => `<td>${item.specs?.inputPrice || '-'}</td>`).join('')}
-          </tr>
-          <tr>
-            <td>Prix Output</td>
-            ${items.map(item => `<td>${item.specs?.outputPrice || '-'}</td>`).join('')}
-          </tr>
-        ` : ''}
-        <tr>
-          <td>API</td>
-          ${items.map(item => `<td>${item.apiAvailable ? '✓' : '✗'}</td>`).join('')}
-        </tr>
-        <tr>
-          <td>Difficulte</td>
-          ${items.map(item => `<td>${getDifficultyLabel(item.difficulty) || '-'}</td>`).join('')}
-        </tr>
-        <tr>
-          <td></td>
-          ${items.map(item => `
-            <td>
-              <button class="comparison-table__remove" onclick="removeFromComparison('${item.id}')">&times;</button>
-            </td>
+
+    <div class="comparator-content">
+      <!-- Items Header Row -->
+      <div class="comparator-items" style="--items-count: ${items.length}">
+        ${itemsWithScores.map((item, idx) => `
+          <div class="comparator-item" style="--item-color: ${comparisonColors[idx].primary}">
+            <div class="comparator-item__header">
+              <button class="comparator-item__remove" onclick="removeFromComparison('${item.id}')" title="Retirer">×</button>
+              <div class="comparator-item__color" style="background: ${comparisonColors[idx].primary}"></div>
+              <h3 class="comparator-item__name">${item.name}</h3>
+              <p class="comparator-item__provider">${item.provider}</p>
+            </div>
+            <div class="comparator-item__badges">
+              ${renderBadges(item.badges, 4)}
+              ${item.tier ? `<span class="badge badge--${item.tier} badge--sm">${getTierLabel(item.tier)}</span>` : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+      <!-- Combined Radar Chart -->
+      <div class="comparator-radar">
+        <h3 class="comparator-section__title">📊 Comparaison des compétences</h3>
+        <div class="comparator-radar__chart">
+          ${renderCombinedRadarChart(itemsWithScores, comparisonColors)}
+        </div>
+        <div class="comparator-radar__legend">
+          ${itemsWithScores.map((item, idx) => `
+            <div class="radar-legend-item">
+              <span class="radar-legend-color" style="background: ${comparisonColors[idx].primary}"></span>
+              <span class="radar-legend-name">${item.name}</span>
+            </div>
           `).join('')}
-        </tr>
-      </tbody>
-    </table>
-    <div style="margin-top: var(--space-lg); text-align: center;">
-      <button class="btn btn--secondary" onclick="exportComparison()">📥 Exporter en PDF</button>
+        </div>
+      </div>
+
+      <!-- Score Comparison Bars -->
+      <div class="comparator-scores">
+        <h3 class="comparator-section__title">📈 Scores détaillés</h3>
+        ${renderScoreComparisonBars(itemsWithScores, comparisonColors)}
+      </div>
+
+      <!-- Specs Comparison Table -->
+      <div class="comparator-specs">
+        <h3 class="comparator-section__title">📋 Spécifications techniques</h3>
+        <table class="comparison-table comparison-table--enhanced">
+          <tbody>
+            <tr>
+              <td class="comparison-table__label">Contexte</td>
+              ${items.map((item, idx) => `
+                <td style="--item-color: ${comparisonColors[idx].primary}">${item.specs?.contextWindow || '-'}</td>
+              `).join('')}
+            </tr>
+            <tr>
+              <td class="comparison-table__label">Vitesse</td>
+              ${items.map((item, idx) => `
+                <td style="--item-color: ${comparisonColors[idx].primary}">${item.specs?.speed || '-'}</td>
+              `).join('')}
+            </tr>
+            <tr>
+              <td class="comparison-table__label">Prix Input</td>
+              ${items.map((item, idx) => `
+                <td style="--item-color: ${comparisonColors[idx].primary}">${item.specs?.inputPrice || '-'}</td>
+              `).join('')}
+            </tr>
+            <tr>
+              <td class="comparison-table__label">Prix Output</td>
+              ${items.map((item, idx) => `
+                <td style="--item-color: ${comparisonColors[idx].primary}">${item.specs?.outputPrice || '-'}</td>
+              `).join('')}
+            </tr>
+            <tr>
+              <td class="comparison-table__label">API</td>
+              ${items.map((item, idx) => `
+                <td style="--item-color: ${comparisonColors[idx].primary}">
+                  ${item.apiAvailable ? '<span class="check-yes">✓</span>' : '<span class="check-no">✗</span>'}
+                </td>
+              `).join('')}
+            </tr>
+            <tr>
+              <td class="comparison-table__label">Difficulté</td>
+              ${items.map((item, idx) => `
+                <td style="--item-color: ${comparisonColors[idx].primary}">${getDifficultyLabel(item.difficulty) || '-'}</td>
+              `).join('')}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Strengths Comparison -->
+      <div class="comparator-strengths">
+        <h3 class="comparator-section__title">💪 Points forts</h3>
+        <div class="comparator-strengths__grid" style="--items-count: ${items.length}">
+          ${items.map((item, idx) => `
+            <div class="comparator-strengths__item" style="--item-color: ${comparisonColors[idx].primary}">
+              <h4>${item.name}</h4>
+              <ul>
+                ${(item.strengths || []).slice(0, 4).map(s => `<li>${s}</li>`).join('')}
+              </ul>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- Winner Summary -->
+      <div class="comparator-verdict">
+        <h3 class="comparator-section__title">🏆 Verdict</h3>
+        ${renderComparisonVerdict(itemsWithScores, comparisonColors)}
+      </div>
     </div>
   `;
 
   openModal(modalHTML);
+}
+
+// Render combined radar chart for comparison
+function renderCombinedRadarChart(items, colors) {
+  const size = 300;
+  const centerX = size / 2;
+  const centerY = size / 2;
+  const maxRadius = size / 2 - 40;
+
+  // Get all unique categories from all items
+  const allCategories = new Set();
+  items.forEach(item => {
+    if (item.scores) {
+      Object.keys(item.scores).forEach(cat => allCategories.add(cat));
+    }
+  });
+  const categories = Array.from(allCategories);
+  const numCats = categories.length;
+
+  if (numCats === 0) {
+    return '<p class="no-data">Pas de données benchmark disponibles</p>';
+  }
+
+  // Create grid circles
+  const gridCircles = [25, 50, 75, 100].map(level => {
+    const r = maxRadius * level / 100;
+    return `<circle cx="${centerX}" cy="${centerY}" r="${r}" class="radar-grid"/>`;
+  }).join('');
+
+  // Create axis lines and labels
+  const axisLines = categories.map((cat, i) => {
+    const angle = (Math.PI * 2 * i / numCats) - Math.PI / 2;
+    const x = centerX + maxRadius * Math.cos(angle);
+    const y = centerY + maxRadius * Math.sin(angle);
+    return `<line x1="${centerX}" y1="${centerY}" x2="${x}" y2="${y}" class="radar-axis"/>`;
+  }).join('');
+
+  const labels = categories.map((cat, i) => {
+    const angle = (Math.PI * 2 * i / numCats) - Math.PI / 2;
+    const labelRadius = maxRadius + 25;
+    const x = centerX + labelRadius * Math.cos(angle);
+    const y = centerY + labelRadius * Math.sin(angle);
+    const comp = COMPETENCY_LABELS[cat] || { emoji: '📊', name: cat };
+    return `<text x="${x}" y="${y}" class="radar-label" text-anchor="middle" dominant-baseline="middle">${comp.emoji}</text>`;
+  }).join('');
+
+  // Create polygons for each item
+  const polygons = items.map((item, idx) => {
+    if (!item.scores) return '';
+
+    const points = categories.map((cat, i) => {
+      const angle = (Math.PI * 2 * i / numCats) - Math.PI / 2;
+      const value = (item.scores[cat] || 0) / 100;
+      const x = centerX + maxRadius * value * Math.cos(angle);
+      const y = centerY + maxRadius * value * Math.sin(angle);
+      return `${x},${y}`;
+    }).join(' ');
+
+    return `
+      <polygon
+        points="${points}"
+        class="radar-polygon radar-polygon--${idx}"
+        fill="${colors[idx].primary}"
+        fill-opacity="0.2"
+        stroke="${colors[idx].primary}"
+        stroke-width="2"
+      />
+    `;
+  }).join('');
+
+  // Create points for each item
+  const pointGroups = items.map((item, idx) => {
+    if (!item.scores) return '';
+
+    return categories.map((cat, i) => {
+      const angle = (Math.PI * 2 * i / numCats) - Math.PI / 2;
+      const value = (item.scores[cat] || 0) / 100;
+      const x = centerX + maxRadius * value * Math.cos(angle);
+      const y = centerY + maxRadius * value * Math.sin(angle);
+      return `<circle cx="${x}" cy="${y}" r="4" fill="${colors[idx].primary}" class="radar-point--${idx}"/>`;
+    }).join('');
+  }).join('');
+
+  return `
+    <svg viewBox="0 0 ${size} ${size}" class="radar-chart radar-chart--combined" role="img" aria-label="Comparaison radar">
+      ${gridCircles}
+      ${axisLines}
+      ${polygons}
+      ${pointGroups}
+      ${labels}
+    </svg>
+  `;
+}
+
+// Render score comparison bars
+function renderScoreComparisonBars(items, colors) {
+  // Get all categories
+  const allCategories = new Set();
+  items.forEach(item => {
+    if (item.scores) {
+      Object.keys(item.scores).forEach(cat => allCategories.add(cat));
+    }
+  });
+
+  if (allCategories.size === 0) {
+    return '<p class="no-data">Pas de scores disponibles</p>';
+  }
+
+  return Array.from(allCategories).map(cat => {
+    const comp = COMPETENCY_LABELS[cat] || { emoji: '📊', name: cat };
+
+    // Find the highest score for this category
+    let maxScore = 0;
+    items.forEach(item => {
+      if (item.scores?.[cat] > maxScore) maxScore = item.scores[cat];
+    });
+
+    return `
+      <div class="score-comparison-row">
+        <div class="score-comparison-label">
+          <span class="score-comparison-emoji">${comp.emoji}</span>
+          <span class="score-comparison-name">${comp.name}</span>
+        </div>
+        <div class="score-comparison-bars">
+          ${items.map((item, idx) => {
+            const score = item.scores?.[cat] || 0;
+            const isMax = score === maxScore && maxScore > 0;
+            return `
+              <div class="score-bar-container">
+                <div
+                  class="score-bar ${isMax ? 'score-bar--winner' : ''}"
+                  style="--bar-width: ${score}%; --bar-color: ${colors[idx].primary}"
+                >
+                  <span class="score-bar__value">${score}</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Render comparison verdict
+function renderComparisonVerdict(items, colors) {
+  // Calculate overall scores
+  const itemsWithOverall = items.map((item, idx) => {
+    let overall = 0;
+    let count = 0;
+    if (item.scores) {
+      Object.values(item.scores).forEach(score => {
+        overall += score;
+        count++;
+      });
+    }
+    return {
+      ...item,
+      overallScore: count > 0 ? Math.round(overall / count) : 0,
+      color: colors[idx]
+    };
+  });
+
+  // Sort by overall score
+  const sorted = [...itemsWithOverall].sort((a, b) => b.overallScore - a.overallScore);
+
+  // Find category winners
+  const categoryWinners = {};
+  const allCategories = new Set();
+  items.forEach(item => {
+    if (item.scores) {
+      Object.keys(item.scores).forEach(cat => allCategories.add(cat));
+    }
+  });
+
+  allCategories.forEach(cat => {
+    let maxScore = 0;
+    let winner = null;
+    items.forEach(item => {
+      if (item.scores?.[cat] > maxScore) {
+        maxScore = item.scores[cat];
+        winner = item.name;
+      }
+    });
+    if (winner) {
+      categoryWinners[cat] = { name: winner, score: maxScore };
+    }
+  });
+
+  return `
+    <div class="verdict-content">
+      <div class="verdict-ranking">
+        <h4>Classement général</h4>
+        <ol class="verdict-list">
+          ${sorted.map((item, idx) => `
+            <li class="verdict-item ${idx === 0 ? 'verdict-item--winner' : ''}">
+              <span class="verdict-rank">${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}.`}</span>
+              <span class="verdict-name" style="color: ${item.color.primary}">${item.name}</span>
+              <span class="verdict-score">${item.overallScore}/100</span>
+            </li>
+          `).join('')}
+        </ol>
+      </div>
+      <div class="verdict-categories">
+        <h4>Meilleur par catégorie</h4>
+        <div class="verdict-categories-list">
+          ${Object.entries(categoryWinners).slice(0, 6).map(([cat, winner]) => {
+            const comp = COMPETENCY_LABELS[cat] || { emoji: '📊', name: cat };
+            return `
+              <div class="verdict-category">
+                <span class="verdict-category-emoji">${comp.emoji}</span>
+                <span class="verdict-category-name">${comp.name}</span>
+                <span class="verdict-category-winner">${winner.name}</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 function removeFromComparison(itemId) {

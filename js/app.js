@@ -273,11 +273,17 @@ function populateFilters() {
     elements.usecaseFilter.innerHTML = `<option value="">Tous les cas d'usage</option>${useCases}`;
   }
 
-  // Phase 3: Examples category filter
+  // Phase 3: Examples category filter - only show categories that have examples
   if (elements.examplesCategoryFilter) {
-    const options = state.data.categories.map(cat =>
-      `<option value="${cat.id}">${cat.emoji} ${cat.name}</option>`
-    ).join('');
+    // Get categoryIds that actually have examples
+    const categoriesWithExamples = new Set(
+      state.data.examples.map(ex => ex.categoryId)
+    );
+
+    const options = state.data.categories
+      .filter(cat => categoriesWithExamples.has(cat.id))
+      .map(cat => `<option value="${cat.id}">${cat.emoji} ${cat.name}</option>`)
+      .join('');
     elements.examplesCategoryFilter.innerHTML = `<option value="">Toutes categories</option>${options}`;
   }
 }

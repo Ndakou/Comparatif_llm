@@ -1,6 +1,6 @@
 /**
  * AI Reference Hub - Main Application
- * Version: 4.0.0 - Phase 1 Critical: Cumulative Filters, Enhanced Comparator
+ * Version: 4.1.0 - Phase 2: Enhanced Examples, Responsive Design, Performance
  * Author: MR Tech Lab
  */
 
@@ -225,6 +225,9 @@ function initializeApp() {
   renderQuickGuide();
   setupEventListeners();
   updateComparatorUI();
+
+  // Phase 2: Initialize performance optimizations
+  initPerformanceOptimizations();
 }
 
 function updateCounts() {
@@ -1216,11 +1219,30 @@ function renderExamples() {
     return cat?.emoji || '💡';
   };
 
-  elements.examplesGrid.innerHTML = examples.map(example => `
-    <div class="example-card" style="--example-color: ${getCategoryColor(example.categoryId)}">
+  // Difficulty labels
+  const difficultyLabels = {
+    debutant: { label: 'Débutant', class: 'difficulty--easy', icon: '🟢' },
+    intermediaire: { label: 'Intermédiaire', class: 'difficulty--medium', icon: '🟡' },
+    avance: { label: 'Avancé', class: 'difficulty--hard', icon: '🟠' },
+    expert: { label: 'Expert', class: 'difficulty--expert', icon: '🔴' }
+  };
+
+  elements.examplesGrid.innerHTML = examples.map((example, idx) => {
+    const difficulty = difficultyLabels[example.difficulty] || difficultyLabels.intermediaire;
+    const hasPrompt = example.prompt && example.prompt.length > 0;
+    const promptId = `prompt-${idx}`;
+
+    return `
+    <div class="example-card example-card--enhanced" style="--example-color: ${getCategoryColor(example.categoryId)}">
       <div class="example-card__header">
         <div class="example-card__icon">${getCategoryEmoji(example.categoryId)}</div>
         <h4 class="example-card__title">${example.title}</h4>
+        <div class="example-card__badges">
+          <span class="example-card__difficulty ${difficulty.class}" title="${difficulty.label}">
+            ${difficulty.icon} ${difficulty.label}
+          </span>
+          ${example.estimatedTime ? `<span class="example-card__time" title="Temps estimé">⏱️ ${example.estimatedTime}</span>` : ''}
+        </div>
       </div>
       <div class="example-card__content">
         <div class="example-card__step">
@@ -1235,6 +1257,27 @@ function renderExamples() {
           <div class="example-card__step-label example-card__step-label--result">✅ Résultat</div>
           <p class="example-card__step-text">${example.result}</p>
         </div>
+
+        ${hasPrompt ? `
+        <div class="example-card__prompt-section">
+          <button class="example-card__prompt-toggle" onclick="toggleExamplePrompt('${promptId}')" aria-expanded="false" aria-controls="${promptId}">
+            <span class="prompt-toggle__icon">📝</span>
+            <span class="prompt-toggle__text">Voir le prompt complet</span>
+            <span class="prompt-toggle__chevron">▼</span>
+          </button>
+          <div id="${promptId}" class="example-card__prompt hidden">
+            <div class="example-card__prompt-header">
+              <span class="prompt-header__title">Prompt à copier</span>
+              <button class="btn btn--sm btn--copy" onclick="copyExamplePrompt('${promptId}')" title="Copier le prompt">
+                <span class="copy-icon">📋</span>
+                <span class="copy-text">Copier</span>
+              </button>
+            </div>
+            <pre class="example-card__prompt-code"><code>${escapeHtml(example.prompt)}</code></pre>
+          </div>
+        </div>
+        ` : ''}
+
         <div class="example-card__tools">
           ${example.tools.map(toolId => {
             const tool = [...state.data.llms, ...state.data.tools].find(t => t.id === toolId);
@@ -1243,7 +1286,58 @@ function renderExamples() {
         </div>
       </div>
     </div>
-  `).join('');
+  `}).join('');
+}
+
+// Toggle example prompt visibility
+function toggleExamplePrompt(promptId) {
+  const promptEl = document.getElementById(promptId);
+  const toggleBtn = promptEl?.previousElementSibling;
+
+  if (!promptEl || !toggleBtn) return;
+
+  const isHidden = promptEl.classList.contains('hidden');
+  promptEl.classList.toggle('hidden');
+  toggleBtn.setAttribute('aria-expanded', isHidden);
+
+  const chevron = toggleBtn.querySelector('.prompt-toggle__chevron');
+  const text = toggleBtn.querySelector('.prompt-toggle__text');
+
+  if (chevron) chevron.textContent = isHidden ? '▲' : '▼';
+  if (text) text.textContent = isHidden ? 'Masquer le prompt' : 'Voir le prompt complet';
+}
+
+// Copy example prompt to clipboard
+async function copyExamplePrompt(promptId) {
+  const promptEl = document.getElementById(promptId);
+  const codeEl = promptEl?.querySelector('code');
+  const copyBtn = promptEl?.querySelector('.btn--copy');
+
+  if (!codeEl) return;
+
+  try {
+    await navigator.clipboard.writeText(codeEl.textContent);
+
+    if (copyBtn) {
+      const originalText = copyBtn.innerHTML;
+      copyBtn.innerHTML = '<span class="copy-icon">✅</span><span class="copy-text">Copié!</span>';
+      copyBtn.classList.add('btn--success');
+
+      setTimeout(() => {
+        copyBtn.innerHTML = originalText;
+        copyBtn.classList.remove('btn--success');
+      }, 2000);
+    }
+  } catch (err) {
+    console.error('Failed to copy prompt:', err);
+  }
+}
+
+// Escape HTML for safe display
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
 }
 
 // ============================================
@@ -2188,6 +2282,230 @@ function debounce(func, wait) {
     clearTimeout(timeout);
     timeout = setTimeout(later, wait);
   };
+}
+
+// Throttle function for scroll events
+function throttle(func, limit) {
+  let inThrottle;
+  return function(...args) {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
+}
+
+// ============================================
+// PHASE 2: PERFORMANCE OPTIMIZATIONS
+// ============================================
+
+// Lazy loading with IntersectionObserver
+const lazyLoadObserver = new IntersectionObserver((entries, observer) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const element = entry.target;
+
+      // Handle lazy images
+      if (element.dataset.src) {
+        element.src = element.dataset.src;
+        element.removeAttribute('data-src');
+      }
+
+      // Handle lazy backgrounds
+      if (element.dataset.bg) {
+        element.style.backgroundImage = `url(${element.dataset.bg})`;
+        element.removeAttribute('data-bg');
+      }
+
+      // Add loaded class for animations
+      element.classList.add('lazy-loaded');
+      observer.unobserve(element);
+    }
+  });
+}, {
+  rootMargin: '50px 0px',
+  threshold: 0.1
+});
+
+// Initialize lazy loading for elements
+function initLazyLoading() {
+  const lazyElements = document.querySelectorAll('[data-src], [data-bg], .lazy-load');
+  lazyElements.forEach(el => lazyLoadObserver.observe(el));
+}
+
+// Intersection observer for card animations
+const cardAnimationObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('animate-in');
+      cardAnimationObserver.unobserve(entry.target);
+    }
+  });
+}, {
+  rootMargin: '0px 0px -50px 0px',
+  threshold: 0.1
+});
+
+// Initialize card animations
+function initCardAnimations() {
+  const cards = document.querySelectorAll('.item-card, .example-card, .category-card');
+  cards.forEach((card, index) => {
+    card.style.setProperty('--animation-delay', `${index * 50}ms`);
+    cardAnimationObserver.observe(card);
+  });
+}
+
+// Request animation frame wrapper for smooth updates
+function smoothUpdate(callback) {
+  return requestAnimationFrame(() => {
+    callback();
+  });
+}
+
+// Batch DOM updates for better performance
+const domBatchUpdater = {
+  updates: [],
+  scheduled: false,
+
+  add(update) {
+    this.updates.push(update);
+    if (!this.scheduled) {
+      this.scheduled = true;
+      requestAnimationFrame(() => {
+        this.flush();
+      });
+    }
+  },
+
+  flush() {
+    const fragment = document.createDocumentFragment();
+    this.updates.forEach(update => update(fragment));
+    this.updates = [];
+    this.scheduled = false;
+  }
+};
+
+// Virtual scroll helper for large lists
+class VirtualScroller {
+  constructor(container, itemHeight, renderItem) {
+    this.container = container;
+    this.itemHeight = itemHeight;
+    this.renderItem = renderItem;
+    this.items = [];
+    this.visibleItems = new Map();
+    this.scrollTop = 0;
+    this.containerHeight = 0;
+
+    this.handleScroll = throttle(this.onScroll.bind(this), 16);
+  }
+
+  setItems(items) {
+    this.items = items;
+    this.container.style.height = `${items.length * this.itemHeight}px`;
+    this.containerHeight = this.container.parentElement?.clientHeight || 600;
+    this.render();
+  }
+
+  onScroll() {
+    this.scrollTop = this.container.parentElement?.scrollTop || 0;
+    this.render();
+  }
+
+  render() {
+    const startIndex = Math.floor(this.scrollTop / this.itemHeight);
+    const endIndex = Math.min(
+      startIndex + Math.ceil(this.containerHeight / this.itemHeight) + 2,
+      this.items.length
+    );
+
+    // Remove items no longer visible
+    this.visibleItems.forEach((el, index) => {
+      if (index < startIndex || index >= endIndex) {
+        el.remove();
+        this.visibleItems.delete(index);
+      }
+    });
+
+    // Add new visible items
+    for (let i = startIndex; i < endIndex; i++) {
+      if (!this.visibleItems.has(i) && this.items[i]) {
+        const el = this.renderItem(this.items[i], i);
+        el.style.position = 'absolute';
+        el.style.top = `${i * this.itemHeight}px`;
+        el.style.width = '100%';
+        this.container.appendChild(el);
+        this.visibleItems.set(i, el);
+      }
+    }
+  }
+}
+
+// Preload critical resources
+function preloadCriticalResources() {
+  // Preload fonts
+  const fonts = [
+    'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap'
+  ];
+
+  fonts.forEach(font => {
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'style';
+    link.href = font;
+    document.head.appendChild(link);
+  });
+}
+
+// Cache DOM queries
+const domCache = new Map();
+
+function getCachedElement(selector) {
+  if (!domCache.has(selector)) {
+    domCache.set(selector, document.querySelector(selector));
+  }
+  return domCache.get(selector);
+}
+
+function clearDomCache() {
+  domCache.clear();
+}
+
+// Memory cleanup
+function cleanupMemory() {
+  // Clear any large objects from memory
+  if (state.radarChart) {
+    state.radarChart.destroy();
+    state.radarChart = null;
+  }
+
+  // Clear DOM cache periodically
+  clearDomCache();
+}
+
+// Initialize performance optimizations
+function initPerformanceOptimizations() {
+  // Lazy loading
+  initLazyLoading();
+
+  // Card animations on scroll
+  setTimeout(() => initCardAnimations(), 100);
+
+  // Cleanup on page hide
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      cleanupMemory();
+    }
+  });
+
+  // Preload resources when idle
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(preloadCriticalResources);
+  } else {
+    setTimeout(preloadCriticalResources, 1000);
+  }
+
+  console.log('Performance optimizations initialized');
 }
 
 function showToast(message) {

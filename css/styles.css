@@ -3153,7 +3153,7 @@ select:focus-visible {
 
 /* Card entrance animations */
 .item-card {
-  animation: cardSlideIn 0.4s var(--ease-smooth) backwards;
+  animation: cardSlideIn 0.4s var(--ease-smooth) both;
 }
 
 .item-card:nth-child(1) { animation-delay: 0ms; }
@@ -3182,7 +3182,7 @@ select:focus-visible {
 
 /* Category card animations */
 .category-card {
-  animation: categoryPop 0.5s var(--ease-elastic) backwards;
+  animation: categoryPop 0.5s var(--ease-elastic) both;
 }
 
 .category-card:nth-child(1) { animation-delay: 0ms; }

@@ -748,6 +748,13 @@ function handleFilterChange() {
 }
 
 function filterItems(items) {
+  // Defensive: ensure filter arrays are defined
+  state.filters.competencies = state.filters.competencies || [];
+  state.filters.tiers = state.filters.tiers || [];
+  state.filters.difficulties = state.filters.difficulties || [];
+  state.filters.accessTypes = state.filters.accessTypes || [];
+  state.filters.contextSizes = state.filters.contextSizes || [];
+
   let filtered = items.filter(item => {
     // Search query always applies (AND logic)
     if (state.searchQuery) {
@@ -764,7 +771,7 @@ function filterItems(items) {
     }
 
     // Category filter always applies
-    if (state.filters.category && !item.categories.includes(state.filters.category)) {
+    if (state.filters.category && !(item.categories || []).includes(state.filters.category)) {
       return false;
     }
 
@@ -4309,11 +4316,17 @@ function loadPreferences() {
       state.filtersExpanded = preferences.filtersExpanded;
     }
 
-    // Apply filters
+    // Apply filters with safe defaults for arrays
     if (preferences.filters) {
       state.filters = {
         ...state.filters,
-        ...preferences.filters
+        ...preferences.filters,
+        // Ensure arrays are never undefined
+        competencies: Array.isArray(preferences.filters.competencies) ? preferences.filters.competencies : [],
+        tiers: Array.isArray(preferences.filters.tiers) ? preferences.filters.tiers : [],
+        difficulties: Array.isArray(preferences.filters.difficulties) ? preferences.filters.difficulties : [],
+        accessTypes: Array.isArray(preferences.filters.accessTypes) ? preferences.filters.accessTypes : [],
+        contextSizes: Array.isArray(preferences.filters.contextSizes) ? preferences.filters.contextSizes : []
       };
     }
 

@@ -1,6 +1,6 @@
 /**
  * AI Reference Hub - Main Application
- * Version: 4.1.0 - Phase 2: Enhanced Examples, Responsive Design, Performance
+ * Version: 4.2.0 - Phase 3: Advanced Animations, Data Export, User Preferences
  * Author: MR Tech Lab
  */
 
@@ -214,20 +214,36 @@ function showError(message) {
 // ============================================
 
 function initializeApp() {
-  // Apply saved theme first
+  // Phase 3: Load user preferences first
+  loadPreferences();
+
+  // Apply saved theme
   applyTheme(state.theme);
 
   updateCounts();
   populateFilters();
   renderCategories();
-  renderNews(); // Phase 3
+  renderNews();
   renderExamples();
   renderQuickGuide();
   setupEventListeners();
   updateComparatorUI();
 
+  // Phase 3: Apply preferences to UI elements
+  applyPreferencesToUI();
+
+  // Phase 3: Attach auto-save for preferences
+  attachPreferenceSaving();
+
+  // Switch to saved tab if different from default
+  if (state.currentTab !== 'llms') {
+    handleTabChange(state.currentTab);
+  }
+
   // Phase 2: Initialize performance optimizations
   initPerformanceOptimizations();
+
+  console.log('✅ AI Reference Hub v4.2.0 initialisé');
 }
 
 function updateCounts() {
@@ -2547,6 +2563,396 @@ toastStyles.textContent = `
 document.head.appendChild(toastStyles);
 
 // ============================================
+// PHASE 3: DATA EXPORT FUNCTIONALITY
+// ============================================
+
+// Export all LLMs data to JSON
+function exportLLMsToJSON() {
+  const data = {
+    exportDate: new Date().toISOString(),
+    version: '4.2.0',
+    totalCount: state.data.llms.length,
+    llms: state.data.llms.map(llm => ({
+      id: llm.id,
+      name: llm.name,
+      developer: llm.developer,
+      category: llm.categoryId,
+      tier: llm.tier,
+      pricing: llm.pricing,
+      contextWindow: llm.contextWindow,
+      releaseDate: llm.releaseDate,
+      scores: llm.scores,
+      tags: llm.tags,
+      docUrl: llm.docUrl
+    }))
+  };
+
+  downloadFile(
+    JSON.stringify(data, null, 2),
+    `llms-export-${formatDate(new Date())}.json`,
+    'application/json'
+  );
+
+  showToast('Export JSON téléchargé!');
+}
+
+// Export all tools data to JSON
+function exportToolsToJSON() {
+  const data = {
+    exportDate: new Date().toISOString(),
+    version: '4.2.0',
+    totalCount: state.data.tools.length,
+    tools: state.data.tools.map(tool => ({
+      id: tool.id,
+      name: tool.name,
+      developer: tool.developer,
+      category: tool.categoryId,
+      tier: tool.tier,
+      pricing: tool.pricing,
+      tags: tool.tags,
+      docUrl: tool.docUrl
+    }))
+  };
+
+  downloadFile(
+    JSON.stringify(data, null, 2),
+    `tools-export-${formatDate(new Date())}.json`,
+    'application/json'
+  );
+
+  showToast('Export JSON téléchargé!');
+}
+
+// Export LLMs to CSV
+function exportLLMsToCSV() {
+  const headers = [
+    'ID', 'Nom', 'Developpeur', 'Categorie', 'Tier', 'Prix',
+    'Contexte', 'Date Sortie', 'Score Reasoning', 'Score Coding',
+    'Score Math', 'Score Writing', 'Score Multilingue', 'Score Vitesse',
+    'Tags', 'Documentation'
+  ];
+
+  const rows = state.data.llms.map(llm => [
+    llm.id,
+    llm.name,
+    llm.developer || '',
+    llm.categoryId || '',
+    llm.tier || '',
+    llm.pricing || '',
+    llm.contextWindow || '',
+    llm.releaseDate || '',
+    llm.scores?.reasoning || '',
+    llm.scores?.coding || '',
+    llm.scores?.math || '',
+    llm.scores?.writing || '',
+    llm.scores?.multilingual || '',
+    llm.scores?.speed || '',
+    (llm.tags || []).join('; '),
+    llm.docUrl || ''
+  ]);
+
+  const csv = [headers, ...rows]
+    .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+
+  downloadFile(
+    '\uFEFF' + csv, // BOM for Excel UTF-8 support
+    `llms-export-${formatDate(new Date())}.csv`,
+    'text/csv;charset=utf-8'
+  );
+
+  showToast('Export CSV téléchargé!');
+}
+
+// Export tools to CSV
+function exportToolsToCSV() {
+  const headers = [
+    'ID', 'Nom', 'Developpeur', 'Categorie', 'Tier', 'Prix',
+    'Tags', 'Documentation'
+  ];
+
+  const rows = state.data.tools.map(tool => [
+    tool.id,
+    tool.name,
+    tool.developer || '',
+    tool.categoryId || '',
+    tool.tier || '',
+    tool.pricing || '',
+    (tool.tags || []).join('; '),
+    tool.docUrl || ''
+  ]);
+
+  const csv = [headers, ...rows]
+    .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+
+  downloadFile(
+    '\uFEFF' + csv,
+    `tools-export-${formatDate(new Date())}.csv`,
+    'text/csv;charset=utf-8'
+  );
+
+  showToast('Export CSV téléchargé!');
+}
+
+// Export benchmarks to CSV
+function exportBenchmarksToCSV() {
+  const benchmarks = state.data.benchmarks?.llmScores || [];
+
+  const headers = [
+    'ID', 'Reasoning', 'Coding', 'Math', 'Writing', 'Multilingue',
+    'Vitesse', 'Contexte', 'Cout', 'Multimodal', 'Instructions',
+    'Points forts', 'Meilleur pour'
+  ];
+
+  const rows = benchmarks.map(b => [
+    b.id,
+    b.scores?.reasoning || '',
+    b.scores?.coding || '',
+    b.scores?.math || '',
+    b.scores?.writing || '',
+    b.scores?.multilingual || '',
+    b.scores?.speed || '',
+    b.scores?.context || '',
+    b.scores?.cost || '',
+    b.scores?.multimodal || '',
+    b.scores?.instruction || '',
+    (b.highlights || []).join('; '),
+    (b.bestFor || []).join('; ')
+  ]);
+
+  const csv = [headers, ...rows]
+    .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+
+  downloadFile(
+    '\uFEFF' + csv,
+    `benchmarks-export-${formatDate(new Date())}.csv`,
+    'text/csv;charset=utf-8'
+  );
+
+  showToast('Export Benchmarks CSV téléchargé!');
+}
+
+// Export current filtered view
+function exportCurrentView() {
+  const currentTab = state.currentTab;
+  const items = currentTab === 'llms' ? state.data.llms : state.data.tools;
+  const filtered = filterItems(items);
+
+  const data = {
+    exportDate: new Date().toISOString(),
+    type: currentTab,
+    filters: {
+      category: state.filters.category,
+      search: state.searchQuery,
+      competencies: state.filters.competencies,
+      tiers: state.filters.tiers,
+      logic: state.filterLogic
+    },
+    totalCount: filtered.length,
+    items: filtered
+  };
+
+  downloadFile(
+    JSON.stringify(data, null, 2),
+    `${currentTab}-filtered-${formatDate(new Date())}.json`,
+    'application/json'
+  );
+
+  showToast(`Export de ${filtered.length} éléments téléchargé!`);
+}
+
+// Export examples with prompts
+function exportExamplesToJSON() {
+  const data = {
+    exportDate: new Date().toISOString(),
+    version: '4.2.0',
+    totalCount: state.data.examples.length,
+    examples: state.data.examples
+  };
+
+  downloadFile(
+    JSON.stringify(data, null, 2),
+    `examples-prompts-${formatDate(new Date())}.json`,
+    'application/json'
+  );
+
+  showToast('Export des exemples téléchargé!');
+}
+
+// Export quick guide
+function exportQuickGuide() {
+  const guide = state.data.quickGuide;
+
+  let markdown = '# Guide Rapide IA - AI Reference Hub\n\n';
+  markdown += `*Exporté le ${new Date().toLocaleDateString('fr-FR')}*\n\n`;
+
+  markdown += '## Recommandations par Cas d\'Usage\n\n';
+  markdown += '| Cas d\'Usage | Recommandation |\n';
+  markdown += '|-------------|----------------|\n';
+  guide.byUseCase.forEach(item => {
+    markdown += `| ${item.useCase} | ${item.recommendation} |\n`;
+  });
+
+  markdown += '\n## Stack n8n Recommandé\n\n';
+  markdown += '| Composant | Recommandation |\n';
+  markdown += '|-----------|----------------|\n';
+  guide.n8nStack.forEach(item => {
+    markdown += `| ${item.component} | ${item.recommendation} |\n`;
+  });
+
+  downloadFile(
+    markdown,
+    `guide-rapide-${formatDate(new Date())}.md`,
+    'text/markdown'
+  );
+
+  showToast('Guide rapide exporté en Markdown!');
+}
+
+// Generate full report
+function generateFullReport() {
+  const llmCount = state.data.llms.length;
+  const toolsCount = state.data.tools.length;
+  const categoriesCount = state.data.categories.length;
+
+  let report = `# Rapport Complet AI Reference Hub\n\n`;
+  report += `*Généré le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}*\n\n`;
+
+  report += `## Statistiques Générales\n\n`;
+  report += `- **LLMs référencés:** ${llmCount}\n`;
+  report += `- **Outils référencés:** ${toolsCount}\n`;
+  report += `- **Catégories:** ${categoriesCount}\n\n`;
+
+  report += `## Top 10 LLMs par Score Global\n\n`;
+  const topLLMs = [...state.data.llms]
+    .map(llm => ({
+      ...llm,
+      avgScore: llm.scores ?
+        Object.values(llm.scores).reduce((a, b) => a + b, 0) / Object.values(llm.scores).length : 0
+    }))
+    .sort((a, b) => b.avgScore - a.avgScore)
+    .slice(0, 10);
+
+  report += '| Rang | Nom | Développeur | Score Moyen |\n';
+  report += '|------|-----|-------------|-------------|\n';
+  topLLMs.forEach((llm, idx) => {
+    report += `| ${idx + 1} | ${llm.name} | ${llm.developer || 'N/A'} | ${llm.avgScore.toFixed(1)} |\n`;
+  });
+
+  report += `\n## LLMs par Tier\n\n`;
+  const byTier = {};
+  state.data.llms.forEach(llm => {
+    const tier = llm.tier || 'Non classé';
+    byTier[tier] = (byTier[tier] || 0) + 1;
+  });
+  Object.entries(byTier).forEach(([tier, count]) => {
+    report += `- **${tier}:** ${count} LLMs\n`;
+  });
+
+  report += `\n## Catégories\n\n`;
+  state.data.categories.forEach(cat => {
+    const llmCount = state.data.llms.filter(l => l.categoryId === cat.id).length;
+    const toolCount = state.data.tools.filter(t => t.categoryId === cat.id).length;
+    report += `### ${cat.emoji} ${cat.name}\n`;
+    report += `${cat.description}\n`;
+    report += `- LLMs: ${llmCount} | Outils: ${toolCount}\n\n`;
+  });
+
+  downloadFile(
+    report,
+    `rapport-complet-${formatDate(new Date())}.md`,
+    'text/markdown'
+  );
+
+  showToast('Rapport complet généré!');
+}
+
+// Helper: Format date for filenames
+function formatDate(date) {
+  return date.toISOString().split('T')[0];
+}
+
+// Show export modal
+function showExportModal() {
+  const existingModal = document.querySelector('.export-modal-backdrop');
+  if (existingModal) existingModal.remove();
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'modal-backdrop export-modal-backdrop fade-in';
+  backdrop.onclick = (e) => {
+    if (e.target === backdrop) closeExportModal();
+  };
+
+  backdrop.innerHTML = `
+    <div class="modal export-modal modal-enter" style="max-width: 500px;">
+      <div class="modal__header">
+        <h2 class="modal__title">📤 Exporter les Données</h2>
+        <button class="modal__close" onclick="closeExportModal()" aria-label="Fermer">×</button>
+      </div>
+      <div class="modal__body" style="padding: var(--space-6);">
+        <div class="export-options">
+          <h3 style="margin-bottom: var(--space-4); color: var(--text-secondary);">Format JSON</h3>
+          <div class="export-buttons" style="display: grid; gap: var(--space-3); margin-bottom: var(--space-6);">
+            <button class="btn btn--primary" onclick="exportLLMsToJSON(); closeExportModal();">
+              🤖 Exporter tous les LLMs (JSON)
+            </button>
+            <button class="btn btn--primary" onclick="exportToolsToJSON(); closeExportModal();">
+              🛠️ Exporter tous les Outils (JSON)
+            </button>
+            <button class="btn btn--primary" onclick="exportExamplesToJSON(); closeExportModal();">
+              📝 Exporter les Exemples avec Prompts
+            </button>
+            <button class="btn btn--secondary" onclick="exportCurrentView(); closeExportModal();">
+              🔍 Exporter la vue filtrée actuelle
+            </button>
+          </div>
+
+          <h3 style="margin-bottom: var(--space-4); color: var(--text-secondary);">Format CSV</h3>
+          <div class="export-buttons" style="display: grid; gap: var(--space-3); margin-bottom: var(--space-6);">
+            <button class="btn btn--outline" onclick="exportLLMsToCSV(); closeExportModal();">
+              📊 Exporter LLMs (CSV/Excel)
+            </button>
+            <button class="btn btn--outline" onclick="exportToolsToCSV(); closeExportModal();">
+              📊 Exporter Outils (CSV/Excel)
+            </button>
+            <button class="btn btn--outline" onclick="exportBenchmarksToCSV(); closeExportModal();">
+              📈 Exporter Benchmarks (CSV)
+            </button>
+          </div>
+
+          <h3 style="margin-bottom: var(--space-4); color: var(--text-secondary);">Rapports</h3>
+          <div class="export-buttons" style="display: grid; gap: var(--space-3);">
+            <button class="btn btn--ghost" onclick="exportQuickGuide(); closeExportModal();">
+              📋 Guide Rapide (Markdown)
+            </button>
+            <button class="btn btn--ghost" onclick="generateFullReport(); closeExportModal();">
+              📄 Rapport Complet (Markdown)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(backdrop);
+  document.body.style.overflow = 'hidden';
+}
+
+function closeExportModal() {
+  const modal = document.querySelector('.export-modal-backdrop');
+  if (modal) {
+    modal.querySelector('.modal').classList.add('modal-exit');
+    modal.classList.add('fade-out');
+    setTimeout(() => {
+      modal.remove();
+      document.body.style.overflow = '';
+    }, 200);
+  }
+}
+
+// ============================================
 // BADGE CALCULATION SYSTEM
 // ============================================
 
@@ -3277,8 +3683,24 @@ function openSettings() {
         </div>
       </div>
 
+      <div class="settings-section">
+        <h3 class="settings-section__title">💾 Données</h3>
+        <div class="settings-option">
+          <span class="settings-option__label">Préférences sauvegardées</span>
+          <div class="settings-option__buttons">
+            <button class="btn btn--sm btn--secondary" onclick="savePreferences(); showToast('Préférences sauvegardées');">
+              💾 Sauvegarder
+            </button>
+            <button class="btn btn--sm btn--ghost" onclick="resetPreferences(); closeModal();">
+              🔄 Réinitialiser
+            </button>
+          </div>
+        </div>
+        <p class="settings-hint">Les préférences sont automatiquement sauvegardées lors de vos actions.</p>
+      </div>
+
       <div class="settings-footer">
-        <p>AI Reference Hub v3.2 - MR Tech Lab</p>
+        <p>AI Reference Hub v4.2.0 - MR Tech Lab</p>
         <p>Données: Janvier 2025</p>
       </div>
     </div>
@@ -3316,6 +3738,284 @@ function exportFavorites() {
 // Make settings functions global
 window.setTheme = setTheme;
 window.exportFavorites = exportFavorites;
+
+// ============================================
+// PHASE 3: USER PREFERENCES PERSISTENCE
+// ============================================
+
+const PREFERENCES_KEY = 'ai-hub-user-preferences';
+const PREFERENCES_VERSION = '1.0';
+
+/**
+ * Save user preferences to localStorage
+ */
+function savePreferences() {
+  const preferences = {
+    version: PREFERENCES_VERSION,
+    savedAt: new Date().toISOString(),
+    theme: state.theme,
+    currentTab: state.currentTab,
+    filterLogic: state.filterLogic,
+    filtersExpanded: state.filtersExpanded,
+    filters: {
+      competencies: state.filters.competencies,
+      tiers: state.filters.tiers,
+      difficulties: state.filters.difficulties,
+      accessTypes: state.filters.accessTypes,
+      contextSizes: state.filters.contextSizes,
+      minScore: state.filters.minScore,
+      sortBy: state.filters.sortBy
+    },
+    comparison: state.comparison,
+    lastSearch: state.searchQuery
+  };
+
+  try {
+    localStorage.setItem(PREFERENCES_KEY, JSON.stringify(preferences));
+    console.log('✅ Préférences sauvegardées');
+  } catch (error) {
+    console.error('❌ Erreur sauvegarde préférences:', error);
+  }
+}
+
+/**
+ * Load user preferences from localStorage
+ */
+function loadPreferences() {
+  try {
+    const saved = localStorage.getItem(PREFERENCES_KEY);
+    if (!saved) return false;
+
+    const preferences = JSON.parse(saved);
+
+    // Check version compatibility
+    if (preferences.version !== PREFERENCES_VERSION) {
+      console.log('⚠️ Version des préférences différente, réinitialisation');
+      return false;
+    }
+
+    // Apply theme
+    if (preferences.theme) {
+      state.theme = preferences.theme;
+      applyTheme(preferences.theme);
+    }
+
+    // Apply tab
+    if (preferences.currentTab) {
+      state.currentTab = preferences.currentTab;
+    }
+
+    // Apply filter logic
+    if (preferences.filterLogic) {
+      state.filterLogic = preferences.filterLogic;
+    }
+
+    // Apply filters expanded state
+    if (typeof preferences.filtersExpanded === 'boolean') {
+      state.filtersExpanded = preferences.filtersExpanded;
+    }
+
+    // Apply filters
+    if (preferences.filters) {
+      state.filters = {
+        ...state.filters,
+        ...preferences.filters
+      };
+    }
+
+    // Apply comparison
+    if (preferences.comparison && Array.isArray(preferences.comparison)) {
+      state.comparison = preferences.comparison.slice(0, state.maxComparison);
+    }
+
+    // Apply last search
+    if (preferences.lastSearch) {
+      state.searchQuery = preferences.lastSearch;
+    }
+
+    console.log('✅ Préférences chargées');
+    return true;
+  } catch (error) {
+    console.error('❌ Erreur chargement préférences:', error);
+    return false;
+  }
+}
+
+/**
+ * Reset user preferences
+ */
+function resetPreferences() {
+  try {
+    localStorage.removeItem(PREFERENCES_KEY);
+
+    // Reset state to defaults
+    state.theme = 'dark';
+    state.currentTab = 'llms';
+    state.filterLogic = 'and';
+    state.filtersExpanded = false;
+    state.filters = {
+      category: '',
+      useCase: '',
+      competencies: [],
+      tiers: [],
+      difficulties: [],
+      accessTypes: [],
+      contextSizes: [],
+      minScore: 0,
+      sortBy: ''
+    };
+    state.comparison = [];
+    state.searchQuery = '';
+
+    // Apply defaults
+    applyTheme('dark');
+    if (elements.search) elements.search.value = '';
+
+    // Update UI
+    handleTabChange('llms');
+    resetFilters();
+    updateComparatorUI();
+
+    showToast('Préférences réinitialisées');
+    console.log('✅ Préférences réinitialisées');
+  } catch (error) {
+    console.error('❌ Erreur réinitialisation préférences:', error);
+  }
+}
+
+/**
+ * Apply loaded preferences to UI
+ */
+function applyPreferencesToUI() {
+  // Apply search
+  if (elements.search && state.searchQuery) {
+    elements.search.value = state.searchQuery;
+  }
+
+  // Apply filter logic buttons
+  const andBtn = document.getElementById('filter-logic-and');
+  const orBtn = document.getElementById('filter-logic-or');
+  if (andBtn && orBtn) {
+    andBtn.classList.toggle('active', state.filterLogic === 'and');
+    orBtn.classList.toggle('active', state.filterLogic === 'or');
+  }
+
+  // Apply filters expanded state
+  const filtersPanel = document.getElementById('advanced-filters');
+  const toggleBtn = document.getElementById('toggle-filters');
+  if (filtersPanel && toggleBtn && state.filtersExpanded) {
+    filtersPanel.classList.remove('hidden');
+    toggleBtn.classList.add('active');
+    toggleBtn.setAttribute('aria-expanded', 'true');
+  }
+
+  // Apply competency checkboxes
+  state.filters.competencies.forEach(comp => {
+    const checkbox = document.querySelector(`input[name="competency"][value="${comp}"]`);
+    if (checkbox) checkbox.checked = true;
+  });
+
+  // Apply tier checkboxes
+  state.filters.tiers.forEach(tier => {
+    const checkbox = document.querySelector(`input[name="tier"][value="${tier}"]`);
+    if (checkbox) checkbox.checked = true;
+  });
+
+  // Apply difficulty checkboxes
+  state.filters.difficulties.forEach(diff => {
+    const checkbox = document.querySelector(`input[name="difficulty"][value="${diff}"]`);
+    if (checkbox) checkbox.checked = true;
+  });
+
+  // Apply access type checkboxes
+  state.filters.accessTypes.forEach(access => {
+    const checkbox = document.querySelector(`input[name="access"][value="${access}"]`);
+    if (checkbox) checkbox.checked = true;
+  });
+
+  // Apply context size checkboxes
+  state.filters.contextSizes.forEach(ctx => {
+    const checkbox = document.querySelector(`input[name="context"][value="${ctx}"]`);
+    if (checkbox) checkbox.checked = true;
+  });
+
+  // Apply score slider
+  const scoreSlider = document.getElementById('score-slider');
+  const scoreValue = document.getElementById('score-value');
+  if (scoreSlider && state.filters.minScore) {
+    scoreSlider.value = state.filters.minScore;
+    if (scoreValue) scoreValue.textContent = state.filters.minScore;
+  }
+
+  // Apply sort select
+  const sortSelect = document.getElementById('sort-select');
+  if (sortSelect && state.filters.sortBy) {
+    sortSelect.value = state.filters.sortBy;
+  }
+
+  // Update active filters UI
+  updateActiveFiltersUI();
+}
+
+/**
+ * Auto-save preferences on important state changes (debounced)
+ */
+const debouncedSavePreferences = debounce(savePreferences, 1000);
+
+/**
+ * Attach preference saving to state changes
+ */
+function attachPreferenceSaving() {
+  // Save on tab change by adding listener to nav tabs
+  document.querySelectorAll('.nav-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      setTimeout(debouncedSavePreferences, 100);
+    });
+  });
+
+  // Save on filter changes
+  document.addEventListener('change', (e) => {
+    if (e.target.matches('[name="competency"], [name="tier"], [name="difficulty"], [name="access"], [name="context"]')) {
+      debouncedSavePreferences();
+    }
+  });
+
+  // Save on search input
+  if (elements.search) {
+    elements.search.addEventListener('input', debounce(() => {
+      debouncedSavePreferences();
+    }, 500));
+  }
+
+  // Save on comparison changes
+  const originalToggleComparison = window.toggleComparison;
+  if (originalToggleComparison) {
+    window.toggleComparison = function(id) {
+      originalToggleComparison(id);
+      debouncedSavePreferences();
+    };
+  }
+
+  // Save on filter logic change
+  const andBtn = document.getElementById('filter-logic-and');
+  const orBtn = document.getElementById('filter-logic-or');
+  if (andBtn) andBtn.addEventListener('click', () => setTimeout(debouncedSavePreferences, 100));
+  if (orBtn) orBtn.addEventListener('click', () => setTimeout(debouncedSavePreferences, 100));
+
+  // Save on filters panel toggle
+  const toggleBtn = document.getElementById('toggle-filters');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => setTimeout(debouncedSavePreferences, 100));
+  }
+
+  // Save before page unload
+  window.addEventListener('beforeunload', savePreferences);
+}
+
+// Make preference functions global
+window.savePreferences = savePreferences;
+window.loadPreferences = loadPreferences;
+window.resetPreferences = resetPreferences;
 
 // ============================================
 // INITIALIZATION

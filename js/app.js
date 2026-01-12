@@ -1,6 +1,6 @@
 /**
  * AI Reference Hub - Main Application
- * Version: 3.2.0 - Phase 3: Use Cases, News, Themes & User Preferences
+ * Version: 4.0.0 - Phase 1 Critical: Cumulative Filters, Enhanced Comparator
  * Author: MR Tech Lab
  */
 
@@ -13,17 +13,21 @@ const state = {
   currentTab: 'llms',
   currentCategory: null,
   searchQuery: '',
+  // Phase 1 Critical: Enhanced Cumulative Filters
   filters: {
     category: '',
-    tier: '',
-    difficulty: '',
-    useCase: '', // Phase 3: Use case filter
-    // Phase 1: Enhanced filters
+    useCase: '',
+    // Cumulative filter arrays
     competencies: [],
+    tiers: [],
+    difficulties: [],
+    accessTypes: [],
+    contextSizes: [],
     minScore: 0,
-    accessType: [],
-    contextSize: ''
+    sortBy: ''
   },
+  filterLogic: 'and', // 'and' or 'or' for cumulative filters
+  filtersExpanded: false,
   comparison: [],
   maxComparison: 4,
   favorites: JSON.parse(localStorage.getItem('ai-hub-favorites') || '[]'),
@@ -31,7 +35,9 @@ const state = {
   // Phase 3: User preferences
   preferences: JSON.parse(localStorage.getItem('ai-hub-preferences') || '{}'),
   theme: localStorage.getItem('ai-hub-theme') || 'dark',
-  examplesFilter: ''
+  examplesFilter: '',
+  // Chart.js instance for comparator
+  radarChart: null
 };
 
 // ============================================
@@ -138,15 +144,13 @@ const elements = {
   resultsCount: document.getElementById('results-count'),
   searchInput: document.getElementById('search'),
   categoryFilter: document.getElementById('category-filter'),
-  tierFilter: document.getElementById('tier-filter'),
-  difficultyFilter: document.getElementById('difficulty-filter'),
-  usecaseFilter: document.getElementById('usecase-filter'), // Phase 3
+  usecaseFilter: document.getElementById('usecase-filter'),
   categoriesGrid: document.getElementById('categories-grid'),
   itemsSection: document.getElementById('items-section'),
   itemsGrid: document.getElementById('items-grid'),
   itemsSectionTitle: document.getElementById('items-section-title'),
   examplesGrid: document.getElementById('examples-grid'),
-  examplesCategoryFilter: document.getElementById('examples-category-filter'), // Phase 3
+  examplesCategoryFilter: document.getElementById('examples-category-filter'),
   quickGuideList: document.getElementById('quick-guide-list'),
   quickGuideStack: document.getElementById('quick-guide-stack'),
   comparatorBtn: document.getElementById('comparator-btn'),
@@ -164,7 +168,18 @@ const elements = {
   themeToggle: document.getElementById('theme-toggle'),
   settingsBtn: document.getElementById('settings-btn'),
   newsTicker: document.getElementById('news-ticker'),
-  newsGrid: document.getElementById('news-grid')
+  newsGrid: document.getElementById('news-grid'),
+  // Phase 1 Critical: Cumulative Filters elements
+  toggleFiltersBtn: document.getElementById('toggle-filters'),
+  advancedFilters: document.getElementById('advanced-filters'),
+  activeFiltersCount: document.getElementById('active-filters-count'),
+  activeFiltersTags: document.getElementById('active-filters-tags'),
+  filterLogicAnd: document.getElementById('filter-logic-and'),
+  filterLogicOr: document.getElementById('filter-logic-or'),
+  resetFilters: document.getElementById('reset-filters'),
+  minScoreSlider: document.getElementById('min-score-slider'),
+  minScoreValue: document.getElementById('min-score-value'),
+  sortBy: document.getElementById('sort-by')
 };
 
 // ============================================
@@ -263,18 +278,10 @@ function setupEventListeners() {
     elements.searchInput.addEventListener('input', debounce(handleSearch, 300));
   }
 
-  // Filters
+  // Category and use case select filters
   if (elements.categoryFilter) {
-    elements.categoryFilter.addEventListener('change', handleFilterChange);
+    elements.categoryFilter.addEventListener('change', handleCategorySelectChange);
   }
-  if (elements.tierFilter) {
-    elements.tierFilter.addEventListener('change', handleFilterChange);
-  }
-  if (elements.difficultyFilter) {
-    elements.difficultyFilter.addEventListener('change', handleFilterChange);
-  }
-
-  // Phase 3: Use case filter
   if (elements.usecaseFilter) {
     elements.usecaseFilter.addEventListener('change', handleUseCaseFilterChange);
   }
@@ -308,6 +315,316 @@ function setupEventListeners() {
 
   // Keyboard shortcuts
   document.addEventListener('keydown', handleKeyboard);
+
+  // Phase 1 Critical: Cumulative Filters Event Listeners
+  setupCumulativeFiltersListeners();
+}
+
+// ============================================
+// PHASE 1 CRITICAL: CUMULATIVE FILTERS SETUP
+// ============================================
+
+function setupCumulativeFiltersListeners() {
+  // Toggle filters panel
+  if (elements.toggleFiltersBtn) {
+    elements.toggleFiltersBtn.addEventListener('click', toggleFiltersPanel);
+  }
+
+  // Filter logic toggle (AND/OR)
+  if (elements.filterLogicAnd) {
+    elements.filterLogicAnd.addEventListener('click', () => setFilterLogic('and'));
+  }
+  if (elements.filterLogicOr) {
+    elements.filterLogicOr.addEventListener('click', () => setFilterLogic('or'));
+  }
+
+  // Reset filters
+  if (elements.resetFilters) {
+    elements.resetFilters.addEventListener('click', resetAllFilters);
+  }
+
+  // Min score slider
+  if (elements.minScoreSlider) {
+    elements.minScoreSlider.addEventListener('input', handleMinScoreChange);
+  }
+
+  // Sort by
+  if (elements.sortBy) {
+    elements.sortBy.addEventListener('change', handleSortChange);
+  }
+
+  // Checkbox filters with debounce
+  const debouncedFilterUpdate = debounce(applyFiltersAndRender, 200);
+
+  // Competency checkboxes
+  document.querySelectorAll('input[name="competency"]').forEach(checkbox => {
+    checkbox.addEventListener('change', (e) => {
+      updateCheckboxFilter('competencies', e.target.value, e.target.checked);
+      debouncedFilterUpdate();
+    });
+  });
+
+  // Tier checkboxes
+  document.querySelectorAll('input[name="tier"]').forEach(checkbox => {
+    checkbox.addEventListener('change', (e) => {
+      updateCheckboxFilter('tiers', e.target.value, e.target.checked);
+      debouncedFilterUpdate();
+    });
+  });
+
+  // Access type checkboxes
+  document.querySelectorAll('input[name="access"]').forEach(checkbox => {
+    checkbox.addEventListener('change', (e) => {
+      updateCheckboxFilter('accessTypes', e.target.value, e.target.checked);
+      debouncedFilterUpdate();
+    });
+  });
+
+  // Context size checkboxes
+  document.querySelectorAll('input[name="context"]').forEach(checkbox => {
+    checkbox.addEventListener('change', (e) => {
+      updateCheckboxFilter('contextSizes', e.target.value, e.target.checked);
+      debouncedFilterUpdate();
+    });
+  });
+
+  // Difficulty checkboxes
+  document.querySelectorAll('input[name="difficulty"]').forEach(checkbox => {
+    checkbox.addEventListener('change', (e) => {
+      updateCheckboxFilter('difficulties', e.target.value, e.target.checked);
+      debouncedFilterUpdate();
+    });
+  });
+}
+
+function toggleFiltersPanel() {
+  state.filtersExpanded = !state.filtersExpanded;
+
+  if (elements.advancedFilters) {
+    elements.advancedFilters.classList.toggle('hidden', !state.filtersExpanded);
+  }
+  if (elements.toggleFiltersBtn) {
+    elements.toggleFiltersBtn.setAttribute('aria-expanded', state.filtersExpanded);
+    elements.toggleFiltersBtn.classList.toggle('active', state.filtersExpanded);
+  }
+}
+
+function setFilterLogic(logic) {
+  state.filterLogic = logic;
+
+  // Update UI
+  if (elements.filterLogicAnd) {
+    elements.filterLogicAnd.classList.toggle('active', logic === 'and');
+  }
+  if (elements.filterLogicOr) {
+    elements.filterLogicOr.classList.toggle('active', logic === 'or');
+  }
+
+  applyFiltersAndRender();
+}
+
+function updateCheckboxFilter(filterKey, value, isChecked) {
+  if (isChecked) {
+    if (!state.filters[filterKey].includes(value)) {
+      state.filters[filterKey].push(value);
+    }
+  } else {
+    state.filters[filterKey] = state.filters[filterKey].filter(v => v !== value);
+  }
+
+  updateActiveFiltersUI();
+}
+
+function handleMinScoreChange(e) {
+  state.filters.minScore = parseInt(e.target.value, 10);
+  if (elements.minScoreValue) {
+    elements.minScoreValue.textContent = state.filters.minScore;
+  }
+  debounce(applyFiltersAndRender, 200)();
+}
+
+function handleSortChange(e) {
+  state.filters.sortBy = e.target.value;
+  applyFiltersAndRender();
+}
+
+function handleCategorySelectChange(e) {
+  state.filters.category = e.target.value;
+  applyFiltersAndRender();
+}
+
+function resetAllFilters() {
+  // Reset state
+  state.filters = {
+    category: '',
+    useCase: '',
+    competencies: [],
+    tiers: [],
+    difficulties: [],
+    accessTypes: [],
+    contextSizes: [],
+    minScore: 0,
+    sortBy: ''
+  };
+  state.filterLogic = 'and';
+  state.searchQuery = '';
+  state.currentCategory = null;
+
+  // Reset UI elements
+  if (elements.searchInput) elements.searchInput.value = '';
+  if (elements.categoryFilter) elements.categoryFilter.value = '';
+  if (elements.usecaseFilter) elements.usecaseFilter.value = '';
+  if (elements.minScoreSlider) elements.minScoreSlider.value = 0;
+  if (elements.minScoreValue) elements.minScoreValue.textContent = '0';
+  if (elements.sortBy) elements.sortBy.value = '';
+
+  // Reset filter logic UI
+  if (elements.filterLogicAnd) elements.filterLogicAnd.classList.add('active');
+  if (elements.filterLogicOr) elements.filterLogicOr.classList.remove('active');
+
+  // Reset all checkboxes
+  document.querySelectorAll('.advanced-filters input[type="checkbox"]').forEach(cb => {
+    cb.checked = false;
+  });
+
+  updateActiveFiltersUI();
+  renderCategories();
+  showToast('Filtres reinitialises');
+}
+
+function updateActiveFiltersUI() {
+  const activeCount = countActiveFilters();
+
+  // Update badge count
+  if (elements.activeFiltersCount) {
+    elements.activeFiltersCount.textContent = activeCount;
+    elements.activeFiltersCount.classList.toggle('hidden', activeCount === 0);
+  }
+
+  // Update active filters tags
+  renderActiveFiltersTags();
+}
+
+function countActiveFilters() {
+  let count = 0;
+  count += state.filters.competencies.length;
+  count += state.filters.tiers.length;
+  count += state.filters.difficulties.length;
+  count += state.filters.accessTypes.length;
+  count += state.filters.contextSizes.length;
+  if (state.filters.minScore > 0) count++;
+  if (state.filters.category) count++;
+  if (state.filters.useCase) count++;
+  return count;
+}
+
+function renderActiveFiltersTags() {
+  if (!elements.activeFiltersTags) return;
+
+  const tags = [];
+
+  // Add competency tags
+  state.filters.competencies.forEach(comp => {
+    const label = COMPETENCY_LABELS[comp];
+    tags.push({ type: 'competencies', value: comp, label: `${label?.emoji || ''} ${label?.name || comp}` });
+  });
+
+  // Add tier tags
+  state.filters.tiers.forEach(tier => {
+    tags.push({ type: 'tiers', value: tier, label: getTierLabel(tier) });
+  });
+
+  // Add difficulty tags
+  state.filters.difficulties.forEach(diff => {
+    tags.push({ type: 'difficulties', value: diff, label: getDifficultyLabel(diff) });
+  });
+
+  // Add access type tags
+  const accessLabels = { api: '🔌 API', opensource: '🌐 Open Source', free: '🆓 Gratuit' };
+  state.filters.accessTypes.forEach(access => {
+    tags.push({ type: 'accessTypes', value: access, label: accessLabels[access] || access });
+  });
+
+  // Add context size tags
+  const contextLabels = { small: '≤32K', medium: '32K-128K', large: '128K-1M', xlarge: '>1M' };
+  state.filters.contextSizes.forEach(ctx => {
+    tags.push({ type: 'contextSizes', value: ctx, label: `📚 ${contextLabels[ctx]}` });
+  });
+
+  // Add min score tag
+  if (state.filters.minScore > 0) {
+    tags.push({ type: 'minScore', value: state.filters.minScore, label: `📊 Score ≥${state.filters.minScore}` });
+  }
+
+  // Add category tag
+  if (state.filters.category) {
+    const cat = state.data.categories.find(c => c.id === state.filters.category);
+    tags.push({ type: 'category', value: state.filters.category, label: `${cat?.emoji || ''} ${cat?.name || state.filters.category}` });
+  }
+
+  if (tags.length === 0) {
+    elements.activeFiltersTags.classList.add('hidden');
+    return;
+  }
+
+  elements.activeFiltersTags.classList.remove('hidden');
+  elements.activeFiltersTags.innerHTML = tags.map(tag => `
+    <span class="filter-tag" data-type="${tag.type}" data-value="${tag.value}">
+      ${tag.label}
+      <button class="filter-tag__remove" onclick="removeFilterTag('${tag.type}', '${tag.value}')" aria-label="Retirer ce filtre">×</button>
+    </span>
+  `).join('');
+}
+
+function removeFilterTag(type, value) {
+  if (type === 'minScore') {
+    state.filters.minScore = 0;
+    if (elements.minScoreSlider) elements.minScoreSlider.value = 0;
+    if (elements.minScoreValue) elements.minScoreValue.textContent = '0';
+  } else if (type === 'category') {
+    state.filters.category = '';
+    if (elements.categoryFilter) elements.categoryFilter.value = '';
+  } else if (type === 'useCase') {
+    state.filters.useCase = '';
+    if (elements.usecaseFilter) elements.usecaseFilter.value = '';
+  } else {
+    state.filters[type] = state.filters[type].filter(v => v !== value);
+    // Uncheck corresponding checkbox
+    const checkbox = document.querySelector(`input[name="${type.slice(0, -1)}"][value="${value}"], input[name="${type.slice(0, -2)}"][value="${value}"]`);
+    if (checkbox) checkbox.checked = false;
+  }
+
+  updateActiveFiltersUI();
+  applyFiltersAndRender();
+}
+
+// Make removeFilterTag globally available
+window.removeFilterTag = removeFilterTag;
+
+function applyFiltersAndRender() {
+  updateActiveFiltersUI();
+
+  // If any filter is active, show filtered items
+  if (hasActiveFilters() || state.searchQuery) {
+    state.currentCategory = 'filter';
+    renderItems();
+  } else {
+    state.currentCategory = null;
+    renderCategories();
+  }
+}
+
+function hasActiveFilters() {
+  return (
+    state.filters.competencies.length > 0 ||
+    state.filters.tiers.length > 0 ||
+    state.filters.difficulties.length > 0 ||
+    state.filters.accessTypes.length > 0 ||
+    state.filters.contextSizes.length > 0 ||
+    state.filters.minScore > 0 ||
+    state.filters.category !== '' ||
+    state.filters.useCase !== ''
+  );
 }
 
 function handleKeyboard(e) {
@@ -412,8 +729,8 @@ function handleFilterChange() {
 }
 
 function filterItems(items) {
-  return items.filter(item => {
-    // Search query
+  let filtered = items.filter(item => {
+    // Search query always applies (AND logic)
     if (state.searchQuery) {
       const searchFields = [
         item.name,
@@ -427,23 +744,165 @@ function filterItems(items) {
       if (!searchFields.includes(state.searchQuery)) return false;
     }
 
-    // Category filter
+    // Category filter always applies
     if (state.filters.category && !item.categories.includes(state.filters.category)) {
       return false;
     }
 
-    // Tier filter (LLMs only)
-    if (state.filters.tier && item.tier !== state.filters.tier) {
-      return false;
+    // Phase 1 Critical: Cumulative filters with AND/OR logic
+    const filterResults = [];
+
+    // Competency filter (check if LLM has high scores in selected competencies)
+    if (state.filters.competencies.length > 0) {
+      const benchmarkData = state.data.benchmarks?.llmScores?.find(b => b.id === item.id);
+      if (benchmarkData?.scores) {
+        const hasCompetency = state.filters.competencies.some(comp =>
+          benchmarkData.scores[comp] !== undefined && benchmarkData.scores[comp] >= 70
+        );
+        filterResults.push(hasCompetency);
+      } else {
+        filterResults.push(false);
+      }
     }
 
-    // Difficulty filter
-    if (state.filters.difficulty && item.difficulty !== state.filters.difficulty) {
-      return false;
+    // Tier filter (multiple selection)
+    if (state.filters.tiers.length > 0) {
+      filterResults.push(state.filters.tiers.includes(item.tier));
     }
 
-    return true;
+    // Difficulty filter (multiple selection)
+    if (state.filters.difficulties.length > 0) {
+      filterResults.push(state.filters.difficulties.includes(item.difficulty));
+    }
+
+    // Access type filter
+    if (state.filters.accessTypes.length > 0) {
+      const accessChecks = state.filters.accessTypes.map(access => {
+        switch (access) {
+          case 'api':
+            return item.apiAvailable === true;
+          case 'opensource':
+            return item.categories?.includes('opensource') ||
+                   item.tags?.some(t => t.toLowerCase().includes('opensource') || t.toLowerCase().includes('open source'));
+          case 'free':
+            return item.specs?.inputPrice?.toLowerCase().includes('gratuit') ||
+                   item.specs?.inputPrice === '$0' ||
+                   item.specs?.inputPrice?.toLowerCase().includes('free');
+          default:
+            return false;
+        }
+      });
+      filterResults.push(accessChecks.some(check => check));
+    }
+
+    // Context size filter
+    if (state.filters.contextSizes.length > 0) {
+      const contextValue = parseContextWindow(item.specs?.contextWindow);
+      const contextChecks = state.filters.contextSizes.map(size => {
+        switch (size) {
+          case 'small':
+            return contextValue <= 32000;
+          case 'medium':
+            return contextValue > 32000 && contextValue <= 128000;
+          case 'large':
+            return contextValue > 128000 && contextValue <= 1000000;
+          case 'xlarge':
+            return contextValue > 1000000;
+          default:
+            return false;
+        }
+      });
+      filterResults.push(contextChecks.some(check => check));
+    }
+
+    // Min score filter
+    if (state.filters.minScore > 0) {
+      const benchmarkData = state.data.benchmarks?.llmScores?.find(b => b.id === item.id);
+      if (benchmarkData?.scores) {
+        const avgScore = Object.values(benchmarkData.scores).reduce((a, b) => a + b, 0) /
+                        Object.keys(benchmarkData.scores).length;
+        filterResults.push(avgScore >= state.filters.minScore);
+      } else {
+        filterResults.push(false);
+      }
+    }
+
+    // Apply AND/OR logic
+    if (filterResults.length === 0) return true;
+
+    if (state.filterLogic === 'and') {
+      return filterResults.every(result => result);
+    } else {
+      return filterResults.some(result => result);
+    }
   });
+
+  // Apply sorting AFTER filtering
+  if (state.filters.sortBy) {
+    filtered = sortItems(filtered, state.filters.sortBy);
+  }
+
+  return filtered;
+}
+
+// Sort items based on selected criteria
+function sortItems(items, sortBy) {
+  const sorted = [...items];
+
+  switch (sortBy) {
+    case 'name-asc':
+      return sorted.sort((a, b) => a.name.localeCompare(b.name));
+    case 'name-desc':
+      return sorted.sort((a, b) => b.name.localeCompare(a.name));
+    case 'score-desc':
+      return sorted.sort((a, b) => {
+        const scoreA = getAverageScore(a.id);
+        const scoreB = getAverageScore(b.id);
+        return scoreB - scoreA;
+      });
+    case 'score-asc':
+      return sorted.sort((a, b) => {
+        const scoreA = getAverageScore(a.id);
+        const scoreB = getAverageScore(b.id);
+        return scoreA - scoreB;
+      });
+    case 'price-asc':
+      return sorted.sort((a, b) => {
+        const priceA = parsePrice(a.specs?.inputPrice);
+        const priceB = parsePrice(b.specs?.inputPrice);
+        return priceA - priceB;
+      });
+    case 'price-desc':
+      return sorted.sort((a, b) => {
+        const priceA = parsePrice(a.specs?.inputPrice);
+        const priceB = parsePrice(b.specs?.inputPrice);
+        return priceB - priceA;
+      });
+    case 'context-desc':
+      return sorted.sort((a, b) => {
+        const ctxA = parseContextWindow(a.specs?.contextWindow);
+        const ctxB = parseContextWindow(b.specs?.contextWindow);
+        return ctxB - ctxA;
+      });
+    default:
+      return sorted;
+  }
+}
+
+function getAverageScore(llmId) {
+  const benchmarkData = state.data.benchmarks?.llmScores?.find(b => b.id === llmId);
+  if (!benchmarkData?.scores) return 0;
+  const values = Object.values(benchmarkData.scores);
+  return values.reduce((a, b) => a + b, 0) / values.length;
+}
+
+function parsePrice(priceStr) {
+  if (!priceStr) return Infinity;
+  if (priceStr.toLowerCase().includes('gratuit') || priceStr.toLowerCase().includes('free') || priceStr === '$0') {
+    return 0;
+  }
+  const match = priceStr.match(/\$?([\d.]+)/);
+  return match ? parseFloat(match[1]) : Infinity;
 }
 
 // ============================================
@@ -855,135 +1314,354 @@ function openComparator() {
     badges: calculateBadges(item.id)
   }));
 
-  // Colors for each item in comparison
+  // Colors for each item in comparison - Phase 1 Critical: Enhanced colors
   const comparisonColors = [
-    { primary: '#a855f7', secondary: '#c084fc', name: 'violet' },
-    { primary: '#3b82f6', secondary: '#60a5fa', name: 'bleu' },
-    { primary: '#22c55e', secondary: '#4ade80', name: 'vert' },
-    { primary: '#f97316', secondary: '#fb923c', name: 'orange' }
+    { primary: '#a855f7', secondary: 'rgba(168, 85, 247, 0.3)', name: 'Violet' },
+    { primary: '#3b82f6', secondary: 'rgba(59, 130, 246, 0.3)', name: 'Bleu' },
+    { primary: '#22c55e', secondary: 'rgba(34, 197, 94, 0.3)', name: 'Vert' },
+    { primary: '#f97316', secondary: 'rgba(249, 115, 22, 0.3)', name: 'Orange' }
   ];
 
+  // Calculate rankings for medals
+  const rankings = calculateComparisonRankings(itemsWithScores);
+
   const modalHTML = `
-    <div class="modal__header comparator-header">
-      <h2 class="modal__title">⚖️ Comparateur LLMs</h2>
-      <div class="comparator-header__actions">
-        <button class="btn btn--sm btn--secondary" onclick="exportComparison()">📥 Exporter</button>
-        <button class="modal__close" onclick="closeModal()">&times;</button>
+    <div class="comparator-modal">
+      <div class="comparator-header">
+        <h2 class="comparator-header__title">⚖️ Comparateur LLMs</h2>
+        <div class="comparator-header__actions">
+          <button class="modal__close" onclick="closeModal()">&times;</button>
+        </div>
       </div>
-    </div>
 
-    <div class="comparator-content">
-      <!-- Items Header Row -->
-      <div class="comparator-items" style="--items-count: ${items.length}">
-        ${itemsWithScores.map((item, idx) => `
-          <div class="comparator-item" style="--item-color: ${comparisonColors[idx].primary}">
-            <div class="comparator-item__header">
-              <button class="comparator-item__remove" onclick="removeFromComparison('${item.id}')" title="Retirer">×</button>
-              <div class="comparator-item__color" style="background: ${comparisonColors[idx].primary}"></div>
-              <h3 class="comparator-item__name">${item.name}</h3>
-              <p class="comparator-item__provider">${item.provider}</p>
-            </div>
-            <div class="comparator-item__badges">
-              ${renderBadges(item.badges, 4)}
-              ${item.tier ? `<span class="badge badge--${item.tier} badge--sm">${getTierLabel(item.tier)}</span>` : ''}
-            </div>
+      <div class="comparator-body">
+        <!-- Large Radar Chart Section - 600x600px -->
+        <div class="comparator-radar-section">
+          <h3 class="comparator-radar-section__title">📊 Graphique de comparaison des competences</h3>
+          <div class="comparator-radar-container">
+            <canvas id="comparator-radar-canvas" class="comparator-radar-chart"></canvas>
           </div>
-        `).join('')}
-      </div>
-
-      <!-- Combined Radar Chart -->
-      <div class="comparator-radar">
-        <h3 class="comparator-section__title">📊 Comparaison des compétences</h3>
-        <div class="comparator-radar__chart">
-          ${renderCombinedRadarChart(itemsWithScores, comparisonColors)}
+          <div class="comparator-legend">
+            ${itemsWithScores.map((item, idx) => `
+              <div class="comparator-legend__item">
+                <span class="comparator-legend__color" style="background: ${comparisonColors[idx].primary}"></span>
+                ${item.name}
+              </div>
+            `).join('')}
+          </div>
         </div>
-        <div class="comparator-radar__legend">
-          ${itemsWithScores.map((item, idx) => `
-            <div class="radar-legend-item">
-              <span class="radar-legend-color" style="background: ${comparisonColors[idx].primary}"></span>
-              <span class="radar-legend-name">${item.name}</span>
-            </div>
-          `).join('')}
+
+        <!-- Detailed Comparison Table with Medals -->
+        <div class="comparator-table-section">
+          <h3 class="comparator-table-section__title">📋 Tableau comparatif detaille</h3>
+          <table class="comparator-table">
+            <thead>
+              <tr>
+                <th>Critere</th>
+                ${itemsWithScores.map((item, idx) => `
+                  <th>
+                    <div class="comparator-table__model-name">
+                      <span class="comparator-legend__color" style="background: ${comparisonColors[idx].primary}; width: 12px; height: 12px; border-radius: 50%; display: inline-block;"></span>
+                      ${item.name}
+                      <span class="comparator-table__provider">(${item.provider})</span>
+                    </div>
+                  </th>
+                `).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              ${renderComparisonTableRows(itemsWithScores, rankings, comparisonColors)}
+            </tbody>
+          </table>
         </div>
-      </div>
 
-      <!-- Score Comparison Bars -->
-      <div class="comparator-scores">
-        <h3 class="comparator-section__title">📈 Scores détaillés</h3>
-        ${renderScoreComparisonBars(itemsWithScores, comparisonColors)}
-      </div>
-
-      <!-- Specs Comparison Table -->
-      <div class="comparator-specs">
-        <h3 class="comparator-section__title">📋 Spécifications techniques</h3>
-        <table class="comparison-table comparison-table--enhanced">
-          <tbody>
-            <tr>
-              <td class="comparison-table__label">Contexte</td>
-              ${items.map((item, idx) => `
-                <td style="--item-color: ${comparisonColors[idx].primary}">${item.specs?.contextWindow || '-'}</td>
-              `).join('')}
-            </tr>
-            <tr>
-              <td class="comparison-table__label">Vitesse</td>
-              ${items.map((item, idx) => `
-                <td style="--item-color: ${comparisonColors[idx].primary}">${item.specs?.speed || '-'}</td>
-              `).join('')}
-            </tr>
-            <tr>
-              <td class="comparison-table__label">Prix Input</td>
-              ${items.map((item, idx) => `
-                <td style="--item-color: ${comparisonColors[idx].primary}">${item.specs?.inputPrice || '-'}</td>
-              `).join('')}
-            </tr>
-            <tr>
-              <td class="comparison-table__label">Prix Output</td>
-              ${items.map((item, idx) => `
-                <td style="--item-color: ${comparisonColors[idx].primary}">${item.specs?.outputPrice || '-'}</td>
-              `).join('')}
-            </tr>
-            <tr>
-              <td class="comparison-table__label">API</td>
-              ${items.map((item, idx) => `
-                <td style="--item-color: ${comparisonColors[idx].primary}">
-                  ${item.apiAvailable ? '<span class="check-yes">✓</span>' : '<span class="check-no">✗</span>'}
-                </td>
-              `).join('')}
-            </tr>
-            <tr>
-              <td class="comparison-table__label">Difficulté</td>
-              ${items.map((item, idx) => `
-                <td style="--item-color: ${comparisonColors[idx].primary}">${getDifficultyLabel(item.difficulty) || '-'}</td>
-              `).join('')}
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Strengths Comparison -->
-      <div class="comparator-strengths">
-        <h3 class="comparator-section__title">💪 Points forts</h3>
-        <div class="comparator-strengths__grid" style="--items-count: ${items.length}">
-          ${items.map((item, idx) => `
-            <div class="comparator-strengths__item" style="--item-color: ${comparisonColors[idx].primary}">
-              <h4>${item.name}</h4>
-              <ul>
-                ${(item.strengths || []).slice(0, 4).map(s => `<li>${s}</li>`).join('')}
-              </ul>
-            </div>
-          `).join('')}
+        <!-- Recommendations Section -->
+        <div class="comparator-recommendations">
+          <h3 class="comparator-recommendations__title">🏆 Recommandations</h3>
+          <div class="recommendations-grid">
+            ${renderComparatorRecommendations(itemsWithScores, rankings)}
+          </div>
         </div>
-      </div>
 
-      <!-- Winner Summary -->
-      <div class="comparator-verdict">
-        <h3 class="comparator-section__title">🏆 Verdict</h3>
-        ${renderComparisonVerdict(itemsWithScores, comparisonColors)}
+        <!-- Export Options -->
+        <div class="comparator-export">
+          <button class="btn--export" onclick="exportComparisonCSV()">
+            📊 Exporter CSV
+          </button>
+          <button class="btn--export" onclick="copyComparisonLink()">
+            🔗 Copier lien
+          </button>
+          <button class="btn--export" onclick="exportComparisonPDF()">
+            📄 Exporter PDF
+          </button>
+        </div>
       </div>
     </div>
   `;
 
-  openModal(modalHTML);
+  elements.modalContent.innerHTML = modalHTML;
+  elements.modalContent.classList.add('comparator-modal');
+  elements.modalOverlay.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+
+  // Initialize Chart.js radar chart
+  setTimeout(() => {
+    initComparatorRadarChart(itemsWithScores, comparisonColors);
+  }, 100);
+}
+
+// Phase 1 Critical: Initialize Chart.js Radar Chart (600x600px)
+function initComparatorRadarChart(items, colors) {
+  const canvas = document.getElementById('comparator-radar-canvas');
+  if (!canvas || typeof Chart === 'undefined') {
+    console.warn('Chart.js not loaded or canvas not found');
+    return;
+  }
+
+  // Destroy existing chart if any
+  if (state.radarChart) {
+    state.radarChart.destroy();
+  }
+
+  const competencies = ['reasoning', 'coding', 'math', 'writing', 'multilingual', 'speed'];
+  const labels = competencies.map(c => COMPETENCY_LABELS[c]?.name || c);
+
+  const datasets = items.map((item, idx) => {
+    const scores = item.scores || {};
+    const data = competencies.map(comp => scores[comp] || 0);
+
+    return {
+      label: item.name,
+      data: data,
+      borderColor: colors[idx].primary,
+      backgroundColor: colors[idx].secondary,
+      borderWidth: 3,
+      pointBackgroundColor: colors[idx].primary,
+      pointBorderColor: '#fff',
+      pointBorderWidth: 2,
+      pointRadius: 6,
+      pointHoverRadius: 8
+    };
+  });
+
+  state.radarChart = new Chart(canvas, {
+    type: 'radar',
+    data: {
+      labels: labels,
+      datasets: datasets
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(6, 6, 12, 0.95)',
+          titleColor: '#00f5d4',
+          bodyColor: '#f0f0f5',
+          borderColor: 'rgba(0, 245, 212, 0.3)',
+          borderWidth: 1,
+          padding: 12,
+          callbacks: {
+            label: function(context) {
+              return `${context.dataset.label}: ${context.raw}/100`;
+            }
+          }
+        }
+      },
+      scales: {
+        r: {
+          beginAtZero: true,
+          max: 100,
+          min: 0,
+          ticks: {
+            stepSize: 20,
+            color: 'rgba(152, 152, 168, 0.8)',
+            backdropColor: 'transparent',
+            font: { family: "'Space Mono', monospace", size: 10 }
+          },
+          grid: { color: 'rgba(255, 255, 255, 0.1)', circular: true },
+          pointLabels: {
+            color: '#f0f0f5',
+            font: { family: "'Syne', sans-serif", size: 14, weight: 600 }
+          },
+          angleLines: { color: 'rgba(255, 255, 255, 0.1)' }
+        }
+      },
+      animation: { duration: 800, easing: 'easeOutQuart' }
+    }
+  });
+}
+
+// Phase 1 Critical: Calculate rankings for medals
+function calculateComparisonRankings(items) {
+  const metrics = ['reasoning', 'coding', 'math', 'writing', 'multilingual', 'speed', 'overall', 'price'];
+  const rankings = {};
+
+  metrics.forEach(metric => {
+    const sorted = [...items].sort((a, b) => {
+      if (metric === 'price') {
+        return parsePrice(a.specs?.inputPrice) - parsePrice(b.specs?.inputPrice);
+      }
+      if (metric === 'overall') {
+        const avgA = Object.values(a.scores || {}).reduce((sum, v) => sum + v, 0) / Math.max(1, Object.keys(a.scores || {}).length);
+        const avgB = Object.values(b.scores || {}).reduce((sum, v) => sum + v, 0) / Math.max(1, Object.keys(b.scores || {}).length);
+        return avgB - avgA;
+      }
+      return (b.scores?.[metric] || 0) - (a.scores?.[metric] || 0);
+    });
+
+    rankings[metric] = {};
+    sorted.forEach((item, idx) => {
+      rankings[metric][item.id] = idx + 1;
+    });
+  });
+
+  return rankings;
+}
+
+// Phase 1 Critical: Render detailed table rows with medals
+function renderComparisonTableRows(items, rankings, colors) {
+  const rows = [
+    { key: 'overall', label: '🎯 Score global', isScore: true },
+    { key: 'reasoning', label: '🧠 Raisonnement', isScore: true },
+    { key: 'coding', label: '💻 Code', isScore: true },
+    { key: 'math', label: '🔢 Mathematiques', isScore: true },
+    { key: 'writing', label: '✍️ Redaction', isScore: true },
+    { key: 'multilingual', label: '🌍 Multilingue', isScore: true },
+    { key: 'speed', label: '⚡ Vitesse', isScore: true },
+    { key: 'context', label: '📚 Contexte', isSpec: true, specKey: 'contextWindow' },
+    { key: 'inputPrice', label: '💵 Prix Input', isSpec: true, specKey: 'inputPrice' },
+    { key: 'outputPrice', label: '💸 Prix Output', isSpec: true, specKey: 'outputPrice' },
+    { key: 'tier', label: '⭐ Tier', isTier: true }
+  ];
+
+  return rows.map(row => {
+    return `<tr>
+      <td>${row.label}</td>
+      ${items.map((item, idx) => {
+        let value = '-';
+        let scoreClass = '';
+        let medal = '';
+
+        if (row.isScore) {
+          if (row.key === 'overall') {
+            const scores = Object.values(item.scores || {});
+            value = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+          } else {
+            value = item.scores?.[row.key] || 0;
+          }
+
+          const rank = rankings[row.key]?.[item.id];
+          if (rank === 1) medal = '<span class="medal medal--gold">🥇</span>';
+          else if (rank === 2) medal = '<span class="medal medal--silver">🥈</span>';
+          else if (rank === 3) medal = '<span class="medal medal--bronze">🥉</span>';
+
+          scoreClass = value >= 80 ? 'high' : value >= 60 ? 'medium' : 'low';
+
+          return `<td>
+            <div class="score-cell">
+              <div class="score-bar">
+                <div class="score-bar__fill score-bar__fill--${scoreClass}" style="width: ${value}%"></div>
+              </div>
+              <span class="score-value">${value}</span>
+              ${medal}
+            </div>
+          </td>`;
+        } else if (row.isSpec) {
+          value = item.specs?.[row.specKey] || '-';
+          const priceRank = rankings.price?.[item.id];
+          if (row.specKey === 'inputPrice' && priceRank === 1) {
+            medal = '<span class="medal medal--gold">🥇</span>';
+          }
+          return `<td>${value} ${medal}</td>`;
+        } else if (row.isTier) {
+          value = getTierLabel(item.tier);
+          return `<td><span class="badge badge--${item.tier} badge--sm">${value}</span></td>`;
+        }
+
+        return `<td>${value}</td>`;
+      }).join('')}
+    </tr>`;
+  }).join('');
+}
+
+// Phase 1 Critical: Render recommendations
+function renderComparatorRecommendations(items, rankings) {
+  const useCases = [
+    { key: 'coding', label: 'Developpement', icon: '💻', reason: 'Meilleur score code' },
+    { key: 'reasoning', label: 'Analyse & Raisonnement', icon: '🧠', reason: 'Meilleur raisonnement' },
+    { key: 'writing', label: 'Redaction', icon: '✍️', reason: 'Meilleure qualite texte' },
+    { key: 'price', label: 'Budget serre', icon: '💰', reason: 'Meilleur rapport Q/P' },
+    { key: 'overall', label: 'Usage general', icon: '⭐', reason: 'Meilleur score global' }
+  ];
+
+  return useCases.map(useCase => {
+    const winnerId = Object.entries(rankings[useCase.key] || {})
+      .find(([id, rank]) => rank === 1)?.[0];
+    const winner = items.find(item => item.id === winnerId);
+
+    if (!winner) return '';
+
+    return `
+      <div class="recommendation-card">
+        <div class="recommendation-card__usecase">${useCase.icon} ${useCase.label}</div>
+        <div class="recommendation-card__winner">🏆 ${winner.name}</div>
+        <p class="recommendation-card__reason">${useCase.reason} parmi les modeles compares</p>
+      </div>
+    `;
+  }).join('');
+}
+
+// Phase 1 Critical: Export functions
+function exportComparisonCSV() {
+  const items = state.comparison.map(id =>
+    [...state.data.llms, ...state.data.tools].find(item => item.id === id)
+  ).filter(Boolean);
+
+  const headers = ['Modele', 'Provider', 'Tier', 'Contexte', 'Prix Input', 'Prix Output', 'Score Reasoning', 'Score Code', 'Score Math'];
+  const rows = items.map(item => {
+    const scores = getScoreForLLM(item.id);
+    return [
+      item.name,
+      item.provider,
+      item.tier,
+      item.specs?.contextWindow || '-',
+      item.specs?.inputPrice || '-',
+      item.specs?.outputPrice || '-',
+      scores?.reasoning || 0,
+      scores?.coding || 0,
+      scores?.math || 0
+    ].join(',');
+  });
+
+  const csv = [headers.join(','), ...rows].join('\n');
+  downloadFile(csv, 'comparison-llms.csv', 'text/csv');
+  showToast('Export CSV telecharge');
+}
+
+function copyComparisonLink() {
+  const ids = state.comparison.join(',');
+  const url = `${window.location.origin}${window.location.pathname}?compare=${ids}`;
+  navigator.clipboard.writeText(url).then(() => {
+    showToast('Lien copie dans le presse-papier');
+  });
+}
+
+function exportComparisonPDF() {
+  showToast('Export PDF - Fonctionnalite a venir');
+}
+
+function downloadFile(content, filename, type) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 // Render combined radar chart for comparison

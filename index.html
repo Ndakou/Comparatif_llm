@@ -23,6 +23,9 @@
     <!-- Styles -->
     <link rel="stylesheet" href="css/styles.css">
 
+    <!-- Chart.js for Enhanced Comparator -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
 </head>
@@ -76,7 +79,7 @@
                     </button>
                 </nav>
 
-                <!-- Search & Filters -->
+                <!-- Search & Filters - Phase 1 Critical: Cumulative Filters -->
                 <div class="controls">
                     <div class="search-box">
                         <span class="search-box__icon">🔍</span>
@@ -88,28 +91,206 @@
                             aria-label="Rechercher"
                         >
                     </div>
-                    <div class="filter-group">
-                        <select id="category-filter" class="filter-select" aria-label="Filtrer par categorie">
-                            <option value="">Toutes les categories</option>
-                        </select>
-                        <select id="usecase-filter" class="filter-select" aria-label="Filtrer par cas d'usage">
-                            <option value="">Tous les cas d'usage</option>
-                        </select>
-                        <select id="tier-filter" class="filter-select" aria-label="Filtrer par tier">
-                            <option value="">Tous les tiers</option>
-                            <option value="premium">Premium</option>
-                            <option value="standard">Standard</option>
-                            <option value="budget">Budget</option>
-                        </select>
-                        <select id="difficulty-filter" class="filter-select" aria-label="Filtrer par difficulte">
-                            <option value="">Toutes difficultes</option>
-                            <option value="debutant">Debutant</option>
-                            <option value="intermediaire">Intermediaire</option>
-                            <option value="avancee">Avance</option>
-                        </select>
-                    </div>
+                    <button id="toggle-filters" class="btn btn--filters" aria-expanded="false" aria-controls="advanced-filters">
+                        <span class="btn__icon">🎛️</span>
+                        <span class="btn__text">Filtres avances</span>
+                        <span id="active-filters-count" class="btn__badge hidden">0</span>
+                    </button>
                     <div class="results-count">
                         <span class="results-count__value" id="results-count">0</span> resultats
+                    </div>
+                </div>
+
+                <!-- Advanced Filters Panel - Cumulative System -->
+                <div id="advanced-filters" class="advanced-filters hidden" role="region" aria-label="Filtres avances">
+                    <div class="filters-header">
+                        <h3 class="filters-header__title">🎛️ Filtres cumulatifs</h3>
+                        <div class="filters-header__actions">
+                            <div class="filter-logic-toggle">
+                                <span class="filter-logic__label">Mode:</span>
+                                <button id="filter-logic-and" class="filter-logic__btn active" data-logic="and" title="Tous les criteres doivent correspondre">ET</button>
+                                <button id="filter-logic-or" class="filter-logic__btn" data-logic="or" title="Au moins un critere doit correspondre">OU</button>
+                            </div>
+                            <button id="reset-filters" class="btn btn--sm btn--ghost">
+                                <span>🔄</span> Reinitialiser
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="filters-grid">
+                        <!-- Competencies Filter -->
+                        <div class="filter-section">
+                            <h4 class="filter-section__title">🎯 Competences</h4>
+                            <div class="filter-checkboxes" id="competency-checkboxes">
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="competency" value="reasoning">
+                                    <span class="filter-checkbox__mark"></span>
+                                    <span class="filter-checkbox__label">🧠 Raisonnement</span>
+                                </label>
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="competency" value="coding">
+                                    <span class="filter-checkbox__mark"></span>
+                                    <span class="filter-checkbox__label">💻 Code</span>
+                                </label>
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="competency" value="math">
+                                    <span class="filter-checkbox__mark"></span>
+                                    <span class="filter-checkbox__label">🔢 Mathematiques</span>
+                                </label>
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="competency" value="writing">
+                                    <span class="filter-checkbox__mark"></span>
+                                    <span class="filter-checkbox__label">✍️ Redaction</span>
+                                </label>
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="competency" value="multilingual">
+                                    <span class="filter-checkbox__mark"></span>
+                                    <span class="filter-checkbox__label">🌍 Multilingue</span>
+                                </label>
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="competency" value="multimodal">
+                                    <span class="filter-checkbox__mark"></span>
+                                    <span class="filter-checkbox__label">🎨 Multimodal</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Budget Filter -->
+                        <div class="filter-section">
+                            <h4 class="filter-section__title">💰 Budget (Tier)</h4>
+                            <div class="filter-checkboxes" id="tier-checkboxes">
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="tier" value="premium">
+                                    <span class="filter-checkbox__mark"></span>
+                                    <span class="filter-checkbox__label">👑 Premium</span>
+                                </label>
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="tier" value="standard">
+                                    <span class="filter-checkbox__mark"></span>
+                                    <span class="filter-checkbox__label">⭐ Standard</span>
+                                </label>
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="tier" value="budget">
+                                    <span class="filter-checkbox__mark"></span>
+                                    <span class="filter-checkbox__label">💵 Budget</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Access Type Filter -->
+                        <div class="filter-section">
+                            <h4 class="filter-section__title">🔓 Type d'acces</h4>
+                            <div class="filter-checkboxes" id="access-checkboxes">
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="access" value="api">
+                                    <span class="filter-checkbox__mark"></span>
+                                    <span class="filter-checkbox__label">🔌 API disponible</span>
+                                </label>
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="access" value="opensource">
+                                    <span class="filter-checkbox__mark"></span>
+                                    <span class="filter-checkbox__label">🌐 Open Source</span>
+                                </label>
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="access" value="free">
+                                    <span class="filter-checkbox__mark"></span>
+                                    <span class="filter-checkbox__label">🆓 Gratuit</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Score Minimum Slider -->
+                        <div class="filter-section">
+                            <h4 class="filter-section__title">📊 Score minimum</h4>
+                            <div class="filter-slider">
+                                <input type="range" id="min-score-slider" min="0" max="100" value="0" step="5">
+                                <div class="filter-slider__labels">
+                                    <span>0</span>
+                                    <span id="min-score-value" class="filter-slider__current">0</span>
+                                    <span>100</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Context Size Filter -->
+                        <div class="filter-section">
+                            <h4 class="filter-section__title">📚 Taille contexte</h4>
+                            <div class="filter-checkboxes" id="context-checkboxes">
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="context" value="small">
+                                    <span class="filter-checkbox__mark"></span>
+                                    <span class="filter-checkbox__label">≤32K tokens</span>
+                                </label>
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="context" value="medium">
+                                    <span class="filter-checkbox__mark"></span>
+                                    <span class="filter-checkbox__label">32K-128K</span>
+                                </label>
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="context" value="large">
+                                    <span class="filter-checkbox__mark"></span>
+                                    <span class="filter-checkbox__label">128K-1M</span>
+                                </label>
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="context" value="xlarge">
+                                    <span class="filter-checkbox__mark"></span>
+                                    <span class="filter-checkbox__label">>1M tokens</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Category & Difficulty -->
+                        <div class="filter-section">
+                            <h4 class="filter-section__title">📂 Categories</h4>
+                            <select id="category-filter" class="filter-select filter-select--full" aria-label="Filtrer par categorie">
+                                <option value="">Toutes les categories</option>
+                            </select>
+                            <select id="usecase-filter" class="filter-select filter-select--full" aria-label="Filtrer par cas d'usage" style="margin-top: 0.5rem;">
+                                <option value="">Tous les cas d'usage</option>
+                            </select>
+                        </div>
+
+                        <!-- Difficulty Filter -->
+                        <div class="filter-section">
+                            <h4 class="filter-section__title">📈 Difficulte</h4>
+                            <div class="filter-checkboxes" id="difficulty-checkboxes">
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="difficulty" value="debutant">
+                                    <span class="filter-checkbox__mark"></span>
+                                    <span class="filter-checkbox__label">🟢 Debutant</span>
+                                </label>
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="difficulty" value="intermediaire">
+                                    <span class="filter-checkbox__mark"></span>
+                                    <span class="filter-checkbox__label">🟡 Intermediaire</span>
+                                </label>
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="difficulty" value="avancee">
+                                    <span class="filter-checkbox__mark"></span>
+                                    <span class="filter-checkbox__label">🔴 Avance</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Sort Options -->
+                        <div class="filter-section">
+                            <h4 class="filter-section__title">🔃 Trier par</h4>
+                            <select id="sort-by" class="filter-select filter-select--full">
+                                <option value="">Defaut</option>
+                                <option value="name-asc">Nom (A-Z)</option>
+                                <option value="name-desc">Nom (Z-A)</option>
+                                <option value="score-desc">Score global (decroissant)</option>
+                                <option value="score-asc">Score global (croissant)</option>
+                                <option value="price-asc">Prix (croissant)</option>
+                                <option value="price-desc">Prix (decroissant)</option>
+                                <option value="context-desc">Contexte (decroissant)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Active Filters Tags -->
+                    <div id="active-filters-tags" class="active-filters-tags hidden">
+                        <!-- Dynamically populated -->
                     </div>
                 </div>
 

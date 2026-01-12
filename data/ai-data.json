@@ -1,0 +1,859 @@
+{
+  "metadata": {
+    "version": "3.0.0",
+    "lastUpdate": "2025-01-12",
+    "author": "MR Tech Lab"
+  },
+  "categories": [
+    {"id": "reasoning", "name": "Raisonnement & Analyse", "emoji": "🎯", "color": "#a855f7", "description": "LLMs optimises pour le raisonnement complexe et la resolution de problemes"},
+    {"id": "polyvalent", "name": "Polyvalence & Vitesse", "emoji": "⚡", "color": "#3b82f6", "description": "Modeles equilibres performance/vitesse pour usage quotidien"},
+    {"id": "economique", "name": "Economique & Efficace", "emoji": "💰", "color": "#22c55e", "description": "Solutions abordables avec excellent rapport qualite/prix"},
+    {"id": "creation", "name": "Creation de Contenu", "emoji": "🎨", "color": "#f97316", "description": "Generation de texte, images, videos et audio"},
+    {"id": "code", "name": "Code & Developpement", "emoji": "💻", "color": "#06b6d4", "description": "Assistants de programmation et outils de developpement"},
+    {"id": "recherche", "name": "Recherche & Documentation", "emoji": "🔍", "color": "#8b5cf6", "description": "Recherche web, RAG et synthese documentaire"},
+    {"id": "conversation", "name": "Conversation & Voix", "emoji": "🗣️", "color": "#ec4899", "description": "Chatbots, assistants vocaux et transcription"},
+    {"id": "opensource", "name": "Open Source", "emoji": "🌐", "color": "#64748b", "description": "Modeles open source pour self-hosting"},
+    {"id": "video", "name": "Generation Video", "emoji": "🎬", "color": "#ef4444", "description": "Creation et edition de videos par IA"},
+    {"id": "image", "name": "Generation Image", "emoji": "🖼️", "color": "#eab308", "description": "Creation d'images et art par IA"},
+    {"id": "audio", "name": "Audio & Musique", "emoji": "🎵", "color": "#14b8a6", "description": "Synthese vocale, musique et audio"},
+    {"id": "productivity", "name": "Productivite", "emoji": "📊", "color": "#6366f1", "description": "Outils de productivite et automatisation"}
+  ],
+  "llms": [
+    {
+      "id": "gpt-5-2", "name": "GPT-5.2", "provider": "OpenAI", "categories": ["reasoning", "polyvalent"],
+      "tier": "premium", "description": "Flagship OpenAI avec contexte 400K tokens et score parfait AIME 2025. Le plus avance d'OpenAI.",
+      "strengths": ["Contexte 400K tokens", "Score parfait AIME 2025", "Raisonnement exceptionnel", "Multimodal complet"],
+      "weaknesses": ["Cout tres eleve", "Latence importante pour taches complexes"],
+      "useCases": ["Recherche avancee", "Analyse financiere", "Problemes mathematiques"],
+      "comparison": "vs Claude 4.5: Plus grand contexte, Claude meilleur en code.",
+      "specs": {"contextWindow": "400K", "speed": "Moyenne", "inputPrice": "$30/M", "outputPrice": "$120/M"},
+      "apiAvailable": true, "docUrl": "https://platform.openai.com/docs", "tags": ["flagship", "reasoning", "400k"],
+      "difficulty": "avancee", "isNew": true
+    },
+    {
+      "id": "gpt-5-1", "name": "GPT-5.1", "provider": "OpenAI", "categories": ["reasoning", "polyvalent"],
+      "tier": "premium", "description": "Adaptive reasoning qui ajuste dynamiquement le temps de reflexion selon la complexite.",
+      "strengths": ["Adaptive reasoning", "Optimisation automatique", "Excellent equilibre vitesse/qualite"],
+      "weaknesses": ["Moins puissant que 5.2 sur taches complexes"],
+      "useCases": ["Applications generales", "Chatbots avances", "Analyse de documents"],
+      "specs": {"contextWindow": "200K", "speed": "Rapide", "inputPrice": "$15/M", "outputPrice": "$60/M"},
+      "apiAvailable": true, "docUrl": "https://platform.openai.com/docs", "tags": ["adaptive", "reasoning"],
+      "difficulty": "intermediaire", "isNew": true
+    },
+    {
+      "id": "gpt-4o", "name": "GPT-4o", "provider": "OpenAI", "categories": ["polyvalent", "creation"],
+      "tier": "standard", "description": "Modele multimodal phare pour usage quotidien. Excellent equilibre.",
+      "strengths": ["Multimodal natif", "Tres rapide", "Bonne creativite", "Prix accessible"],
+      "weaknesses": ["Depasse par GPT-5 en raisonnement"],
+      "useCases": ["Chatbots", "Analyse d'images", "Generation de contenu"],
+      "specs": {"contextWindow": "128K", "speed": "Rapide", "inputPrice": "$2.50/M", "outputPrice": "$10/M"},
+      "apiAvailable": true, "docUrl": "https://platform.openai.com/docs", "tags": ["multimodal", "polyvalent"],
+      "difficulty": "debutant", "isNew": false
+    },
+    {
+      "id": "gpt-4o-mini", "name": "GPT-4o mini", "provider": "OpenAI", "categories": ["economique"],
+      "tier": "budget", "description": "Version economique de GPT-4o pour applications a volume eleve.",
+      "strengths": ["Tres economique", "Rapide", "API stable"],
+      "weaknesses": ["Capacites reduites"],
+      "useCases": ["Chatbots simples", "Classification", "Extraction de donnees"],
+      "specs": {"contextWindow": "128K", "speed": "Tres rapide", "inputPrice": "$0.15/M", "outputPrice": "$0.60/M"},
+      "apiAvailable": true, "docUrl": "https://platform.openai.com/docs", "tags": ["budget", "volume"],
+      "difficulty": "debutant", "isNew": false
+    },
+    {
+      "id": "o1", "name": "o1", "provider": "OpenAI", "categories": ["reasoning"],
+      "tier": "premium", "description": "Modele de raisonnement avance utilisant chain of thought.",
+      "strengths": ["Raisonnement mathematique top", "Auto-verification", "Logique complexe"],
+      "weaknesses": ["Lent", "Tres couteux"],
+      "useCases": ["Maths complexes", "Programmation algorithmique", "Recherche"],
+      "specs": {"contextWindow": "200K", "speed": "Lent", "inputPrice": "$15/M", "outputPrice": "$60/M"},
+      "apiAvailable": true, "docUrl": "https://platform.openai.com/docs", "tags": ["reasoning", "math"],
+      "difficulty": "avancee", "isNew": false
+    },
+    {
+      "id": "o3", "name": "o3", "provider": "OpenAI", "categories": ["reasoning"],
+      "tier": "premium", "description": "Successeur de o1 avec capacites de raisonnement encore plus poussees.",
+      "strengths": ["Meilleur que o1 en raisonnement", "Benchmarks records", "Adaptabilite"],
+      "weaknesses": ["Tres couteux", "Disponibilite limitee"],
+      "useCases": ["Problemes scientifiques", "Recherche avancee"],
+      "specs": {"contextWindow": "200K", "speed": "Lent", "inputPrice": "$20/M", "outputPrice": "$80/M"},
+      "apiAvailable": true, "docUrl": "https://platform.openai.com/docs", "tags": ["reasoning", "frontier"],
+      "difficulty": "avancee", "isNew": true
+    },
+    {
+      "id": "claude-opus-4-5", "name": "Claude Opus 4.5", "provider": "Anthropic", "categories": ["reasoning", "code"],
+      "tier": "premium", "description": "Record SWE-bench 80.9%. Le plus puissant pour le code et le raisonnement.",
+      "strengths": ["Record SWE-bench 80.9%", "Raisonnement exceptionnel", "Code production-ready", "200K contexte"],
+      "weaknesses": ["Cout eleve", "Latence"],
+      "useCases": ["Audit de code", "Analyse juridique", "Documents techniques"],
+      "specs": {"contextWindow": "200K", "speed": "Moyenne", "inputPrice": "$15/M", "outputPrice": "$75/M"},
+      "apiAvailable": true, "docUrl": "https://docs.anthropic.com", "tags": ["flagship", "code", "reasoning"],
+      "difficulty": "avancee", "isNew": true
+    },
+    {
+      "id": "claude-sonnet-4-5", "name": "Claude Sonnet 4.5", "provider": "Anthropic", "categories": ["polyvalent", "code"],
+      "tier": "standard", "description": "Meilleur modele de code au monde. 30h+ d'operation autonome.",
+      "strengths": ["Best coding model", "30h+ autonomie", "Excellent rapport qualite/prix"],
+      "weaknesses": ["Moins puissant qu'Opus pour raisonnement pur"],
+      "useCases": ["Developpement quotidien", "Automatisation", "Workflows n8n"],
+      "specs": {"contextWindow": "200K", "speed": "Rapide", "inputPrice": "$3/M", "outputPrice": "$15/M"},
+      "apiAvailable": true, "docUrl": "https://docs.anthropic.com", "tags": ["code", "polyvalent", "autonome"],
+      "difficulty": "intermediaire", "isNew": true
+    },
+    {
+      "id": "claude-sonnet-4", "name": "Claude Sonnet 4", "provider": "Anthropic", "categories": ["polyvalent", "code"],
+      "tier": "standard", "description": "Excellent equilibre performance/cout pour usage quotidien.",
+      "strengths": ["Bon ratio qualite/prix", "Code de qualite", "Rapide"],
+      "weaknesses": ["Depasse par Sonnet 4.5"],
+      "useCases": ["Dev quotidien", "Chatbots", "Automatisation"],
+      "specs": {"contextWindow": "200K", "speed": "Rapide", "inputPrice": "$3/M", "outputPrice": "$15/M"},
+      "apiAvailable": true, "docUrl": "https://docs.anthropic.com", "tags": ["polyvalent", "code"],
+      "difficulty": "intermediaire", "isNew": false
+    },
+    {
+      "id": "claude-haiku-3-5", "name": "Claude Haiku 3.5", "provider": "Anthropic", "categories": ["economique"],
+      "tier": "budget", "description": "Ultra-rapide et economique pour taches simples a haut volume.",
+      "strengths": ["Extremement rapide", "Cout tres bas", "Bon pour taches simples"],
+      "weaknesses": ["Raisonnement limite"],
+      "useCases": ["Classification", "Extraction", "Chatbots simples"],
+      "specs": {"contextWindow": "200K", "speed": "Tres rapide", "inputPrice": "$0.25/M", "outputPrice": "$1.25/M"},
+      "apiAvailable": true, "docUrl": "https://docs.anthropic.com", "tags": ["budget", "fast", "volume"],
+      "difficulty": "debutant", "isNew": false
+    },
+    {
+      "id": "gemini-3-pro", "name": "Gemini 3 Pro", "provider": "Google", "categories": ["reasoning", "recherche"],
+      "tier": "premium", "description": "Record LMArena 1501 Elo. Premier modele a depasser 1500. GPQA Diamond 91.9%.",
+      "strengths": ["Record 1501 Elo", "GPQA Diamond 91.9%", "Deep Think mode", "2M contexte"],
+      "weaknesses": ["API parfois instable"],
+      "useCases": ["Recherche scientifique", "Analyse massive", "Grounding web"],
+      "specs": {"contextWindow": "2M", "speed": "Moyenne", "inputPrice": "$1.25/M", "outputPrice": "$5/M"},
+      "apiAvailable": true, "docUrl": "https://ai.google.dev/docs", "tags": ["record", "reasoning", "2M"],
+      "difficulty": "avancee", "isNew": true
+    },
+    {
+      "id": "gemini-2-5-flash", "name": "Gemini 2.5 Flash", "provider": "Google", "categories": ["polyvalent", "economique"],
+      "tier": "standard", "description": "Modele rapide et economique avec 1M de contexte.",
+      "strengths": ["1M contexte", "Tres rapide", "Multimodal", "Prix bas"],
+      "weaknesses": ["Moins precis que Pro"],
+      "useCases": ["Analyse de documents", "Workflows Google", "Video/Image"],
+      "specs": {"contextWindow": "1M", "speed": "Tres rapide", "inputPrice": "$0.075/M", "outputPrice": "$0.30/M"},
+      "apiAvailable": true, "docUrl": "https://ai.google.dev/docs", "tags": ["fast", "long-context", "multimodal"],
+      "difficulty": "intermediaire", "isNew": true
+    },
+    {
+      "id": "gemini-2-flash", "name": "Gemini 2.0 Flash", "provider": "Google", "categories": ["polyvalent"],
+      "tier": "standard", "description": "Modele multimodal rapide avec enorme contexte.",
+      "strengths": ["Contexte 1M", "Multimodal", "Integration Google"],
+      "weaknesses": ["Peut etre incoherent"],
+      "useCases": ["Analyse documents", "Workflows Google"],
+      "specs": {"contextWindow": "1M", "speed": "Rapide", "inputPrice": "$0.075/M", "outputPrice": "$0.30/M"},
+      "apiAvailable": true, "docUrl": "https://ai.google.dev/docs", "tags": ["long-context", "multimodal"],
+      "difficulty": "intermediaire", "isNew": false
+    },
+    {
+      "id": "llama-4-scout", "name": "Llama 4 Scout", "provider": "Meta", "categories": ["opensource", "polyvalent"],
+      "tier": "standard", "description": "Contexte record de 10M tokens! Premier modele open source nativement multimodal.",
+      "strengths": ["10M tokens contexte!", "Multimodal natif", "Open source", "MoE architecture"],
+      "weaknesses": ["Necessite infrastructure lourde"],
+      "useCases": ["Analyse massive", "Self-hosting", "Recherche"],
+      "specs": {"contextWindow": "10M", "speed": "Variable", "inputPrice": "Gratuit", "outputPrice": "Gratuit"},
+      "apiAvailable": true, "docUrl": "https://llama.meta.com", "tags": ["10M-context", "opensource", "multimodal"],
+      "difficulty": "avancee", "isNew": true
+    },
+    {
+      "id": "llama-4-maverick", "name": "Llama 4 Maverick", "provider": "Meta", "categories": ["opensource", "polyvalent"],
+      "tier": "standard", "description": "Bat GPT-4o et Gemini 2.0 Flash sur les benchmarks. MoE architecture.",
+      "strengths": ["Bat GPT-4o", "Open source", "MoE efficace", "Multimodal"],
+      "weaknesses": ["Ressources importantes requises"],
+      "useCases": ["Production self-hosted", "Fine-tuning", "Applications entreprise"],
+      "specs": {"contextWindow": "1M", "speed": "Rapide", "inputPrice": "Gratuit", "outputPrice": "Gratuit"},
+      "apiAvailable": true, "docUrl": "https://llama.meta.com", "tags": ["opensource", "beats-gpt4o"],
+      "difficulty": "avancee", "isNew": true
+    },
+    {
+      "id": "llama-3-3-70b", "name": "Llama 3.3 70B", "provider": "Meta", "categories": ["opensource"],
+      "tier": "standard", "description": "Modele open source populaire pour self-hosting.",
+      "strengths": ["Open source", "Grande communaute", "Nombreux fine-tunes"],
+      "weaknesses": ["Depasse par Llama 4"],
+      "useCases": ["Self-hosting", "Fine-tuning"],
+      "specs": {"contextWindow": "128K", "speed": "Variable", "inputPrice": "Gratuit", "outputPrice": "Gratuit"},
+      "apiAvailable": true, "docUrl": "https://llama.meta.com", "tags": ["opensource", "self-host"],
+      "difficulty": "avancee", "isNew": false
+    },
+    {
+      "id": "mistral-large-3", "name": "Mistral Large 3", "provider": "Mistral AI", "categories": ["polyvalent", "code"],
+      "tier": "standard", "description": "675B params MoE. 92% perf GPT-5.2 a 15% du prix. Meilleur francais.",
+      "strengths": ["92% GPT-5.2 a 15% prix", "Meilleur francais", "RGPD", "MoE 675B"],
+      "weaknesses": ["Contexte plus petit"],
+      "useCases": ["Apps francaises", "Entreprises EU", "Code"],
+      "specs": {"contextWindow": "128K", "speed": "Rapide", "inputPrice": "$2/M", "outputPrice": "$6/M"},
+      "apiAvailable": true, "docUrl": "https://docs.mistral.ai", "tags": ["francais", "europe", "moe"],
+      "difficulty": "intermediaire", "isNew": true
+    },
+    {
+      "id": "mistral-large-2", "name": "Mistral Large 2", "provider": "Mistral AI", "categories": ["polyvalent"],
+      "tier": "standard", "description": "Excellent support francais et conformite RGPD.",
+      "strengths": ["Meilleur francais", "RGPD", "Serveurs EU"],
+      "weaknesses": ["Moins performant que Large 3"],
+      "useCases": ["Apps francaises", "Administration"],
+      "specs": {"contextWindow": "128K", "speed": "Rapide", "inputPrice": "$2/M", "outputPrice": "$6/M"},
+      "apiAvailable": true, "docUrl": "https://docs.mistral.ai", "tags": ["francais", "europe"],
+      "difficulty": "intermediaire", "isNew": false
+    },
+    {
+      "id": "deepseek-v3-2", "name": "DeepSeek V3.2 Speciale", "provider": "DeepSeek", "categories": ["reasoning", "code", "opensource"],
+      "tier": "standard", "description": "Medailles d'or IMO, IOI, CMO 2025. 2e place ICPC World Finals.",
+      "strengths": ["Gold IMO/IOI/CMO 2025", "Prix imbattable", "Open source", "Excellent code"],
+      "weaknesses": ["Serveurs en Chine"],
+      "useCases": ["Competitions", "Maths avancees", "Algorithmes"],
+      "specs": {"contextWindow": "128K", "speed": "Rapide", "inputPrice": "$0.014/M", "outputPrice": "$0.14/M"},
+      "apiAvailable": true, "docUrl": "https://platform.deepseek.com", "tags": ["competition", "math", "opensource"],
+      "difficulty": "avancee", "isNew": true
+    },
+    {
+      "id": "deepseek-v3", "name": "DeepSeek V3", "provider": "DeepSeek", "categories": ["economique", "code", "opensource"],
+      "tier": "budget", "description": "Performances GPT-4 a cout derisoire. Excellent code.",
+      "strengths": ["Prix imbattable", "Excellent code", "Open source"],
+      "weaknesses": ["Serveurs Chine", "Moins bon francais"],
+      "useCases": ["Dev a bas cout", "Prototypage"],
+      "specs": {"contextWindow": "128K", "speed": "Rapide", "inputPrice": "$0.014/M", "outputPrice": "$0.14/M"},
+      "apiAvailable": true, "docUrl": "https://platform.deepseek.com", "tags": ["budget", "code"],
+      "difficulty": "intermediaire", "isNew": false
+    },
+    {
+      "id": "deepseek-r1", "name": "DeepSeek R1", "provider": "DeepSeek", "categories": ["reasoning", "opensource"],
+      "tier": "standard", "description": "Raisonnement niveau o1 a 5% du prix.",
+      "strengths": ["95% qualite o1 a 5% prix", "Open source", "Excellent maths"],
+      "weaknesses": ["Temps variable"],
+      "useCases": ["Maths", "Logique", "Algorithmes"],
+      "specs": {"contextWindow": "128K", "speed": "Variable", "inputPrice": "$0.14/M", "outputPrice": "$2.19/M"},
+      "apiAvailable": true, "docUrl": "https://platform.deepseek.com", "tags": ["reasoning", "budget"],
+      "difficulty": "avancee", "isNew": false
+    },
+    {
+      "id": "grok-3", "name": "Grok 3", "provider": "xAI", "categories": ["recherche", "conversation"],
+      "tier": "standard", "description": "Acces temps reel X/Twitter et web. Ton decontracte.",
+      "strengths": ["Temps reel web/X", "Actualites direct", "Humoristique"],
+      "weaknesses": ["Biais potentiel X"],
+      "useCases": ["Veille temps reel", "Tendances sociales"],
+      "specs": {"contextWindow": "128K", "speed": "Rapide", "inputPrice": "$2/M", "outputPrice": "$10/M"},
+      "apiAvailable": true, "docUrl": "https://x.ai", "tags": ["realtime", "social"],
+      "difficulty": "intermediaire", "isNew": true
+    },
+    {
+      "id": "qwen-3-72b", "name": "Qwen 3 72B", "provider": "Alibaba", "categories": ["opensource", "code"],
+      "tier": "standard", "description": "Open source performant sur code et multilingue.",
+      "strengths": ["Open source", "Excellent code", "Multilingue"],
+      "weaknesses": ["Doc principalement chinois"],
+      "useCases": ["Dev", "Self-hosting", "Fine-tuning"],
+      "specs": {"contextWindow": "128K", "speed": "Variable", "inputPrice": "Gratuit", "outputPrice": "Gratuit"},
+      "apiAvailable": true, "docUrl": "https://qwen.ai", "tags": ["opensource", "code"],
+      "difficulty": "avancee", "isNew": false
+    },
+    {
+      "id": "perplexity-sonar", "name": "Perplexity Sonar", "provider": "Perplexity", "categories": ["recherche"],
+      "tier": "standard", "description": "Recherche web avec citations automatiques.",
+      "strengths": ["Recherche web", "Citations auto", "Sources verifiables"],
+      "weaknesses": ["Moins creatif"],
+      "useCases": ["Recherche", "Fact-checking", "Veille"],
+      "specs": {"contextWindow": "128K", "speed": "Moyenne", "inputPrice": "$1/M", "outputPrice": "$1/M"},
+      "apiAvailable": true, "docUrl": "https://docs.perplexity.ai", "tags": ["search", "citations"],
+      "difficulty": "debutant", "isNew": false
+    },
+    {
+      "id": "cohere-command-r-plus", "name": "Command R+", "provider": "Cohere", "categories": ["recherche", "polyvalent"],
+      "tier": "standard", "description": "Optimise RAG et applications entreprise.",
+      "strengths": ["Excellent RAG", "Multilingue", "Enterprise-ready"],
+      "weaknesses": ["Moins connu"],
+      "useCases": ["Chatbots entreprise", "RAG", "Support multilingue"],
+      "specs": {"contextWindow": "128K", "speed": "Rapide", "inputPrice": "$2.50/M", "outputPrice": "$10/M"},
+      "apiAvailable": true, "docUrl": "https://docs.cohere.com", "tags": ["rag", "enterprise"],
+      "difficulty": "intermediaire", "isNew": false
+    }
+  ],
+  "tools": [
+    {
+      "id": "chatgpt", "name": "ChatGPT", "provider": "OpenAI", "categories": ["polyvalent", "conversation"],
+      "type": "assistant", "description": "Assistant IA conversationnel le plus populaire au monde.",
+      "strengths": ["Interface intuitive", "Plugins/GPTs", "Multimodal", "Voice mode"],
+      "weaknesses": ["Abonnement pour fonctions avancees"],
+      "useCases": ["Assistant quotidien", "Brainstorming", "Redaction"],
+      "integrations": ["API", "Plugins", "Zapier"], "pricing": "Gratuit / $20/mois Plus",
+      "difficulty": "debutant", "docUrl": "https://chat.openai.com", "tags": ["assistant", "populaire"], "isNew": false
+    },
+    {
+      "id": "claude-ai", "name": "Claude.ai", "provider": "Anthropic", "categories": ["polyvalent", "code"],
+      "type": "assistant", "description": "Assistant IA d'Anthropic avec Projects et Artifacts.",
+      "strengths": ["Projects pour contexte", "Artifacts interactifs", "200K contexte", "Code excellent"],
+      "weaknesses": ["Moins de plugins que ChatGPT"],
+      "useCases": ["Dev", "Analyse documents", "Redaction"],
+      "integrations": ["API", "Projects"], "pricing": "Gratuit / $20/mois Pro",
+      "difficulty": "debutant", "docUrl": "https://claude.ai", "tags": ["assistant", "code"], "isNew": false
+    },
+    {
+      "id": "sora", "name": "Sora", "provider": "OpenAI", "categories": ["video", "creation"],
+      "type": "video", "description": "Revolution video IA. Scenes, personnages et animations depuis du texte.",
+      "strengths": ["Qualite cinematographique", "Coherence temporelle", "Creativite", "Scenes complexes"],
+      "weaknesses": ["Acces limite", "Cout eleve", "Temps de generation"],
+      "useCases": ["Publicites", "Clips", "Prototypage video"],
+      "integrations": ["API OpenAI"], "pricing": "Inclus ChatGPT Plus/Pro",
+      "difficulty": "intermediaire", "docUrl": "https://openai.com/sora", "tags": ["video", "revolutionary"], "isNew": true
+    },
+    {
+      "id": "veo-3", "name": "Google Veo 3", "provider": "Google", "categories": ["video", "creation"],
+      "type": "video", "description": "Videos avec audio synchronise parfait. Dialogues generes depuis le prompt.",
+      "strengths": ["Audio synchronise", "Dialogues generes", "Qualite top", "Effets sonores"],
+      "weaknesses": ["Acces via VideoFX"],
+      "useCases": ["TikTok/Reels", "Pubs", "Contenu social"],
+      "integrations": ["VideoFX", "API Google"], "pricing": "Disponible via VideoFX",
+      "difficulty": "intermediaire", "docUrl": "https://deepmind.google/veo", "tags": ["video", "audio-sync"], "isNew": true
+    },
+    {
+      "id": "kling", "name": "Kling 2.5", "provider": "Kuaishou", "categories": ["video", "creation"],
+      "type": "video", "description": "Videos 1080p 10s extensibles a 3min. Tres abordable.",
+      "strengths": ["1080p natif", "Jusqu'a 3 min", "Prix bas $10/mois", "Audio integre"],
+      "weaknesses": ["Moins creatif que Sora"],
+      "useCases": ["Contenu social", "E-commerce", "Demos"],
+      "integrations": ["API"], "pricing": "$10/mois base",
+      "difficulty": "debutant", "docUrl": "https://kling.kuaishou.com", "tags": ["video", "affordable"], "isNew": true
+    },
+    {
+      "id": "runway-gen3", "name": "Runway Gen-3 Alpha", "provider": "Runway", "categories": ["video", "creation"],
+      "type": "video", "description": "Generation video pro avec controle precis du mouvement.",
+      "strengths": ["Controle mouvement", "Outils edition IA", "Image-to-video"],
+      "weaknesses": ["Duree limitee", "Cout eleve"],
+      "useCases": ["Pubs", "Effets speciaux", "Contenu social"],
+      "integrations": ["API", "Adobe plugin"], "pricing": "$12/mois (125 credits)",
+      "difficulty": "intermediaire", "docUrl": "https://docs.runwayml.com", "tags": ["video", "pro"], "isNew": false
+    },
+    {
+      "id": "pika", "name": "Pika 2.0", "provider": "Pika Labs", "categories": ["video", "creation"],
+      "type": "video", "description": "Generation video accessible avec effets speciaux.",
+      "strengths": ["Interface simple", "Effets integres", "Image-to-video"],
+      "weaknesses": ["Qualite inferieure Sora"],
+      "useCases": ["Reseaux sociaux", "Contenu rapide"],
+      "integrations": ["Discord", "Web"], "pricing": "Gratuit limite / $8/mois",
+      "difficulty": "debutant", "docUrl": "https://pika.art", "tags": ["video", "accessible"], "isNew": false
+    },
+    {
+      "id": "luma-dream-machine", "name": "Luma Dream Machine", "provider": "Luma AI", "categories": ["video", "creation"],
+      "type": "video", "description": "Generation video rapide avec bon rapport qualite/vitesse.",
+      "strengths": ["Generation rapide", "Qualite correcte", "Gratuit limite"],
+      "weaknesses": ["Moins de controle"],
+      "useCases": ["Prototypage", "Tests creatifs"],
+      "integrations": ["API", "Web"], "pricing": "Gratuit / $24/mois",
+      "difficulty": "debutant", "docUrl": "https://lumalabs.ai", "tags": ["video", "fast"], "isNew": false
+    },
+    {
+      "id": "midjourney", "name": "Midjourney V6.1", "provider": "Midjourney", "categories": ["image", "creation"],
+      "type": "image", "description": "Leader generation images artistiques. Qualite exceptionnelle.",
+      "strengths": ["Qualite artistique top", "Style unique", "Communaute active", "Controle stylistique"],
+      "weaknesses": ["Discord only", "Apprentissage prompts"],
+      "useCases": ["Art", "Design", "Marketing"],
+      "integrations": ["Discord", "n8n webhooks"], "pricing": "$10/mois (200 images)",
+      "difficulty": "intermediaire", "docUrl": "https://docs.midjourney.com", "tags": ["image", "art"], "isNew": false
+    },
+    {
+      "id": "dall-e-3", "name": "DALL-E 3", "provider": "OpenAI", "categories": ["image", "creation"],
+      "type": "image", "description": "Generation images avec excellent suivi instructions.",
+      "strengths": ["Suivi prompts excellent", "API robuste", "Texte dans images"],
+      "weaknesses": ["Moins artistique que MJ"],
+      "useCases": ["Illustrations", "Visuels presentations"],
+      "integrations": ["API OpenAI", "n8n", "Zapier"], "pricing": "$0.04-0.12/image",
+      "difficulty": "debutant", "docUrl": "https://platform.openai.com/docs/guides/images", "tags": ["image", "api"], "isNew": false
+    },
+    {
+      "id": "stable-diffusion-3", "name": "Stable Diffusion 3.5", "provider": "Stability AI", "categories": ["image", "creation", "opensource"],
+      "type": "image", "description": "Open source leader. Self-hosting et personnalisation totale.",
+      "strengths": ["Open source", "Self-hosting", "LoRA/Fine-tuning", "Gratuit"],
+      "weaknesses": ["GPU requis", "Courbe apprentissage"],
+      "useCases": ["Production masse", "Styles custom", "Recherche"],
+      "integrations": ["ComfyUI", "A1111", "API"], "pricing": "Gratuit / API $0.002/image",
+      "difficulty": "avancee", "docUrl": "https://stability.ai", "tags": ["image", "opensource"], "isNew": true
+    },
+    {
+      "id": "flux", "name": "FLUX.1", "provider": "Black Forest Labs", "categories": ["image", "creation", "opensource"],
+      "type": "image", "description": "Nouveau standard open source. Rivalise avec Midjourney.",
+      "strengths": ["Qualite Midjourney-level", "Open source", "Rapide"],
+      "weaknesses": ["Plus recent, moins de ressources"],
+      "useCases": ["Art", "Design", "Production"],
+      "integrations": ["ComfyUI", "Replicate"], "pricing": "Gratuit / API variable",
+      "difficulty": "intermediaire", "docUrl": "https://blackforestlabs.ai", "tags": ["image", "opensource", "quality"], "isNew": true
+    },
+    {
+      "id": "ideogram", "name": "Ideogram 2.0", "provider": "Ideogram", "categories": ["image", "creation"],
+      "type": "image", "description": "Specialiste du texte dans les images. Logos et typographie.",
+      "strengths": ["Texte parfait", "Logos", "Typographie"],
+      "weaknesses": ["Moins artistique"],
+      "useCases": ["Logos", "Affiches", "Marketing"],
+      "integrations": ["API", "Web"], "pricing": "Gratuit limite / $7/mois",
+      "difficulty": "debutant", "docUrl": "https://ideogram.ai", "tags": ["image", "text"], "isNew": false
+    },
+    {
+      "id": "leonardo", "name": "Leonardo.ai", "provider": "Leonardo", "categories": ["image", "creation"],
+      "type": "image", "description": "Plateforme creative complete avec fine-tuning facile.",
+      "strengths": ["Fine-tuning facile", "Modeles varies", "Interface pro"],
+      "weaknesses": ["Credits limites gratuit"],
+      "useCases": ["Game assets", "Design", "Marketing"],
+      "integrations": ["API", "Web"], "pricing": "Gratuit / $10/mois",
+      "difficulty": "intermediaire", "docUrl": "https://leonardo.ai", "tags": ["image", "creative"], "isNew": false
+    },
+    {
+      "id": "elevenlabs", "name": "ElevenLabs", "provider": "ElevenLabs", "categories": ["audio", "conversation"],
+      "type": "audio", "description": "Synthese vocale ultra-realiste. Clonage voix. 25+ langues.",
+      "strengths": ["Qualite vocale top", "Clonage voix", "25+ langues", "API temps reel"],
+      "weaknesses": ["Cout eleve usage intensif"],
+      "useCases": ["Podcasts", "Narration", "Assistants vocaux", "Doublage"],
+      "integrations": ["API", "n8n", "Zapier"], "pricing": "$5/mois (30K caracteres)",
+      "difficulty": "debutant", "docUrl": "https://docs.elevenlabs.io", "tags": ["voice", "tts"], "isNew": false
+    },
+    {
+      "id": "minimax-voice", "name": "MiniMax Voice", "provider": "MiniMax", "categories": ["audio", "conversation"],
+      "type": "audio", "description": "Generation 2h audio haute qualite. Top pour doublage.",
+      "strengths": ["2h audio generation", "Haute qualite", "Multi-voix"],
+      "weaknesses": ["Interface en chinois"],
+      "useCases": ["Audiobooks", "Doublage", "Podcasts longs"],
+      "integrations": ["API"], "pricing": "Variable",
+      "difficulty": "intermediaire", "docUrl": "https://minimax.chat", "tags": ["voice", "long-form"], "isNew": true
+    },
+    {
+      "id": "suno", "name": "Suno V4", "provider": "Suno", "categories": ["audio", "creation"],
+      "type": "music", "description": "Generation musique complete. Chansons avec paroles et voix.",
+      "strengths": ["Chansons completes", "Voix realistes", "Multi-genres"],
+      "weaknesses": ["Droits a verifier"],
+      "useCases": ["Jingles", "Musique fond", "Prototypage"],
+      "integrations": ["Web", "API beta"], "pricing": "Gratuit / $8/mois Pro",
+      "difficulty": "debutant", "docUrl": "https://suno.ai", "tags": ["music", "creative"], "isNew": false
+    },
+    {
+      "id": "udio", "name": "Udio", "provider": "Udio", "categories": ["audio", "creation"],
+      "type": "music", "description": "Concurrent Suno avec qualite audio superieure.",
+      "strengths": ["Qualite audio top", "Controle style", "Instrumentaux"],
+      "weaknesses": ["Moins intuitif"],
+      "useCases": ["Production musicale", "Soundtracks"],
+      "integrations": ["Web"], "pricing": "Gratuit / $10/mois",
+      "difficulty": "intermediaire", "docUrl": "https://udio.com", "tags": ["music", "quality"], "isNew": false
+    },
+    {
+      "id": "whisper", "name": "Whisper V3", "provider": "OpenAI", "categories": ["audio", "opensource"],
+      "type": "transcription", "description": "Transcription audio open source. 100+ langues.",
+      "strengths": ["Tres precis", "100+ langues", "Open source", "Self-hosting"],
+      "weaknesses": ["GPU pour temps reel"],
+      "useCases": ["Transcription reunions", "Sous-titres", "Indexation"],
+      "integrations": ["API OpenAI", "n8n", "Self-host"], "pricing": "$0.006/min / Gratuit self-host",
+      "difficulty": "intermediaire", "docUrl": "https://platform.openai.com/docs/guides/speech-to-text", "tags": ["transcription", "opensource"], "isNew": false
+    },
+    {
+      "id": "adobe-podcast", "name": "Adobe Podcast", "provider": "Adobe", "categories": ["audio"],
+      "type": "audio", "description": "Enhance Speech gratuit. Supprime bruit et ameliore voix.",
+      "strengths": ["Gratuit", "Suppression bruit", "Amelioration voix"],
+      "weaknesses": ["Fonctions limitees"],
+      "useCases": ["Podcasts", "Voiceovers", "Reunions"],
+      "integrations": ["Web"], "pricing": "Gratuit",
+      "difficulty": "debutant", "docUrl": "https://podcast.adobe.com", "tags": ["audio", "free"], "isNew": false
+    },
+    {
+      "id": "cursor", "name": "Cursor", "provider": "Cursor", "categories": ["code"],
+      "type": "ide", "description": "IDE IA #1. VS Code base avec auto-completion et chat codebase.",
+      "strengths": ["Auto-completion top", "Chat codebase", "VS Code base", "Agent mode"],
+      "weaknesses": ["Abonnement pour avance"],
+      "useCases": ["Dev quotidien", "Refactoring", "Debugging"],
+      "integrations": ["VS Code extensions", "Git"], "pricing": "Gratuit / $20/mois Pro",
+      "difficulty": "debutant", "docUrl": "https://cursor.sh/docs", "tags": ["code", "ide"], "isNew": false
+    },
+    {
+      "id": "github-copilot", "name": "GitHub Copilot", "provider": "GitHub/Microsoft", "categories": ["code"],
+      "type": "extension", "description": "Assistant code integre VS Code. Auto-completion intelligente.",
+      "strengths": ["Integration native", "Suggestions contextuelles", "Multi-langages"],
+      "weaknesses": ["Abonnement requis"],
+      "useCases": ["Auto-completion", "Tests", "Documentation"],
+      "integrations": ["VS Code", "JetBrains", "Neovim"], "pricing": "$10/mois",
+      "difficulty": "debutant", "docUrl": "https://docs.github.com/copilot", "tags": ["code", "extension"], "isNew": false
+    },
+    {
+      "id": "windsurf", "name": "Windsurf", "provider": "Codeium", "categories": ["code"],
+      "type": "ide", "description": "IDE IA concurrent Cursor avec flows agents.",
+      "strengths": ["Flows agents", "Gratuit generous", "Multi-fichiers"],
+      "weaknesses": ["Plus recent"],
+      "useCases": ["Dev", "Projets complexes"],
+      "integrations": ["VS Code base"], "pricing": "Gratuit / $10/mois Pro",
+      "difficulty": "debutant", "docUrl": "https://codeium.com/windsurf", "tags": ["code", "ide"], "isNew": true
+    },
+    {
+      "id": "bolt", "name": "Bolt.new", "provider": "StackBlitz", "categories": ["code", "creation"],
+      "type": "web", "description": "Generation apps web completes depuis prompt. Deploy instant.",
+      "strengths": ["Apps completes", "Deploy instant", "Full-stack"],
+      "weaknesses": ["Limites complexite"],
+      "useCases": ["Prototypage", "MVPs", "Landing pages"],
+      "integrations": ["Netlify", "Vercel"], "pricing": "Gratuit / $20/mois",
+      "difficulty": "debutant", "docUrl": "https://bolt.new", "tags": ["code", "full-stack"], "isNew": true
+    },
+    {
+      "id": "lovable", "name": "Lovable", "provider": "Lovable", "categories": ["code", "creation"],
+      "type": "web", "description": "Generation apps avec Supabase integre.",
+      "strengths": ["Supabase integre", "Auth/DB inclus", "Full-stack"],
+      "weaknesses": ["Ecosysteme Supabase"],
+      "useCases": ["SaaS", "Apps avec auth", "MVPs"],
+      "integrations": ["Supabase", "Vercel"], "pricing": "Gratuit / $20/mois",
+      "difficulty": "intermediaire", "docUrl": "https://lovable.dev", "tags": ["code", "saas"], "isNew": true
+    },
+    {
+      "id": "v0", "name": "v0.dev", "provider": "Vercel", "categories": ["code", "creation"],
+      "type": "web", "description": "Generation UI React/Next.js depuis descriptions.",
+      "strengths": ["UI instantanee", "Code propre", "Export Vercel"],
+      "weaknesses": ["React/Next only"],
+      "useCases": ["Prototypage UI", "Composants React"],
+      "integrations": ["Vercel", "GitHub"], "pricing": "Gratuit / $20/mois",
+      "difficulty": "intermediaire", "docUrl": "https://v0.dev/docs", "tags": ["code", "ui"], "isNew": false
+    },
+    {
+      "id": "replit", "name": "Replit Agent", "provider": "Replit", "categories": ["code"],
+      "type": "ide", "description": "IDE cloud avec agent IA pour build apps completes.",
+      "strengths": ["Cloud IDE", "Agent autonome", "Deploy integre"],
+      "weaknesses": ["Performance variable"],
+      "useCases": ["Prototypage", "Education", "Collaboration"],
+      "integrations": ["Cloud native"], "pricing": "Gratuit / $25/mois",
+      "difficulty": "debutant", "docUrl": "https://replit.com", "tags": ["code", "cloud"], "isNew": false
+    },
+    {
+      "id": "codeium", "name": "Codeium", "provider": "Codeium", "categories": ["code"],
+      "type": "extension", "description": "Alternative gratuite GitHub Copilot.",
+      "strengths": ["Gratuit illimite", "Multi-IDE", "Rapide"],
+      "weaknesses": ["Moins precis que Copilot"],
+      "useCases": ["Auto-completion", "Dev quotidien"],
+      "integrations": ["VS Code", "JetBrains", "Vim"], "pricing": "Gratuit / $10/mois Teams",
+      "difficulty": "debutant", "docUrl": "https://codeium.com", "tags": ["code", "free"], "isNew": false
+    },
+    {
+      "id": "tabnine", "name": "Tabnine", "provider": "Tabnine", "categories": ["code"],
+      "type": "extension", "description": "Auto-completion IA avec modele local possible.",
+      "strengths": ["Modele local", "Prive", "Multi-IDE"],
+      "weaknesses": ["Moins puissant cloud"],
+      "useCases": ["Dev prive", "Entreprise securise"],
+      "integrations": ["Tous IDEs"], "pricing": "Gratuit / $12/mois",
+      "difficulty": "debutant", "docUrl": "https://tabnine.com", "tags": ["code", "private"], "isNew": false
+    },
+    {
+      "id": "n8n", "name": "n8n", "provider": "n8n", "categories": ["productivity", "code"],
+      "type": "automation", "description": "Automatisation no-code puissante. Self-hosting possible.",
+      "strengths": ["Self-hosting", "400+ integrations", "Workflows visuels", "Nodes IA"],
+      "weaknesses": ["Courbe apprentissage"],
+      "useCases": ["Automatisation", "Pipelines", "Chatbots"],
+      "integrations": ["Tous services", "OpenAI", "Anthropic"], "pricing": "Gratuit self-host / $20/mois cloud",
+      "difficulty": "intermediaire", "docUrl": "https://docs.n8n.io", "tags": ["automation", "powerful"], "isNew": false
+    },
+    {
+      "id": "zapier", "name": "Zapier", "provider": "Zapier", "categories": ["productivity"],
+      "type": "automation", "description": "Automatisation no-code la plus populaire.",
+      "strengths": ["Simple", "6000+ apps", "Fiable"],
+      "weaknesses": ["Cout a l'echelle", "Moins flexible"],
+      "useCases": ["Automatisation simple", "Integrations"],
+      "integrations": ["6000+ apps"], "pricing": "Gratuit / $20/mois",
+      "difficulty": "debutant", "docUrl": "https://zapier.com", "tags": ["automation", "easy"], "isNew": false
+    },
+    {
+      "id": "make", "name": "Make (Integromat)", "provider": "Make", "categories": ["productivity"],
+      "type": "automation", "description": "Automatisation visuelle puissante.",
+      "strengths": ["Workflows visuels", "Flexible", "Bon prix"],
+      "weaknesses": ["Interface complexe"],
+      "useCases": ["Workflows complexes", "Data pipelines"],
+      "integrations": ["1000+ apps"], "pricing": "Gratuit / $9/mois",
+      "difficulty": "intermediaire", "docUrl": "https://make.com", "tags": ["automation", "visual"], "isNew": false
+    },
+    {
+      "id": "lindy", "name": "Lindy", "provider": "Lindy", "categories": ["productivity"],
+      "type": "assistant", "description": "Agents IA pour automatiser taches business.",
+      "strengths": ["Agents specialises", "Multi-domaines", "No-code"],
+      "weaknesses": ["Nouveau"],
+      "useCases": ["Sales", "Support", "Scheduling"],
+      "integrations": ["Email", "Calendar", "CRM"], "pricing": "$50/mois",
+      "difficulty": "intermediaire", "docUrl": "https://lindy.ai", "tags": ["agents", "business"], "isNew": true
+    },
+    {
+      "id": "notebooklm", "name": "NotebookLM", "provider": "Google", "categories": ["recherche", "productivity"],
+      "type": "assistant", "description": "Transforme documents en insights. Genere podcasts audio.",
+      "strengths": ["Analyse documents", "Genere podcasts", "Gratuit", "Sources citees"],
+      "weaknesses": ["Google account requis"],
+      "useCases": ["Recherche", "Apprentissage", "Synthese"],
+      "integrations": ["Google Drive", "Upload"], "pricing": "Gratuit",
+      "difficulty": "debutant", "docUrl": "https://notebooklm.google", "tags": ["research", "free"], "isNew": false
+    },
+    {
+      "id": "notion-ai", "name": "Notion AI", "provider": "Notion", "categories": ["productivity", "creation"],
+      "type": "assistant", "description": "IA integree Notion pour redaction et organisation.",
+      "strengths": ["Integration native", "Acces workspace", "Redaction"],
+      "weaknesses": ["Limite a Notion", "Cout additionnel"],
+      "useCases": ["Redaction", "Resumes", "Organisation"],
+      "integrations": ["Notion"], "pricing": "$10/mois/membre",
+      "difficulty": "debutant", "docUrl": "https://notion.so/help/guides/using-notion-ai", "tags": ["productivity", "writing"], "isNew": false
+    },
+    {
+      "id": "perplexity", "name": "Perplexity", "provider": "Perplexity", "categories": ["recherche"],
+      "type": "search", "description": "Moteur recherche IA avec sources citees.",
+      "strengths": ["Sources citees", "Recherche web", "Actualites"],
+      "weaknesses": ["Moins creatif"],
+      "useCases": ["Recherche", "Fact-checking", "Veille"],
+      "integrations": ["API", "Chrome ext"], "pricing": "Gratuit / $20/mois Pro",
+      "difficulty": "debutant", "docUrl": "https://perplexity.ai", "tags": ["search", "citations"], "isNew": false
+    },
+    {
+      "id": "you-com", "name": "You.com", "provider": "You.com", "categories": ["recherche"],
+      "type": "search", "description": "Moteur recherche IA avec modes specialises.",
+      "strengths": ["Modes recherche", "Code mode", "Gratuit"],
+      "weaknesses": ["Moins connu"],
+      "useCases": ["Recherche", "Code", "Redaction"],
+      "integrations": ["Web"], "pricing": "Gratuit / $15/mois",
+      "difficulty": "debutant", "docUrl": "https://you.com", "tags": ["search", "modes"], "isNew": false
+    },
+    {
+      "id": "synthesia", "name": "Synthesia", "provider": "Synthesia", "categories": ["video", "creation"],
+      "type": "video", "description": "Videos avec avatars IA. Formation et marketing.",
+      "strengths": ["Avatars realistes", "Multi-langues", "Templates"],
+      "weaknesses": ["Style corporate"],
+      "useCases": ["Formation", "Marketing", "Support"],
+      "integrations": ["API", "LMS"], "pricing": "$22/mois",
+      "difficulty": "debutant", "docUrl": "https://synthesia.io", "tags": ["video", "avatars"], "isNew": false
+    },
+    {
+      "id": "heygen", "name": "HeyGen", "provider": "HeyGen", "categories": ["video", "creation"],
+      "type": "video", "description": "Avatars IA et traduction video.",
+      "strengths": ["Avatars personnalises", "Traduction video", "Lip-sync"],
+      "weaknesses": ["Cout eleve"],
+      "useCases": ["Marketing", "Traduction", "Personnalisation"],
+      "integrations": ["API"], "pricing": "$24/mois",
+      "difficulty": "intermediaire", "docUrl": "https://heygen.com", "tags": ["video", "translation"], "isNew": false
+    },
+    {
+      "id": "descript", "name": "Descript", "provider": "Descript", "categories": ["video", "audio"],
+      "type": "editor", "description": "Edition video/audio par texte. Transcription auto.",
+      "strengths": ["Edit par texte", "Transcription", "Screen recording"],
+      "weaknesses": ["Courbe apprentissage"],
+      "useCases": ["Podcasts", "Videos", "Transcription"],
+      "integrations": ["Export multi"], "pricing": "Gratuit / $12/mois",
+      "difficulty": "intermediaire", "docUrl": "https://descript.com", "tags": ["video", "audio", "edit"], "isNew": false
+    },
+    {
+      "id": "fathom", "name": "Fathom", "provider": "Fathom", "categories": ["productivity"],
+      "type": "assistant", "description": "Notes de reunion automatiques. Resumes et actions.",
+      "strengths": ["Notes auto", "Resumes", "Actions items", "Gratuit illimite"],
+      "weaknesses": ["Reunions only"],
+      "useCases": ["Reunions", "Follow-ups", "Documentation"],
+      "integrations": ["Zoom", "Meet", "Teams"], "pricing": "Gratuit / $24/mois Teams",
+      "difficulty": "debutant", "docUrl": "https://fathom.video", "tags": ["meetings", "notes"], "isNew": false
+    },
+    {
+      "id": "otter", "name": "Otter.ai", "provider": "Otter", "categories": ["productivity", "conversation"],
+      "type": "transcription", "description": "Transcription reunions en temps reel.",
+      "strengths": ["Temps reel", "Speaker ID", "Search"],
+      "weaknesses": ["Anglais principalement"],
+      "useCases": ["Reunions", "Interviews", "Cours"],
+      "integrations": ["Zoom", "Meet", "Teams"], "pricing": "Gratuit / $17/mois",
+      "difficulty": "debutant", "docUrl": "https://otter.ai", "tags": ["transcription", "meetings"], "isNew": false
+    },
+    {
+      "id": "grammarly", "name": "Grammarly", "provider": "Grammarly", "categories": ["creation", "productivity"],
+      "type": "writing", "description": "Assistant ecriture avec IA generative.",
+      "strengths": ["Corrections", "Suggestions style", "Multi-plateforme"],
+      "weaknesses": ["Anglais focus"],
+      "useCases": ["Emails", "Documents", "Redaction"],
+      "integrations": ["Browser", "Office", "Mobile"], "pricing": "Gratuit / $12/mois",
+      "difficulty": "debutant", "docUrl": "https://grammarly.com", "tags": ["writing", "grammar"], "isNew": false
+    },
+    {
+      "id": "jasper", "name": "Jasper", "provider": "Jasper", "categories": ["creation"],
+      "type": "writing", "description": "Generation contenu marketing.",
+      "strengths": ["Templates marketing", "Brand voice", "Team collab"],
+      "weaknesses": ["Cout eleve"],
+      "useCases": ["Marketing", "Ads", "Blog"],
+      "integrations": ["Browser", "API"], "pricing": "$49/mois",
+      "difficulty": "intermediaire", "docUrl": "https://jasper.ai", "tags": ["marketing", "content"], "isNew": false
+    },
+    {
+      "id": "copy-ai", "name": "Copy.ai", "provider": "Copy.ai", "categories": ["creation"],
+      "type": "writing", "description": "Generation copy et contenu.",
+      "strengths": ["Templates varies", "Workflows", "API"],
+      "weaknesses": ["Qualite variable"],
+      "useCases": ["Copywriting", "Emails", "Social"],
+      "integrations": ["API", "Zapier"], "pricing": "Gratuit / $49/mois",
+      "difficulty": "debutant", "docUrl": "https://copy.ai", "tags": ["copywriting"], "isNew": false
+    },
+    {
+      "id": "canva-ai", "name": "Canva AI", "provider": "Canva", "categories": ["creation", "image"],
+      "type": "design", "description": "Suite design avec fonctions IA integrees.",
+      "strengths": ["Magic tools", "Templates", "Accessibilite"],
+      "weaknesses": ["Moins pro que Adobe"],
+      "useCases": ["Design rapide", "Social media", "Presentations"],
+      "integrations": ["Web", "Mobile"], "pricing": "Gratuit / $13/mois Pro",
+      "difficulty": "debutant", "docUrl": "https://canva.com", "tags": ["design", "easy"], "isNew": false
+    },
+    {
+      "id": "adobe-firefly", "name": "Adobe Firefly", "provider": "Adobe", "categories": ["image", "creation"],
+      "type": "image", "description": "Generation IA integree suite Adobe.",
+      "strengths": ["Integration Adobe", "Commercial safe", "Qualite pro"],
+      "weaknesses": ["Abonnement Adobe"],
+      "useCases": ["Design pro", "Photoshop", "Illustrator"],
+      "integrations": ["Adobe Suite"], "pricing": "Inclus Creative Cloud",
+      "difficulty": "intermediaire", "docUrl": "https://firefly.adobe.com", "tags": ["image", "adobe"], "isNew": false
+    },
+    {
+      "id": "remove-bg", "name": "Remove.bg", "provider": "Kaleido", "categories": ["image"],
+      "type": "tool", "description": "Suppression arriere-plan automatique.",
+      "strengths": ["Instantane", "Precis", "API"],
+      "weaknesses": ["Limite gratuit"],
+      "useCases": ["E-commerce", "Portraits", "Design"],
+      "integrations": ["API", "Photoshop"], "pricing": "Gratuit / $9/mois",
+      "difficulty": "debutant", "docUrl": "https://remove.bg", "tags": ["image", "tool"], "isNew": false
+    },
+    {
+      "id": "photoroom", "name": "PhotoRoom", "provider": "PhotoRoom", "categories": ["image"],
+      "type": "tool", "description": "Edition photo e-commerce automatisee.",
+      "strengths": ["Remove bg", "Templates", "Batch"],
+      "weaknesses": ["Focus e-commerce"],
+      "useCases": ["E-commerce", "Marketplace", "Social"],
+      "integrations": ["Mobile", "API"], "pricing": "Gratuit / $10/mois",
+      "difficulty": "debutant", "docUrl": "https://photoroom.com", "tags": ["image", "ecommerce"], "isNew": false
+    },
+    {
+      "id": "langchain", "name": "LangChain", "provider": "LangChain", "categories": ["code", "recherche"],
+      "type": "framework", "description": "Framework apps LLM. RAG et agents.",
+      "strengths": ["Orchestration puissante", "100+ connecteurs", "RAG/agents"],
+      "weaknesses": ["Courbe apprentissage"],
+      "useCases": ["Chatbots memoire", "RAG", "Agents"],
+      "integrations": ["Python", "JS", "Tous LLMs"], "pricing": "Open source + LangSmith payant",
+      "difficulty": "avancee", "docUrl": "https://python.langchain.com", "tags": ["framework", "rag"], "isNew": false
+    },
+    {
+      "id": "llamaindex", "name": "LlamaIndex", "provider": "LlamaIndex", "categories": ["code", "recherche"],
+      "type": "framework", "description": "Framework data pour LLMs. Indexation et RAG.",
+      "strengths": ["Indexation facile", "Multi-sources", "RAG optimise"],
+      "weaknesses": ["Moins flexible LangChain"],
+      "useCases": ["RAG", "Knowledge bases", "Search"],
+      "integrations": ["Python", "Tous LLMs"], "pricing": "Open source",
+      "difficulty": "avancee", "docUrl": "https://llamaindex.ai", "tags": ["framework", "indexing"], "isNew": false
+    },
+    {
+      "id": "pinecone", "name": "Pinecone", "provider": "Pinecone", "categories": ["recherche"],
+      "type": "database", "description": "Base vectorielle managee pour RAG.",
+      "strengths": ["Performance", "Manage", "Simple"],
+      "weaknesses": ["Cout a l'echelle", "Lock-in"],
+      "useCases": ["RAG entreprise", "Recherche semantique"],
+      "integrations": ["LangChain", "LlamaIndex"], "pricing": "Gratuit / $0.33/M vecteurs",
+      "difficulty": "intermediaire", "docUrl": "https://docs.pinecone.io", "tags": ["vector-db", "rag"], "isNew": false
+    },
+    {
+      "id": "qdrant", "name": "Qdrant", "provider": "Qdrant", "categories": ["recherche", "opensource"],
+      "type": "database", "description": "Base vectorielle open source performante.",
+      "strengths": ["Open source", "Self-hosting", "Performant"],
+      "weaknesses": ["Maintenance si self-host"],
+      "useCases": ["RAG self-hosted", "Recherche privee"],
+      "integrations": ["LangChain", "Python"], "pricing": "Gratuit / $25/mois cloud",
+      "difficulty": "avancee", "docUrl": "https://qdrant.tech", "tags": ["vector-db", "opensource"], "isNew": false
+    },
+    {
+      "id": "weaviate", "name": "Weaviate", "provider": "Weaviate", "categories": ["recherche", "opensource"],
+      "type": "database", "description": "Base vectorielle avec modules IA integres.",
+      "strengths": ["Modules IA", "GraphQL", "Open source"],
+      "weaknesses": ["Complexite"],
+      "useCases": ["RAG avance", "Multi-modal search"],
+      "integrations": ["LangChain", "GraphQL"], "pricing": "Open source / Cloud payant",
+      "difficulty": "avancee", "docUrl": "https://weaviate.io", "tags": ["vector-db", "graphql"], "isNew": false
+    },
+    {
+      "id": "chroma", "name": "Chroma", "provider": "Chroma", "categories": ["recherche", "opensource"],
+      "type": "database", "description": "Base vectorielle legere pour prototypage.",
+      "strengths": ["Simple", "Leger", "Open source"],
+      "weaknesses": ["Moins scalable"],
+      "useCases": ["Prototypage", "Dev local"],
+      "integrations": ["LangChain", "Python"], "pricing": "Open source",
+      "difficulty": "intermediaire", "docUrl": "https://trychroma.com", "tags": ["vector-db", "simple"], "isNew": false
+    },
+    {
+      "id": "huggingface", "name": "Hugging Face", "provider": "Hugging Face", "categories": ["opensource", "recherche"],
+      "type": "platform", "description": "Hub modeles IA. 500K+ modeles open source.",
+      "strengths": ["500K+ modeles", "Communaute", "Inference API", "Spaces"],
+      "weaknesses": ["Courbe apprentissage"],
+      "useCases": ["Fine-tuning", "Deployment", "Recherche"],
+      "integrations": ["Transformers", "Tous frameworks"], "pricing": "Gratuit / $9/mois Pro",
+      "difficulty": "intermediaire", "docUrl": "https://huggingface.co/docs", "tags": ["hub", "models"], "isNew": false
+    },
+    {
+      "id": "replicate", "name": "Replicate", "provider": "Replicate", "categories": ["opensource"],
+      "type": "platform", "description": "Run modeles open source via API.",
+      "strengths": ["API simple", "Modeles varies", "Pay per use"],
+      "weaknesses": ["Cout a l'usage"],
+      "useCases": ["Prototypage", "Production light"],
+      "integrations": ["API REST", "Python"], "pricing": "Pay per use",
+      "difficulty": "intermediaire", "docUrl": "https://replicate.com/docs", "tags": ["api", "models"], "isNew": false
+    },
+    {
+      "id": "ollama", "name": "Ollama", "provider": "Ollama", "categories": ["opensource"],
+      "type": "tool", "description": "Run LLMs localement. Simple et efficace.",
+      "strengths": ["Local", "Simple", "Gratuit", "Multi-modeles"],
+      "weaknesses": ["Limite par hardware"],
+      "useCases": ["Dev local", "Tests", "Prive"],
+      "integrations": ["CLI", "API locale"], "pricing": "Gratuit",
+      "difficulty": "intermediaire", "docUrl": "https://ollama.ai", "tags": ["local", "free"], "isNew": false
+    },
+    {
+      "id": "lmstudio", "name": "LM Studio", "provider": "LM Studio", "categories": ["opensource"],
+      "type": "tool", "description": "Interface desktop pour LLMs locaux.",
+      "strengths": ["Interface graphique", "Facile", "Multi-modeles"],
+      "weaknesses": ["Desktop only"],
+      "useCases": ["Usage local", "Tests"],
+      "integrations": ["Local API"], "pricing": "Gratuit",
+      "difficulty": "debutant", "docUrl": "https://lmstudio.ai", "tags": ["local", "gui"], "isNew": false
+    }
+  ],
+  "examples": [
+    {"categoryId": "reasoning", "title": "Analyser 50 pages de contrats", "situation": "Extraire clauses cles et identifier risques dans plusieurs contrats.", "solution": "Claude Opus 4.5 avec upload PDFs et analyse structuree.", "result": "Resume par contrat, tableau comparatif, points vigilance en 5 min.", "tools": ["claude-opus-4-5"]},
+    {"categoryId": "reasoning", "title": "Resoudre probleme math olympiade", "situation": "Probleme mathematique complexe niveau competition.", "solution": "DeepSeek V3.2 Speciale (medaille d'or IMO) ou o3.", "result": "Solution detaillee avec demonstration complete.", "tools": ["deepseek-v3-2", "o3"]},
+    {"categoryId": "polyvalent", "title": "Automatiser reponses emails", "situation": "200+ emails/jour avec reponses repetitives.", "solution": "Workflow n8n + Claude Sonnet 4.5 pour classifier et repondre.", "result": "80% emails traites auto, temps reponse 4h -> 15min.", "tools": ["claude-sonnet-4-5", "n8n"]},
+    {"categoryId": "economique", "title": "Generer 100 descriptions produits", "situation": "Nouvelle collection e-commerce a documenter.", "solution": "GPT-4o-mini via API avec template structure.", "result": "100 descriptions SEO en 20 min pour moins de $1.", "tools": ["gpt-4o-mini"]},
+    {"categoryId": "economique", "title": "Classifier 10K tickets support", "situation": "Backlog tickets a trier par priorite.", "solution": "Haiku ou DeepSeek V3 en batch.", "result": "Classification complete en 30 min pour moins de $5.", "tools": ["claude-haiku-3-5", "deepseek-v3"]},
+    {"categoryId": "video", "title": "Creer video publicitaire", "situation": "Pub 30s pour nouveau produit sans equipe video.", "solution": "Sora pour generation, Kling pour variantes economiques.", "result": "Video pro en 2h au lieu de 2 jours.", "tools": ["sora", "kling"]},
+    {"categoryId": "video", "title": "Traduire video en 10 langues", "situation": "Contenu marketing a localiser mondialement.", "solution": "HeyGen pour traduction avec lip-sync.", "result": "10 versions localisees en quelques heures.", "tools": ["heygen"]},
+    {"categoryId": "image", "title": "Campagne visuelle 20 images", "situation": "Campagne marketing multi-canal urgente.", "solution": "Midjourney pour concepts, DALL-E 3 via API pour variantes.", "result": "20 visuels coherents en 2h.", "tools": ["midjourney", "dall-e-3"]},
+    {"categoryId": "image", "title": "Creer assets jeu video", "situation": "100 sprites et backgrounds pour jeu indie.", "solution": "Stable Diffusion 3.5 avec LoRA style custom.", "result": "Assets coherents en style unique, gratuit.", "tools": ["stable-diffusion-3"]},
+    {"categoryId": "audio", "title": "Podcast automatise quotidien", "situation": "Podcast actualites tech chaque matin.", "solution": "Perplexity recherche + Claude redaction + ElevenLabs narration.", "result": "Podcast 10 min produit auto chaque jour.", "tools": ["perplexity", "claude-sonnet-4-5", "elevenlabs"]},
+    {"categoryId": "audio", "title": "Audiobook 10 heures", "situation": "Livre a convertir en audio professionnel.", "solution": "MiniMax Voice pour generation longue duree.", "result": "Audiobook complet qualite pro en quelques heures.", "tools": ["minimax-voice"]},
+    {"categoryId": "code", "title": "Migrer app TypeScript", "situation": "50 fichiers JS a convertir en TS strict.", "solution": "Cursor avec Claude Sonnet 4.5 fichier par fichier.", "result": "Migration complete en 1 jour, 0 erreur.", "tools": ["cursor", "claude-sonnet-4-5"]},
+    {"categoryId": "code", "title": "Builder MVP SaaS en 1 jour", "situation": "POC application web avec auth et database.", "solution": "Lovable pour generation full-stack avec Supabase.", "result": "MVP fonctionnel deploye en 8 heures.", "tools": ["lovable"]},
+    {"categoryId": "code", "title": "Creer chatbot support 24/7", "situation": "Assistant FAQ base sur documentation interne.", "solution": "Llama 4 fine-tune + Qdrant RAG.", "result": "Chatbot prive 24/7 sans couts API externes.", "tools": ["llama-4-maverick", "qdrant", "langchain"]},
+    {"categoryId": "recherche", "title": "Veille concurrentielle auto", "situation": "Surveiller 10 concurrents quotidiennement.", "solution": "Workflow n8n avec Perplexity pour recherche et synthese.", "result": "Rapport quotidien auto par email.", "tools": ["perplexity", "n8n"]},
+    {"categoryId": "recherche", "title": "Base connaissances entreprise", "situation": "Documents eparpilles, employes perdent temps.", "solution": "Indexation Qdrant + interface Command R+.", "result": "Temps recherche -80%, reponses sourcees.", "tools": ["cohere-command-r-plus", "qdrant"]},
+    {"categoryId": "conversation", "title": "Transcrire 20h interviews", "situation": "Interviews utilisateurs pour projet UX.", "solution": "Whisper transcription + Claude analyse patterns.", "result": "Transcriptions + synthese insights en quelques heures.", "tools": ["whisper", "claude-sonnet-4-5"]},
+    {"categoryId": "opensource", "title": "LLM prive RGPD", "situation": "Entreprise ne peut pas envoyer donnees externes.", "solution": "Llama 4 ou Qwen 3 sur infrastructure avec Ollama.", "result": "Assistant 100% on-premise, conforme.", "tools": ["llama-4-maverick", "ollama"]},
+    {"categoryId": "productivity", "title": "Automatiser notes reunions", "situation": "Equipe oublie actions et decisions.", "solution": "Fathom pour notes auto avec actions items.", "result": "Notes structurees, follow-ups auto.", "tools": ["fathom"]},
+    {"categoryId": "productivity", "title": "Transformer docs en podcast", "situation": "Rapport 100 pages a digerer rapidement.", "solution": "NotebookLM pour analyse et generation podcast.", "result": "Podcast resume en 20 min, gratuit.", "tools": ["notebooklm"]}
+  ],
+  "quickGuide": {
+    "byUseCase": [
+      {"useCase": "Raisonnement top", "recommendation": "GPT-5.2, Claude Opus 4.5, o3"},
+      {"useCase": "Code quotidien", "recommendation": "Claude Sonnet 4.5, Cursor"},
+      {"useCase": "Budget serre", "recommendation": "DeepSeek V3, Haiku, GPT-4o-mini"},
+      {"useCase": "Self-host", "recommendation": "Llama 4, Qwen 3, Ollama"},
+      {"useCase": "Francais natif", "recommendation": "Mistral Large 3"},
+      {"useCase": "Temps reel web", "recommendation": "Grok 3, Perplexity"},
+      {"useCase": "Maths/Logique", "recommendation": "o3, DeepSeek R1"},
+      {"useCase": "Long context", "recommendation": "Llama 4 Scout (10M!), Gemini 3 Pro (2M)"},
+      {"useCase": "Video IA", "recommendation": "Sora, Veo 3, Kling"},
+      {"useCase": "Images art", "recommendation": "Midjourney, FLUX"},
+      {"useCase": "Audio/Voix", "recommendation": "ElevenLabs, MiniMax"},
+      {"useCase": "Musique", "recommendation": "Suno, Udio"},
+      {"useCase": "RAG", "recommendation": "Command R+, Qdrant"},
+      {"useCase": "Automatisation", "recommendation": "n8n, Make"}
+    ],
+    "n8nStack": [
+      {"component": "Orchestration", "recommendation": "n8n self-hosted"},
+      {"component": "LLM principal", "recommendation": "Claude Sonnet 4.5"},
+      {"component": "LLM budget", "recommendation": "DeepSeek V3 / Haiku"},
+      {"component": "LLM raisonnement", "recommendation": "Claude Opus 4.5 / o3"},
+      {"component": "Embeddings", "recommendation": "OpenAI text-embedding-3"},
+      {"component": "Vector DB", "recommendation": "Qdrant / Pinecone"},
+      {"component": "Recherche web", "recommendation": "Perplexity API"},
+      {"component": "Images", "recommendation": "DALL-E 3 API / FLUX"},
+      {"component": "Audio TTS", "recommendation": "ElevenLabs"},
+      {"component": "Transcription", "recommendation": "Whisper"}
+    ]
+  }
+}

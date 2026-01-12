@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI Reference Hub - Reference exhaustive des LLMs et outils IA pour workflows n8n - MR Tech Lab">
+    <meta name="keywords" content="AI, LLM, Claude, GPT, Gemini, Mistral, n8n, automation, tools">
+    <meta name="author" content="MR Tech Lab">
+    <meta name="theme-color" content="#a855f7">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="AI Reference Hub - MR Tech Lab">
+    <meta property="og:description" content="Reference exhaustive des LLMs et outils IA pour workflows n8n">
+    <meta property="og:type" content="website">
+
+    <title>AI Reference Hub - MR Tech Lab</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="header__logo">AI Reference Hub</h1>
+            <p class="header__subtitle">Reference exhaustive des LLMs et outils IA pour workflows n8n - MR Tech Lab</p>
+            <div class="header__meta">
+                <div class="meta-item">
+                    <span class="meta-item__value" id="llm-total">0</span> LLMs
+                </div>
+                <div class="meta-item">
+                    <span class="meta-item__value" id="tools-total">0</span> Outils IA
+                </div>
+                <div class="meta-item">
+                    Mise a jour: <span class="meta-item__value">Janvier 2025</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container">
+                <!-- Navigation Tabs -->
+                <nav class="nav-tabs" role="tablist">
+                    <button class="nav-tab active" data-tab="llms" role="tab" aria-selected="true">
+                        <span class="nav-tab__icon">🧠</span>
+                        LLMs
+                        <span class="nav-tab__count" id="llm-count">0</span>
+                    </button>
+                    <button class="nav-tab" data-tab="tools" role="tab" aria-selected="false">
+                        <span class="nav-tab__icon">🛠️</span>
+                        Outils IA
+                        <span class="nav-tab__count" id="tools-count">0</span>
+                    </button>
+                </nav>
+
+                <!-- Search & Filters -->
+                <div class="controls">
+                    <div class="search-box">
+                        <span class="search-box__icon">🔍</span>
+                        <input
+                            type="text"
+                            id="search"
+                            class="search-box__input"
+                            placeholder="Rechercher par nom, provider, categorie, forces, cas d'usage..."
+                            aria-label="Rechercher"
+                        >
+                    </div>
+                    <div class="filter-group">
+                        <select id="category-filter" class="filter-select" aria-label="Filtrer par categorie">
+                            <option value="">Toutes les categories</option>
+                        </select>
+                        <select id="tier-filter" class="filter-select" aria-label="Filtrer par tier">
+                            <option value="">Tous les tiers</option>
+                            <option value="premium">Premium</option>
+                            <option value="standard">Standard</option>
+                            <option value="budget">Budget</option>
+                        </select>
+                        <select id="difficulty-filter" class="filter-select" aria-label="Filtrer par difficulte">
+                            <option value="">Toutes difficultes</option>
+                            <option value="debutant">Debutant</option>
+                            <option value="intermediaire">Intermediaire</option>
+                            <option value="avancee">Avance</option>
+                        </select>
+                    </div>
+                    <div class="results-count">
+                        <span class="results-count__value" id="results-count">0</span> resultats
+                    </div>
+                </div>
+
+                <!-- Categories Grid -->
+                <section id="categories-grid" class="categories-grid" aria-label="Categories">
+                    <!-- Dynamically populated -->
+                </section>
+
+                <!-- Items Section (Hidden by default) -->
+                <section id="items-section" class="items-section hidden" aria-label="Items">
+                    <div class="items-section__header">
+                        <h2 class="items-section__title" id="items-section-title"></h2>
+                        <button class="items-section__back btn btn--secondary btn--sm" onclick="goBack()">
+                            ← Retour aux categories
+                        </button>
+                    </div>
+                    <div id="items-grid" class="items-grid">
+                        <!-- Dynamically populated -->
+                    </div>
+                </section>
+
+                <!-- Examples Section -->
+                <section class="examples-section">
+                    <h2 class="examples-section__title">💡 Exemples Concrets d'Utilisation</h2>
+                    <div id="examples-grid" class="examples-grid">
+                        <!-- Dynamically populated -->
+                    </div>
+                </section>
+
+                <!-- Quick Guide -->
+                <section class="quick-guide">
+                    <h2 class="quick-guide__title">🎯 Guide Decision Rapide</h2>
+                    <div class="quick-guide__grid">
+                        <div class="quick-guide__column">
+                            <h3>🧠 LLM par usage</h3>
+                            <ul id="quick-guide-list" class="quick-guide__list">
+                                <!-- Dynamically populated -->
+                            </ul>
+                        </div>
+                        <div class="quick-guide__column">
+                            <h3>🛠️ Stack n8n recommandee</h3>
+                            <ul id="quick-guide-stack" class="quick-guide__list">
+                                <!-- Dynamically populated -->
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>AI Reference Hub v2.0 - Cree par <a href="#">MR Tech Lab</a></p>
+            <p>Donnees mises a jour regulierement. Derniere mise a jour: Janvier 2025</p>
+            <p style="margin-top: 1rem; font-size: 0.85rem;">
+                Raccourcis: <code>/</code> pour rechercher, <code>Esc</code> pour fermer
+            </p>
+        </footer>
+
+        <!-- Comparator Button -->
+        <div class="comparator">
+            <button id="comparator-btn" class="comparator__toggle" aria-label="Ouvrir le comparateur">
+                ⚖️
+                <span id="comparator-count" class="comparator__count hidden">0</span>
+            </button>
+        </div>
+
+        <!-- Modal -->
+        <div id="modal-overlay" class="modal-overlay" role="dialog" aria-modal="true">
+            <div id="modal-content" class="modal">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+</body>
+</html>

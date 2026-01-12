@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Reference Hub - MR Tech Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #08080c;
+            --bg-card: #14141c;
+            --bg-card-hover: #1a1a24;
+            --accent-purple: #a855f7;
+            --accent-blue: #3b82f6;
+            --accent-green: #22c55e;
+            --accent-orange: #f97316;
+            --accent-red: #ef4444;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: #2a2a3a;
+        }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        code, .mono { font-family: 'JetBrains Mono', monospace; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 2rem; }
+
+        /* Header */
+        .header { text-align: center; margin-bottom: 3rem; }
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        .header .subtitle { color: var(--text-secondary); font-size: 1.1rem; }
+        .header .meta {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .meta-item {
+            background: var(--bg-card);
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        .meta-item span { color: var(--accent-purple); font-weight: 600; }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .tab {
+            padding: 1rem 2rem;
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        .tab:hover { border-color: var(--accent-purple); }
+        .tab.active {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            border-color: transparent;
+            color: white;
+        }
+        .tab .count {
+            background: rgba(255,255,255,0.2);
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-left: 0.5rem;
+        }
+
+        /* Search & Filters */
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: 'Outfit', sans-serif;
+        }
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+        }
+        .search-box::before {
+            content: "🔍";
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .filter-select {
+            padding: 1rem 2rem;
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            min-width: 200px;
+        }
+        .filter-select:focus { outline: none; border-color: var(--accent-purple); }
+        .results-count {
+            padding: 1rem 1.5rem;
+            background: var(--bg-card);
+            border-radius: 12px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+        .results-count span { color: var(--accent-purple); font-weight: 600; }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .card:hover {
+            border-color: var(--accent-purple);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(168, 85, 247, 0.1);
+        }
+        .card.expanded {
+            grid-column: span 1;
+            background: var(--bg-card-hover);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .card-provider {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+        .card-pricing {
+            text-align: right;
+            font-size: 0.9rem;
+        }
+        .card-pricing .price {
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+        .card-pricing .api-price {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        /* Badges */
+        .badges {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        .badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .badge-category {
+            background: rgba(168, 85, 247, 0.2);
+            color: var(--accent-purple);
+        }
+        .badge-tier-premium {
+            background: rgba(249, 115, 22, 0.2);
+            color: var(--accent-orange);
+        }
+        .badge-tier-standard {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--accent-blue);
+        }
+        .badge-tier-budget {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--accent-green);
+        }
+        .badge-api {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--accent-green);
+        }
+        .badge-no-api {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+        }
+
+        /* Tags */
+        .tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .tag {
+            background: var(--bg-primary);
+            padding: 0.3rem 0.7rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* Expanded Content */
+        .expanded-content {
+            display: none;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+        .card.expanded .expanded-content { display: block; }
+        .expand-section {
+            margin-bottom: 1.25rem;
+        }
+        .expand-section h4 {
+            color: var(--accent-purple);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .expand-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .expand-section li {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            padding: 0.25rem 0;
+            padding-left: 1.2rem;
+            position: relative;
+        }
+        .expand-section li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--accent-blue);
+        }
+        .expand-section li.weakness::before {
+            content: "⚠";
+            color: var(--accent-orange);
+        }
+        .comparison {
+            background: var(--bg-primary);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+        .comparison strong { color: var(--text-primary); }
+        .tip-box {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(59, 130, 246, 0.1));
+            border: 1px solid var(--accent-purple);
+            padding: 1rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+        }
+        .tip-box::before {
+            content: "💡 Tip: ";
+            font-weight: 600;
+            color: var(--accent-purple);
+        }
+        .context-window {
+            display: inline-block;
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--accent-blue);
+            padding: 0.3rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Decision Guide */
+        .decision-guide {
+            margin-top: 4rem;
+            padding: 2rem;
+            background: var(--bg-card);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+        .decision-guide h2 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .guide-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        .guide-column h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent-purple);
+        }
+        .guide-column ul {
+            list-style: none;
+        }
+        .guide-column li {
+            padding: 0.5rem 0;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+        }
+        .guide-column li:last-child { border-bottom: none; }
+        .guide-column .label { color: var(--text-muted); }
+        .guide-column .value { color: var(--accent-green); font-weight: 500; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+        }
+        .modal h2 {
+            margin-bottom: 1.5rem;
+            color: var(--accent-purple);
+        }
+        .modal pre {
+            background: var(--bg-primary);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+            margin: 1rem 0;
+        }
+        .modal-close {
+            float: right;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .modal-close:hover { color: var(--text-primary); }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding: 2rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+        }
+        .footer a { color: var(--accent-purple); text-decoration: none; }
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-family: 'Outfit', sans-serif;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(168, 85, 247, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .header h1 { font-size: 2rem; }
+            .grid { grid-template-columns: 1fr; }
+            .controls { flex-direction: column; }
+            .search-box { min-width: 100%; }
+        }
+
+        /* Hidden class */
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>AI Reference Hub</h1>
+            <p class="subtitle">Référence exhaustive des LLMs et outils IA pour workflows n8n - MR Tech Lab</p>
+            <div class="meta">
+                <div class="meta-item"><span id="llm-total">0</span> LLMs</div>
+                <div class="meta-item"><span id="tools-total">0</span> Outils IA</div>
+                <div class="meta-item">Mise à jour: <span>Janvier 2025</span></div>
+                <button class="btn" onclick="openModal()">📝 Comment mettre à jour</button>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="llms">🧠 LLMs <span class="count" id="llm-count">0</span></button>
+            <button class="tab" data-tab="tools">🛠️ Outils IA <span class="count" id="tools-count">0</span></button>
+        </div>
+
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="search" placeholder="Rechercher par nom, provider, catégorie, forces, cas d'usage...">
+            </div>
+            <select class="filter-select" id="category-filter">
+                <option value="">Toutes les catégories</option>
+            </select>
+            <div class="results-count"><span id="results-count">0</span> résultats</div>
+        </div>
+
+        <div class="grid" id="grid"></div>
+
+        <section class="decision-guide">
+            <h2>🎯 Guide Décision Rapide</h2>
+            <div class="guide-grid">
+                <div class="guide-column">
+                    <h3>🧠 LLM par usage</h3>
+                    <ul>
+                        <li><span class="label">Raisonnement top</span><span class="value">Claude Opus 4.5, GPT-5.1</span></li>
+                        <li><span class="label">Code quotidien</span><span class="value">Claude Sonnet 4.5, GLM-4.7 ($3!)</span></li>
+                        <li><span class="label">Budget serré</span><span class="value">DeepSeek V4, Haiku</span></li>
+                        <li><span class="label">Self-host</span><span class="value">Qwen 3, Llama 3.3</span></li>
+                        <li><span class="label">Français natif</span><span class="value">Mistral Large 2</span></li>
+                        <li><span class="label">Temps réel web</span><span class="value">Grok 4.1, Perplexity</span></li>
+                        <li><span class="label">Maths/Logique</span><span class="value">o1, DeepSeek R1</span></li>
+                        <li><span class="label">Long context</span><span class="value">Gemini 3 Pro (2M!)</span></li>
+                    </ul>
+                </div>
+                <div class="guide-column">
+                    <h3>🛠️ Stack n8n recommandée</h3>
+                    <ul>
+                        <li><span class="label">Orchestration</span><span class="value">n8n self-hosted</span></li>
+                        <li><span class="label">LLM principal</span><span class="value">Claude Sonnet 4.5</span></li>
+                        <li><span class="label">LLM budget/volume</span><span class="value">Haiku ou DeepSeek V4</span></li>
+                        <li><span class="label">TTS</span><span class="value">ElevenLabs</span></li>
+                        <li><span class="label">STT</span><span class="value">Whisper (gratuit)</span></li>
+                        <li><span class="label">Images</span><span class="value">Flux Pro ou DALL-E 3</span></li>
+                        <li><span class="label">Vidéo</span><span class="value">Kling 2.1 ou Runway</span></li>
+                        <li><span class="label">Scraping</span><span class="value">Apify + n8n</span></li>
+                        <li><span class="label">Vector DB</span><span class="value">Qdrant ou Supabase</span></li>
+                    </ul>
+                </div>
+                <div class="guide-column">
+                    <h3>💰 Meilleur rapport Q/P</h3>
+                    <ul>
+                        <li><span class="label">LLM généraliste</span><span class="value">DeepSeek V4 (20x moins cher!)</span></li>
+                        <li><span class="label">LLM code</span><span class="value">GLM-4.7 ($3/mois!)</span></li>
+                        <li><span class="label">Image</span><span class="value">Flux via fal.ai</span></li>
+                        <li><span class="label">Vidéo</span><span class="value">Kling 2.1, Hailuo</span></li>
+                        <li><span class="label">3D</span><span class="value">Hunyuan3D (gratuit!)</span></li>
+                        <li><span class="label">Musique</span><span class="value">Suno/Udio gratuit</span></li>
+                        <li><span class="label">STT</span><span class="value">Whisper (gratuit)</span></li>
+                        <li><span class="label">Automation</span><span class="value">n8n self-host (gratuit)</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <p>AI Reference Hub - MR Tech Lab © 2025</p>
+            <p>Agence digitale pour coaches sportifs | <a href="#">Le Gardien de l'Agenda</a></p>
+        </footer>
+    </div>
+
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <h2>📝 Comment mettre à jour ce fichier</h2>
+            <p>Pour ajouter ou modifier des entrées, éditez les tableaux <code>llmData</code> ou <code>toolsData</code> dans le code JavaScript.</p>
+            <h3 style="margin-top:1.5rem;color:var(--accent-blue)">Ajouter un LLM:</h3>
+            <pre><code>{
+  id: 'unique-id',
+  name: 'Nom du modèle',
+  provider: 'Provider',
+  category: 'Catégorie',
+  tier: 'Premium|Standard|Budget',
+  strengths: ['Force 1', 'Force 2'],
+  weaknesses: ['Faiblesse 1'],
+  bestFor: ['Cas usage 1'],
+  equivalentTo: 'Modèle similaire',
+  betterThan: 'Meilleur que X',
+  pricing: 'Prix consumer',
+  apiPricing: '$X/$Y per 1M tokens',
+  contextWindow: '128K',
+  apiAccess: true,
+  tip: 'Conseil pratique'
+}</code></pre>
+            <h3 style="margin-top:1.5rem;color:var(--accent-blue)">Ajouter un outil:</h3>
+            <pre><code>{
+  id: 'unique-id',
+  name: 'Nom outil',
+  category: 'Catégorie',
+  specialty: 'Spécialité',
+  strengths: ['Force 1'],
+  weaknesses: ['Faiblesse'],
+  useCases: ['Cas usage'],
+  pricing: 'Prix',
+  apiAccess: true,
+  integration: ['n8n', 'API'],
+  tip: 'Conseil'
+}</code></pre>
+        </div>
+    </div>
+
+<script>
+// ============ LLM DATA ============
+const llmData = [
+    // OPENAI
+    { id: 'gpt-5-1', name: 'GPT-5.1', provider: 'OpenAI', category: 'Frontier', tier: 'Premium', strengths: ['Multimodal natif', 'Function calling avancé', 'Raisonnement amélioré', 'Performance top'], weaknesses: ['Prix élevé', 'Opaque sur les données'], bestFor: ['Tâches complexes', 'Applications enterprise', 'Agents autonomes'], equivalentTo: 'Claude Opus 4.5', betterThan: 'GPT-4o pour tâches complexes', pricing: 'ChatGPT Plus $20/mois', apiPricing: '$5/$15 per 1M', contextWindow: '128K', apiAccess: true, tip: 'Réserver pour les tâches vraiment complexes, utiliser 4o pour le quotidien.' },
+    { id: 'gpt-4o', name: 'GPT-4o', provider: 'OpenAI', category: 'Généraliste', tier: 'Standard', strengths: ['Rapide', 'Voix native', 'Multimodal', 'Bon équilibre'], weaknesses: ['Moins puissant que GPT-5', 'Context limité vs Gemini'], bestFor: ['Usage quotidien', 'Conversations', 'Analyse images'], equivalentTo: 'Claude Sonnet 4.5', betterThan: 'GPT-4 Turbo en vitesse', pricing: 'ChatGPT Plus $20/mois', apiPricing: '$2.50/$10 per 1M', contextWindow: '128K', apiAccess: true, tip: 'Le meilleur choix quotidien OpenAI, bon équilibre prix/perf.' },
+    { id: 'gpt-4o-mini', name: 'GPT-4o-mini', provider: 'OpenAI', category: 'Compact', tier: 'Budget', strengths: ['Très économique', 'Rapide', 'Bon pour tâches simples'], weaknesses: ['Moins capable que 4o', 'Raisonnement limité'], bestFor: ['Classification', 'Extraction données', 'Tâches volume'], equivalentTo: 'Claude Haiku', betterThan: 'GPT-3.5 en tout', pricing: 'Gratuit limité', apiPricing: '$0.15/$0.60 per 1M', contextWindow: '128K', apiAccess: true, tip: 'Parfait pour les workflows n8n à haut volume.' },
+    { id: 'o1', name: 'o1', provider: 'OpenAI', category: 'Raisonnement', tier: 'Premium', strengths: ['Chain-of-thought', 'Maths avancées', 'Logique complexe', 'Coding difficile'], weaknesses: ['Lent', 'Très cher', 'Pas streaming'], bestFor: ['Problèmes mathématiques', 'Code complexe', 'Recherche'], equivalentTo: 'DeepSeek R1', betterThan: 'GPT-4o pour maths/logique', pricing: 'ChatGPT Pro $200/mois', apiPricing: '$15/$60 per 1M', contextWindow: '200K', apiAccess: true, tip: 'Uniquement pour problèmes nécessitant vraiment du raisonnement profond.' },
+    { id: 'o1-mini', name: 'o1-mini', provider: 'OpenAI', category: 'Raisonnement', tier: 'Standard', strengths: ['Raisonnement économique', 'Plus rapide que o1'], weaknesses: ['Moins puissant que o1'], bestFor: ['Raisonnement budget', 'Code intermédiaire'], equivalentTo: 'DeepSeek R1 Lite', betterThan: 'GPT-4o pour logique', pricing: 'ChatGPT Plus', apiPricing: '$3/$12 per 1M', contextWindow: '128K', apiAccess: true, tip: 'Bon compromis entre 4o et o1 pour le raisonnement.' },
+
+    // ANTHROPIC
+    { id: 'claude-opus-4-5', name: 'Claude Opus 4.5', provider: 'Anthropic', category: 'Frontier', tier: 'Premium', strengths: ['Meilleure écriture', 'Nuance exceptionnelle', 'Sécurité top', 'Coding excellent', 'Suit les instructions'], weaknesses: ['Prix élevé', 'Parfois trop prudent'], bestFor: ['Rédaction premium', 'Analyse complexe', 'Code production'], equivalentTo: 'GPT-5.1', betterThan: 'Tous pour écriture nuancée', pricing: 'Claude Pro $20/mois', apiPricing: '$15/$75 per 1M', contextWindow: '200K', apiAccess: true, tip: 'Le meilleur pour rédiger des emails de prospection personnalisés de qualité.' },
+    { id: 'claude-sonnet-4-5', name: 'Claude Sonnet 4.5', provider: 'Anthropic', category: 'Généraliste', tier: 'Standard', strengths: ['Excellent coding', 'Artifacts', 'Computer Use', 'Bon équilibre', 'Instructions suivies'], weaknesses: ['Peut être verbeux'], bestFor: ['Code quotidien', 'Agents', 'Daily driver'], equivalentTo: 'GPT-4o', betterThan: 'GPT-4o pour coding et instructions', pricing: 'Claude Pro $20/mois', apiPricing: '$3/$15 per 1M', contextWindow: '200K', apiAccess: true, tip: 'TON DAILY DRIVER pour n8n. Node Anthropic natif disponible.' },
+    { id: 'claude-haiku-4-5', name: 'Claude Haiku 4.5', provider: 'Anthropic', category: 'Compact', tier: 'Budget', strengths: ['Ultra rapide', 'Très économique', 'Qualité/prix top'], weaknesses: ['Moins capable pour tâches complexes'], bestFor: ['Classification', 'Extraction', 'Triage', 'Volume'], equivalentTo: 'GPT-4o-mini', betterThan: '4o-mini pour suivi instructions', pricing: 'Gratuit limité', apiPricing: '$0.25/$1.25 per 1M', contextWindow: '200K', apiAccess: true, tip: 'Parfait pour scorer tes leads coaches à moindre coût.' },
+
+    // GOOGLE
+    { id: 'gemini-3-pro', name: 'Gemini 3 Pro', provider: 'Google', category: 'Frontier', tier: 'Premium', strengths: ['2M tokens context!', '#1 LMArena 1501 Elo', 'Multimodal natif', 'Recherche intégrée'], weaknesses: ['Moins bon en coding', 'Disponibilité API'], bestFor: ['Analyse longs documents', 'Recherche', 'Multimodal'], equivalentTo: 'Claude Opus 4.5', betterThan: 'Tous pour context length', pricing: 'Gemini Advanced $20/mois', apiPricing: '$7/$21 per 1M', contextWindow: '2M (!)', apiAccess: true, tip: 'Imbattable quand tu dois analyser des documents très longs.' },
+    { id: 'gemini-2-flash', name: 'Gemini 2.0 Flash', provider: 'Google', category: 'Compact', tier: 'Budget', strengths: ['Très rapide', '1M context', 'Très économique'], weaknesses: ['Moins capable que Pro'], bestFor: ['Tâches rapides', 'Volume', 'Long context budget'], equivalentTo: 'Claude Haiku', betterThan: 'Haiku pour context length', pricing: 'Gratuit généreusement', apiPricing: '$0.075/$0.30 per 1M', contextWindow: '1M', apiAccess: true, tip: 'Excellent rapport qualité/prix avec un context énorme.' },
+    { id: 'gemini-flash-thinking', name: 'Gemini Flash Thinking', provider: 'Google', category: 'Raisonnement', tier: 'Standard', strengths: ['Réflexion intégrée', 'Rapide pour reasoning'], weaknesses: ['Nouveau, moins testé'], bestFor: ['Raisonnement rapide', 'Problèmes logiques'], equivalentTo: 'o1-mini', betterThan: 'Flash standard pour logique', pricing: 'Gemini Advanced', apiPricing: '$0.15/$0.60 per 1M', contextWindow: '1M', apiAccess: true, tip: 'Alternative économique à o1 pour raisonnement.' },
+
+    // xAI
+    { id: 'grok-4-1', name: 'Grok 4.1', provider: 'xAI', category: 'Frontier', tier: 'Premium', strengths: ['#1 LMArena coding 1483 Elo', 'Données X temps réel', 'Hallucination 4% seulement', 'Uncensored'], weaknesses: ['Écosystème limité', 'Moins de filtres'], bestFor: ['Code top niveau', 'Analyse tendances X', 'Tâches sans restrictions'], equivalentTo: 'Claude Opus 4.5', betterThan: 'Tous pour coding selon benchmarks', pricing: 'X Premium+ $16/mois', apiPricing: '$5/$15 per 1M', contextWindow: '128K', apiAccess: true, tip: 'Excellent pour analyser les tendances Twitter/X dans ta prospection.' },
+
+    // DEEPSEEK
+    { id: 'deepseek-v4', name: 'DeepSeek V4', provider: 'DeepSeek', category: 'Économique', tier: 'Budget', strengths: ['20x moins cher que GPT-4!', 'Performance frontier', 'MoE efficient', 'Cache très économique'], weaknesses: ['Entreprise chinoise', 'Censure sujets sensibles CN'], bestFor: ['Volume massif', 'Budget serré', 'Tout usage'], equivalentTo: 'GPT-4o', betterThan: 'Tous pour prix/performance', pricing: 'Gratuit web', apiPricing: '$0.07/$0.27 per 1M (cache)', contextWindow: '128K', apiAccess: true, tip: 'INCONTOURNABLE pour tes workflows volume. 20x moins cher!' },
+    { id: 'deepseek-r1', name: 'DeepSeek R1', provider: 'DeepSeek', category: 'Raisonnement', tier: 'Budget', strengths: ['Open source MIT', 'Raisonnement top', 'A inspiré tout l\'écosystème'], weaknesses: ['Lent', 'Context limité'], bestFor: ['Maths', 'Logique', 'Recherche'], equivalentTo: 'o1', betterThan: 'o1 en prix (5% du coût)', pricing: 'Gratuit', apiPricing: '$0.55/$2.19 per 1M', contextWindow: '64K', apiAccess: true, tip: 'o1-level reasoning pour une fraction du prix.' },
+    { id: 'deepseek-coder-v2', name: 'DeepSeek Coder V2', provider: 'DeepSeek', category: 'Code', tier: 'Budget', strengths: ['Spécialisé code', 'Très économique', 'Bon FIM'], weaknesses: ['Moins polyvalent'], bestFor: ['Génération code', 'Debugging', 'Completion'], equivalentTo: 'Codestral', betterThan: 'Modèles généralistes pour code pur', pricing: 'Gratuit', apiPricing: '$0.14/$0.28 per 1M', contextWindow: '128K', apiAccess: true, tip: 'Excellent pour générer du code n8n et scripts.' },
+
+    // ALIBABA QWEN
+    { id: 'qwen-3-235b', name: 'Qwen 3 235B', provider: 'Alibaba', category: 'Open Source', tier: 'Standard', strengths: ['235B params MoE', '119 langues', '1M+ context', 'Top open source multilingue'], weaknesses: ['Requiert GPU puissant', 'Entreprise chinoise'], bestFor: ['Self-host', 'Multilingue', 'Long context'], equivalentTo: 'Llama 3.1 405B', betterThan: 'Llama pour multilingue et context', pricing: 'Gratuit open source', apiPricing: 'Self-host ou Fireworks', contextWindow: '1M+', apiAccess: true, tip: 'Meilleur choix open source pour le français et multilingue.' },
+    { id: 'qwen-2-5-coder-32b', name: 'Qwen2.5-Coder-32B', provider: 'Alibaba', category: 'Code', tier: 'Budget', strengths: ['Excellent coding open source', 'Self-hostable', '32B manageable'], weaknesses: ['Spécialisé code uniquement'], bestFor: ['Self-host coding', 'Génération code'], equivalentTo: 'DeepSeek Coder', betterThan: 'CodeLlama', pricing: 'Gratuit', apiPricing: 'Self-host', contextWindow: '128K', apiAccess: true, tip: 'Top choix pour self-host un modèle code.' },
+    { id: 'qwen-3-32b', name: 'Qwen 3 32B', provider: 'Alibaba', category: 'Open Source', tier: 'Budget', strengths: ['Bon rapport taille/perf', 'Multilingue', 'Accessible GPU'], weaknesses: ['Moins puissant que 235B'], bestFor: ['Self-host budget', 'GPU limité'], equivalentTo: 'Llama 3.3 70B qualité proche', betterThan: 'Modèles 7B', pricing: 'Gratuit', apiPricing: 'Self-host', contextWindow: '32K', apiAccess: true, tip: 'Bon compromis pour self-host avec GPU moyen.' },
+
+    // ZHIPU GLM
+    { id: 'glm-4-7', name: 'GLM-4.7', provider: 'Zhipu AI', category: 'Code', tier: 'Budget', strengths: ['$3/mois seulement!', '84.9% LiveCodeBench', 'SWE-bench 73.8%', 'AIME 95.7%'], weaknesses: ['Entreprise chinoise', 'Moins connu'], bestFor: ['Code quotidien budget', 'Développement'], equivalentTo: 'Claude Sonnet 4.5 pour code', betterThan: 'Presque tous en prix/perf code', pricing: '$3/mois abonnement', apiPricing: 'Inclus abonnement', contextWindow: '128K', apiAccess: true, tip: 'ÉQUIVALENT CLAUDE SONNET POUR CODE À $3/MOIS! Incroyable value.' },
+
+    // MISTRAL
+    { id: 'mistral-large-2', name: 'Mistral Large 2', provider: 'Mistral', category: 'Généraliste', tier: 'Standard', strengths: ['Excellent français', 'EU-based GDPR', 'Function calling', 'Multilingue'], weaknesses: ['Moins puissant que frontier US'], bestFor: ['Entreprises EU', 'Français', 'RGPD compliance'], equivalentTo: 'GPT-4o', betterThan: 'Tous pour français natif', pricing: 'Le Chat Pro ~20€/mois', apiPricing: '$2/$6 per 1M', contextWindow: '128K', apiAccess: true, tip: 'Le meilleur choix pour tes emails en français vers les coaches.' },
+    { id: 'codestral', name: 'Codestral', provider: 'Mistral', category: 'Code', tier: 'Standard', strengths: ['256K context', '80+ langages', 'Fill-in-the-middle', 'EU-based'], weaknesses: ['Spécialisé code'], bestFor: ['Coding EU', 'IDE integration', 'Completion'], equivalentTo: 'DeepSeek Coder', betterThan: 'Généralistes pour code', pricing: 'Gratuit limité', apiPricing: '$0.30/$0.90 per 1M', contextWindow: '256K', apiAccess: true, tip: 'Excellent pour intégrer dans ton IDE avec conformité EU.' },
+    { id: 'mistral-small', name: 'Mistral Small', provider: 'Mistral', category: 'Compact', tier: 'Budget', strengths: ['Économique', 'EU-based', 'Rapide'], weaknesses: ['Moins capable'], bestFor: ['Tâches simples EU', 'Volume'], equivalentTo: 'Haiku', betterThan: 'Haiku pour EU compliance', pricing: 'Gratuit', apiPricing: '$0.20/$0.60 per 1M', contextWindow: '32K', apiAccess: true, tip: 'Alternative EU à Haiku.' },
+    { id: 'pixtral', name: 'Pixtral', provider: 'Mistral', category: 'Multimodal', tier: 'Standard', strengths: ['Vision EU-based', 'RGPD compliant'], weaknesses: ['Nouveau, moins testé'], bestFor: ['Analyse images EU', 'OCR'], equivalentTo: 'GPT-4o vision', betterThan: 'Autres pour vision EU', pricing: 'Le Chat', apiPricing: '$2/$6 per 1M', contextWindow: '128K', apiAccess: true, tip: 'Pour analyser les sites et profils de tes prospects coaches.' },
+
+    // META LLAMA
+    { id: 'llama-3-3-70b', name: 'Llama 3.3 70B', provider: 'Meta', category: 'Open Source', tier: 'Budget', strengths: ['Standard industrie', 'Performance proche 405B', 'Écosystème riche'], weaknesses: ['Moins multilingue que Qwen'], bestFor: ['Self-host', 'Fine-tuning', 'Production'], equivalentTo: 'GPT-4 original', betterThan: 'Llama 3.1 70B', pricing: 'Gratuit', apiPricing: 'Self-host ou providers', contextWindow: '128K', apiAccess: true, tip: 'Le standard pour self-host et fine-tuning.' },
+    { id: 'llama-3-1-405b', name: 'Llama 3.1 405B', provider: 'Meta', category: 'Open Source', tier: 'Standard', strengths: ['Plus gros open source', 'Proche frontier', 'Licence permissive'], weaknesses: ['Requiert infra massive'], bestFor: ['Entreprise', 'Research', 'Max performance OS'], equivalentTo: 'GPT-4 Turbo', betterThan: 'Tous open source', pricing: 'Gratuit', apiPricing: 'Fireworks ~$3/1M', contextWindow: '128K', apiAccess: true, tip: 'Quand tu veux le max open source sans compromis.' },
+    { id: 'llama-3-2-vision', name: 'Llama 3.2 Vision', provider: 'Meta', category: 'Multimodal', tier: 'Budget', strengths: ['Vision open source', 'Self-hostable', 'Gratuit'], weaknesses: ['Moins bon que GPT-4V'], bestFor: ['Vision self-host', 'OCR budget'], equivalentTo: 'GPT-4V lite', betterThan: 'Modèles texte-only', pricing: 'Gratuit', apiPricing: 'Self-host', contextWindow: '128K', apiAccess: true, tip: 'Pour extraire infos visuelles des sites prospects sans coût API.' },
+
+    // AUTRES
+    { id: 'kimi-k2', name: 'Kimi K2 Thinking', provider: 'Moonshot', category: 'Raisonnement', tier: 'Premium', strengths: ['1T+ params', 'MoE', 'Nouveau contender'], weaknesses: ['Très nouveau', 'Disponibilité'], bestFor: ['Early adopters', 'Research'], equivalentTo: 'o1', betterThan: 'À évaluer', pricing: 'À déterminer', apiPricing: 'À déterminer', contextWindow: '200K', apiAccess: true, tip: 'À surveiller, potentiellement très puissant.' },
+    { id: 'perplexity-sonar', name: 'Perplexity Sonar', provider: 'Perplexity', category: 'Recherche', tier: 'Standard', strengths: ['Citations automatiques', 'Web search intégré', 'Sources fiables'], weaknesses: ['Limité au search'], bestFor: ['Recherche web', 'Fact-checking', 'Veille'], equivalentTo: 'Aucun direct', betterThan: 'ChatGPT pour recherche factuelle', pricing: 'Pro $20/mois', apiPricing: '$1/$5 per 1M', contextWindow: '28K', apiAccess: true, tip: 'Excellent pour rechercher des infos sur tes prospects coaches.' },
+    { id: 'command-r-plus', name: 'Command R+', provider: 'Cohere', category: 'Enterprise', tier: 'Standard', strengths: ['RAG optimisé', 'Multilingue', 'Enterprise ready'], weaknesses: ['Moins généraliste'], bestFor: ['RAG', 'Enterprise search', 'Multilingue'], equivalentTo: 'GPT-4o pour RAG', betterThan: 'Généralistes pour RAG', pricing: 'Coral free', apiPricing: '$2.50/$10 per 1M', contextWindow: '128K', apiAccess: true, tip: 'Si tu construis une base de connaissances pour tes clients.' },
+    { id: 'phi-4', name: 'Phi-4', provider: 'Microsoft', category: 'Compact', tier: 'Budget', strengths: ['14B params seulement', 'Performance surprenante', 'Edge deployment'], weaknesses: ['Limité vs gros modèles'], bestFor: ['Edge', 'Mobile', 'Embarqué'], equivalentTo: 'Mistral Small', betterThan: 'Modèles similaires en taille', pricing: 'Gratuit', apiPricing: 'Azure ou self-host', contextWindow: '16K', apiAccess: true, tip: 'Impressionnant pour sa taille, bon pour expérimentation.' },
+    { id: 'gemma-2-27b', name: 'Gemma 2 27B', provider: 'Google', category: 'Open Source', tier: 'Budget', strengths: ['Efficient', 'Bien optimisé', 'Google backing'], weaknesses: ['Moins capable que Llama'], bestFor: ['Self-host léger', 'Experimentation'], equivalentTo: 'Llama 3 8B+', betterThan: 'Modèles non-optimisés', pricing: 'Gratuit', apiPricing: 'Self-host', contextWindow: '8K', apiAccess: true, tip: 'Bon pour démarrer en self-host.' },
+    { id: 'yi-34b', name: 'Yi-34B', provider: '01.AI', category: 'Open Source', tier: 'Budget', strengths: ['Performant', 'Chinois excellent'], weaknesses: ['Moins connu en occident'], bestFor: ['Chinois', 'Self-host'], equivalentTo: 'Llama 2 70B', betterThan: 'Modèles similaires en chinois', pricing: 'Gratuit', apiPricing: 'Self-host', contextWindow: '200K', apiAccess: true, tip: 'Si tu as des clients chinois.' },
+    { id: 'falcon-3', name: 'Falcon 3', provider: 'TII', category: 'Open Source', tier: 'Budget', strengths: ['Permissive license', 'EU-friendly'], weaknesses: ['Moins performant que Llama'], bestFor: ['EU compliance', 'Research'], equivalentTo: 'Llama 2', betterThan: 'Anciens modèles', pricing: 'Gratuit', apiPricing: 'Self-host', contextWindow: '32K', apiAccess: true, tip: 'Alternative EU pour self-host.' },
+    { id: 'olmo-3', name: 'OLMo 3', provider: 'Allen AI', category: 'Open Source', tier: 'Budget', strengths: ['Fully open (weights, data, code)', 'Research focused'], weaknesses: ['Moins performant'], bestFor: ['Research', 'Transparence'], equivalentTo: 'Llama 2', betterThan: 'Modèles opaques en transparence', pricing: 'Gratuit', apiPricing: 'Self-host', contextWindow: '32K', apiAccess: true, tip: 'Le plus transparent, idéal pour comprendre les LLMs.' },
+    { id: 'nemotron-ultra', name: 'Nemotron Ultra 253B', provider: 'NVIDIA', category: 'Enterprise', tier: 'Premium', strengths: ['Optimisé NVIDIA', 'Performance GPU max'], weaknesses: ['Lock-in NVIDIA'], bestFor: ['Infrastructure NVIDIA', 'Enterprise'], equivalentTo: 'Llama 405B optimisé', betterThan: 'Autres sur hardware NVIDIA', pricing: 'Enterprise', apiPricing: 'NVIDIA AI', contextWindow: '128K', apiAccess: true, tip: 'Si tu as des GPUs NVIDIA dédiés.' },
+    { id: 'hunyuan-large', name: 'Hunyuan Large', provider: 'Tencent', category: 'Open Source', tier: 'Standard', strengths: ['MoE efficient', 'Chinois natif'], weaknesses: ['Entreprise chinoise'], bestFor: ['Marché chinois', 'Self-host'], equivalentTo: 'Qwen 3', betterThan: 'Modèles non-MoE en efficience', pricing: 'Gratuit', apiPricing: 'Self-host', contextWindow: '256K', apiAccess: true, tip: 'Alternative à Qwen pour self-host.' },
+    { id: 'gpt-oss-120b', name: 'GPT-OSS 120B', provider: 'Community', category: 'Open Source', tier: 'Standard', strengths: ['Tentative open source GPT-level', '120B params', 'Community driven'], weaknesses: ['Moins performant que GPT-4', 'Ressources importantes'], bestFor: ['Research', 'Self-host ambitieux', 'Expérimentation'], equivalentTo: 'Llama 3.1 405B lite', betterThan: 'Modèles 70B', pricing: 'Gratuit', apiPricing: 'Self-host', contextWindow: '32K', apiAccess: true, tip: 'Projet communautaire ambitieux, à surveiller.' }
+];
+
+// ============ TOOLS DATA ============
+const toolsData = [
+    // VOIX - TTS
+    { id: 'elevenlabs', name: 'ElevenLabs', category: 'Voix - TTS', specialty: 'Text-to-Speech réaliste', strengths: ['SOTA réalisme', 'Voice cloning', '29 langues', 'Émotions'], weaknesses: ['Prix moyen-élevé', 'Crédits limités'], useCases: ['Voiceovers', 'Audiobooks', 'Assistants vocaux'], equivalentTo: 'Aucun - leader', betterThan: 'OpenAI TTS en qualité', pricing: '$5-330/mois, gratuit 10K chars', apiPricing: '$0.18/1K chars', apiAccess: true, integration: ['n8n', 'API REST', 'SDK'], tip: 'INCONTOURNABLE pour TTS pro. Intégration n8n native.' },
+    { id: 'openai-tts', name: 'OpenAI TTS', category: 'Voix - TTS', specialty: 'TTS simple et fiable', strengths: ['Simple', 'Intégré ecosystem', '6 voix qualité'], weaknesses: ['Moins réaliste que ElevenLabs', 'Pas de cloning'], useCases: ['Narration simple', 'Assistants'], equivalentTo: 'ElevenLabs basique', betterThan: 'Amazon Polly', pricing: 'API seulement', apiPricing: '$15/1M chars', apiAccess: true, integration: ['n8n', 'API OpenAI'], tip: 'Simple si tu utilises déjà OpenAI.' },
+    { id: 'playht', name: 'Play.ht', category: 'Voix - TTS', specialty: 'Large catalogue voix', strengths: ['900+ voix', 'Voice cloning', 'API robuste'], weaknesses: ['Prix plus élevé'], useCases: ['Podcasts', 'E-learning'], equivalentTo: 'ElevenLabs', betterThan: 'Murf pour variété', pricing: '$39-99/mois', apiPricing: 'Inclus plans', apiAccess: true, integration: ['API', 'Zapier'], tip: 'Bonne alternative si ElevenLabs ne convient pas.' },
+    { id: 'murf', name: 'Murf.ai', category: 'Voix - TTS', specialty: 'Voiceover professionnel', strengths: ['Interface pro', 'Voiceover studio'], weaknesses: ['Moins naturel'], useCases: ['Vidéos corporate', 'Ads'], equivalentTo: 'Play.ht', betterThan: 'Outils gratuits', pricing: '$29-99/mois', apiAccess: true, integration: ['API'], tip: 'Pour créer des voiceovers publicitaires.' },
+    { id: 'azure-tts', name: 'Azure TTS', category: 'Voix - TTS', specialty: 'Enterprise Microsoft', strengths: ['Enterprise', 'Intégré Azure', 'SSML avancé'], weaknesses: ['Complexe à setup'], useCases: ['Enterprise', 'Call centers'], equivalentTo: 'Amazon Polly', betterThan: 'Polly en qualité', pricing: 'Pay-as-you-go', apiPricing: '$4/1M chars', apiAccess: true, integration: ['Azure', 'API'], tip: 'Si tu es déjà sur Azure.' },
+    { id: 'amazon-polly', name: 'Amazon Polly', category: 'Voix - TTS', specialty: 'TTS économique AWS', strengths: ['Très économique scale', 'AWS intégré'], weaknesses: ['Moins naturel'], useCases: ['Volume', 'AWS apps'], equivalentTo: 'Azure TTS', betterThan: 'Autres en prix volume', pricing: 'Pay-as-you-go', apiPricing: '$4/1M chars', apiAccess: true, integration: ['AWS', 'n8n via AWS'], tip: 'Le moins cher à grande échelle.' },
+
+    // VOIX - STT
+    { id: 'whisper', name: 'Whisper', category: 'Voix - STT', specialty: 'Transcription open source', strengths: ['INCONTOURNABLE', 'Gratuit self-host', '99 langues', 'Excellent qualité'], weaknesses: ['Requiert GPU pour self-host rapide'], useCases: ['Transcription', 'Sous-titres', 'Voice input'], equivalentTo: 'Aucun en gratuit', betterThan: 'Tous pour gratuit+qualité', pricing: 'Gratuit self-host', apiPricing: '$0.006/min via OpenAI', apiAccess: true, integration: ['n8n', 'API OpenAI', 'Self-host'], tip: 'INCONTOURNABLE. Self-host ou API OpenAI. Top qualité gratuit.' },
+    { id: 'assemblyai', name: 'AssemblyAI', category: 'Voix - STT', specialty: 'Transcription + NLP', strengths: ['Speaker diarization', 'Sentiment analysis', 'NLP intégré'], weaknesses: ['Prix plus élevé'], useCases: ['Meetings', 'Podcasts', 'Analysis'], equivalentTo: 'Deepgram', betterThan: 'Whisper en features', pricing: 'Pay-as-you-go', apiPricing: '$0.37/heure', apiAccess: true, integration: ['API', 'n8n via HTTP'], tip: 'Si tu as besoin de diarization et sentiment.' },
+    { id: 'deepgram', name: 'Deepgram', category: 'Voix - STT', specialty: 'Transcription temps réel', strengths: ['Ultra rapide', 'Streaming temps réel', 'Custom models'], weaknesses: ['Moins de langues'], useCases: ['Live transcription', 'Call centers'], equivalentTo: 'AssemblyAI', betterThan: 'Whisper en vitesse streaming', pricing: 'Pay-as-you-go', apiPricing: '$0.25/heure', apiAccess: true, integration: ['API', 'WebSocket'], tip: 'Le plus rapide pour temps réel.' },
+    { id: 'google-stt', name: 'Google Speech-to-Text', category: 'Voix - STT', specialty: 'STT Google Cloud', strengths: ['Multilingue', 'Google intégré'], weaknesses: ['Prix moyen'], useCases: ['Apps Google', 'Multilingue'], equivalentTo: 'Azure Speech', betterThan: 'Autres pour langues rares', pricing: 'Pay-as-you-go', apiPricing: '$0.024/min', apiAccess: true, integration: ['GCP', 'API'], tip: 'Si tu es sur Google Cloud.' },
+    { id: 'rev-ai', name: 'Rev.ai', category: 'Voix - STT', specialty: 'Transcription qualité humaine', strengths: ['Qualité humaine', 'Précision top', 'Speaker diarization'], weaknesses: ['Cher', 'Plus lent'], useCases: ['Transcription légale', 'Médical', 'Précision critique'], equivalentTo: 'AssemblyAI premium', betterThan: 'Whisper en précision', pricing: 'Pay-as-you-go', apiPricing: '$0.02-0.07/min', apiAccess: true, integration: ['API', 'Zapier'], tip: 'Quand la précision est critique et le budget permet.' },
+
+    // VOIX - ÉDITION
+    { id: 'descript', name: 'Descript', category: 'Voix - Édition', specialty: 'Édition audio/vidéo via texte', strengths: ['Édition via transcription', 'Overdub voice clone', 'Filler word removal'], weaknesses: ['Courbe apprentissage'], useCases: ['Podcasts', 'Vidéos', 'Édition rapide'], equivalentTo: 'Aucun direct', betterThan: 'Édition traditionnelle en vitesse', pricing: '$12-24/mois', apiAccess: false, integration: ['Export', 'Intégrations podcast'], tip: 'Révolutionnaire pour éditer audio/vidéo comme du texte.' },
+
+    // MUSIQUE
+    { id: 'suno', name: 'Suno v4.5', category: 'Musique IA', specialty: 'Chansons complètes from text', strengths: ['Voix + instruments', 'Simple prompt', 'Gratuit 50 crédits/jour'], weaknesses: ['Qualité variable', 'Droits flous'], useCases: ['Jingles', 'Musique marketing', 'Fun'], equivalentTo: 'Udio', betterThan: 'AIVA pour pop/moderne', pricing: 'Gratuit limité, $10-30/mois', apiAccess: false, integration: ['Web only'], tip: 'Parfait pour créer des jingles pour tes clients coaches.' },
+    { id: 'udio', name: 'Udio', category: 'Musique IA', specialty: 'Musique haute fidélité', strengths: ['Haute fidélité', 'Remix', 'Qualité supérieure'], weaknesses: ['Moins de styles'], useCases: ['Musique pro', 'Remix'], equivalentTo: 'Suno', betterThan: 'Suno en qualité audio', pricing: 'Gratuit limité, $10-30/mois', apiAccess: false, integration: ['Web'], tip: 'Meilleure qualité que Suno pour audio pro.' },
+    { id: 'aiva', name: 'AIVA', category: 'Musique IA', specialty: 'Musique orchestrale', strengths: ['Orchestral', 'Classique', 'Cinematic'], weaknesses: ['Pas de voix', 'Style limité'], useCases: ['Bandes son', 'Classique'], equivalentTo: 'Soundraw', betterThan: 'Suno pour orchestral', pricing: '$15-49/mois', apiAccess: true, integration: ['API'], tip: 'Pour de la musique épique pour vidéos corporate.' },
+    { id: 'soundraw', name: 'Soundraw', category: 'Musique IA', specialty: 'Musique royalty-free', strengths: ['Royalty-free', 'Customizable'], weaknesses: ['Moins créatif'], useCases: ['Background music', 'Videos'], equivalentTo: 'Mubert', betterThan: 'Stock music', pricing: '$17-50/mois', apiAccess: true, integration: ['API'], tip: 'Musique de fond personnalisable sans soucis de droits.' },
+    { id: 'mubert', name: 'Mubert', category: 'Musique IA', specialty: 'Génération temps réel', strengths: ['Temps réel', 'Streaming', 'Infini'], weaknesses: ['Moins de contrôle'], useCases: ['Streaming', 'Apps', 'Jeux'], equivalentTo: 'Soundraw', betterThan: 'Autres en temps réel', pricing: 'Gratuit limité', apiAccess: true, integration: ['API'], tip: 'Musique générative continue pour apps.' },
+    { id: 'eleven-music', name: 'Eleven Music', category: 'Musique IA', specialty: 'Musique intégrée ElevenLabs', strengths: ['Intégré ElevenLabs', 'Voix + musique', 'Cohérence audio'], weaknesses: ['Nouveau', 'Dépend ElevenLabs'], useCases: ['Jingles vocaux', 'Podcasts musicaux'], equivalentTo: 'Suno + ElevenLabs', betterThan: 'Workflows séparés', pricing: 'Inclus ElevenLabs', apiAccess: true, integration: ['ElevenLabs', 'API'], tip: 'Si tu utilises déjà ElevenLabs, parfait pour combiner voix et musique.' },
+    { id: 'boomy', name: 'Boomy', category: 'Musique IA', specialty: 'Création et distribution rapide', strengths: ['Création ultra rapide', 'Distribution intégrée', 'Monetization'], weaknesses: ['Qualité basique', 'Moins de contrôle'], useCases: ['Musique rapide', 'Distribution streaming'], equivalentTo: 'Suno simple', betterThan: 'Rien pour rapidité+distribution', pricing: 'Gratuit limité', apiAccess: false, integration: ['Spotify', 'Apple Music'], tip: 'Pour créer et distribuer de la musique en quelques minutes.' },
+
+    // IMAGE - GÉNÉRATION
+    { id: 'midjourney', name: 'Midjourney v6.1', category: 'Image - Génération', specialty: 'Images artistiques premium', strengths: ['MEILLEURE ESTHÉTIQUE', 'Styles cohérents', 'Communauté active'], weaknesses: ['Discord only', 'Pas d\'API officielle', 'Pas de texte fiable'], useCases: ['Art', 'Marketing', 'Concepts'], equivalentTo: 'DALL-E 3 artistique', betterThan: 'Tous pour esthétique', pricing: '$10-120/mois', apiAccess: false, integration: ['Discord', 'Third-party APIs'], tip: 'Le meilleur pour des visuels marketing impactants.' },
+    { id: 'dalle-3', name: 'DALL-E 3', category: 'Image - Génération', specialty: 'Images via ChatGPT', strengths: ['Intégré ChatGPT', 'Bon suivi prompts', 'Texte dans images'], weaknesses: ['Moins artistique que MJ'], useCases: ['Illustrations', 'Social media'], equivalentTo: 'Midjourney', betterThan: 'DALL-E 2', pricing: 'ChatGPT Plus', apiPricing: '$0.04-0.12/image', apiAccess: true, integration: ['n8n', 'API OpenAI'], tip: 'Le plus simple via n8n pour générer des images.' },
+    { id: 'flux-pro', name: 'Flux 1.1 Pro/Ultra', category: 'Image - Génération', specialty: 'Photoréalisme', strengths: ['PHOTORÉALISME #1', 'Texte parfait', 'Anatomie correcte', 'Open weights'], weaknesses: ['Moins artistique'], useCases: ['Photos produits', 'Portraits', 'Réalisme'], equivalentTo: 'Midjourney réaliste', betterThan: 'Tous pour photoréalisme', pricing: 'Via providers', apiPricing: '$0.04-0.06/image fal.ai', apiAccess: true, integration: ['fal.ai', 'Replicate', 'n8n'], tip: 'LE MEILLEUR pour photos réalistes via fal.ai + n8n.' },
+    { id: 'stable-diffusion', name: 'Stable Diffusion XL/3.5', category: 'Image - Génération', specialty: 'Open source flexible', strengths: ['Open source', 'Self-host', 'Très flexible', 'Gratuit'], weaknesses: ['Requiert config', 'Moins simple'], useCases: ['Self-host', 'Custom', 'Volume'], equivalentTo: 'Flux open', betterThan: 'Payants en flexibilité', pricing: 'Gratuit', apiAccess: true, integration: ['ComfyUI', 'Auto1111', 'n8n'], tip: 'Si tu veux contrôle total et volume sans coût.' },
+    { id: 'ideogram', name: 'Ideogram 3.0', category: 'Image - Génération', specialty: 'Texte dans images', strengths: ['MEILLEUR TEXTE', 'Logos', 'Posters'], weaknesses: ['Moins artistique'], useCases: ['Logos', 'Affiches', 'Social media'], equivalentTo: 'DALL-E 3 pour texte', betterThan: 'Tous pour texte dans images', pricing: '$8-48/mois', apiAccess: true, integration: ['API'], tip: 'Pour créer des visuels avec texte parfait.' },
+    { id: 'recraft', name: 'Recraft V3', category: 'Image - Génération', specialty: 'Vectors et SVG', strengths: ['SEUL VRAIS SVG', 'Vectors', 'Illustrations'], weaknesses: ['Pas pour photos'], useCases: ['Logos SVG', 'Illustrations', 'Icons'], equivalentTo: 'Aucun pour SVG', betterThan: 'Tous pour vectors', pricing: '$20-100/mois', apiAccess: true, integration: ['API'], tip: 'UNIQUE pour générer de vrais fichiers SVG.' },
+    { id: 'leonardo', name: 'Leonardo.ai', category: 'Image - Génération', specialty: 'Game assets', strengths: ['Game assets', 'Characters', 'Consistency'], weaknesses: ['Niche gaming'], useCases: ['Jeux', 'Characters', 'Assets'], equivalentTo: 'Midjourney gaming', betterThan: 'Généralistes pour jeux', pricing: '$12-60/mois', apiAccess: true, integration: ['API'], tip: 'Pour créer des avatars et assets cohérents.' },
+    { id: 'firefly', name: 'Adobe Firefly', category: 'Image - Génération', specialty: 'Commercial-safe', strengths: ['100% commercial-safe', 'Intégré Adobe', 'Pas de copyright'], weaknesses: ['Moins créatif'], useCases: ['Commercial', 'Entreprise', 'Print'], equivalentTo: 'DALL-E 3 commercial', betterThan: 'Tous pour sécurité légale', pricing: 'Creative Cloud', apiAccess: true, integration: ['Adobe', 'API'], tip: 'Zéro risque copyright pour usage commercial.' },
+    { id: 'krea', name: 'KREA', category: 'Image - Génération', specialty: 'Génération temps réel', strengths: ['Temps réel', 'Live generation'], weaknesses: ['Moins de features'], useCases: ['Brainstorm', 'Itération rapide'], equivalentTo: 'Aucun direct', betterThan: 'Autres en temps réel', pricing: 'Gratuit limité', apiAccess: true, integration: ['Web', 'API'], tip: 'Génération live pour itérer rapidement.' },
+    { id: 'canva-magic', name: 'Canva Magic Studio', category: 'Image - Génération', specialty: 'IA intégrée Canva', strengths: ['Intégré Canva', 'Simple', 'Templates', 'Tout-en-un'], weaknesses: ['Moins puissant que spécialisés'], useCases: ['Social media', 'Marketing rapide', 'Non-designers'], equivalentTo: 'DALL-E 3 simple', betterThan: 'Outils séparés pour débutants', pricing: 'Canva Pro $13/mois', apiAccess: false, integration: ['Canva'], tip: 'Parfait pour tes clients coaches qui veulent créer eux-mêmes.' },
+    { id: 'reve-image', name: 'Reve Image', category: 'Image - Génération', specialty: 'Nouveau générateur prometteur', strengths: ['Nouveau', 'Qualité prometteuse', 'Innovation'], weaknesses: ['Très nouveau', 'Moins testé'], useCases: ['Early adopters', 'Tests'], equivalentTo: 'Flux', betterThan: 'À évaluer', pricing: 'Variable', apiAccess: true, integration: ['API'], tip: 'À surveiller, nouveau contender intéressant.' },
+
+    // IMAGE - ÉDITION
+    { id: 'removebg', name: 'Remove.bg', category: 'Image - Édition', specialty: 'Suppression fond', strengths: ['Simple', 'Rapide', 'Qualité top'], weaknesses: ['Prix HD', 'Une fonction'], useCases: ['E-commerce', 'Photos produits'], equivalentTo: 'PhotoRoom bg', betterThan: 'Autres pour simplicité', pricing: 'Gratuit preview', apiPricing: '$0.20+/image HD', apiAccess: true, integration: ['n8n', 'API', 'Zapier'], tip: 'Intégration n8n parfaite pour automatiser le détourage.' },
+    { id: 'photoroom', name: 'PhotoRoom', category: 'Image - Édition', specialty: 'E-commerce photos', strengths: ['E-commerce', 'Staging', 'Batch'], weaknesses: ['Prix'], useCases: ['Produits', 'E-commerce'], equivalentTo: 'Remove.bg+', betterThan: 'Remove.bg en features', pricing: '$13-65/mois', apiAccess: true, integration: ['API'], tip: 'Pour préparer les photos produits de tes clients.' },
+    { id: 'topaz', name: 'Topaz Photo AI', category: 'Image - Édition', specialty: 'Upscaling pro', strengths: ['MEILLEUR UPSCALING', 'Denoising pro', 'Desktop'], weaknesses: ['Desktop only', 'Prix one-time élevé'], useCases: ['Photo pro', 'Restauration'], equivalentTo: 'Magnific', betterThan: 'Tous pour upscaling qualité', pricing: '$199 one-time', apiAccess: false, integration: ['Desktop'], tip: 'Investissement unique pour upscaling qualité maximale.' },
+    { id: 'magnific', name: 'Magnific AI', category: 'Image - Édition', specialty: 'Upscaling créatif', strengths: ['Upscaling créatif', 'Ajoute détails'], weaknesses: ['Très cher', 'Peut altérer'], useCases: ['Art', 'Création'], equivalentTo: 'Topaz créatif', betterThan: 'Topaz en créativité', pricing: '$39-299/mois', apiAccess: true, integration: ['API'], tip: 'Pour upscaler en ajoutant des détails créatifs.' },
+    { id: 'cleanup-pictures', name: 'Cleanup.pictures', category: 'Image - Édition', specialty: 'Suppression objets', strengths: ['Suppression objets simple', 'Gratuit', 'Rapide'], weaknesses: ['Limité en features'], useCases: ['Retouche rapide', 'Suppression éléments'], equivalentTo: 'Remove.bg pour objets', betterThan: 'Photoshop pour tâches simples', pricing: 'Gratuit limité', apiAccess: true, integration: ['API', 'Web'], tip: 'Rapide et gratuit pour supprimer des objets indésirables.' },
+    { id: 'pixlr', name: 'Pixlr', category: 'Image - Édition', specialty: 'Édition gratuite en ligne', strengths: ['Gratuit', 'En ligne', 'Complet'], weaknesses: ['Moins pro que Photoshop'], useCases: ['Édition basique', 'Retouches'], equivalentTo: 'Photoshop lite', betterThan: 'Rien pour gratuit+complet', pricing: 'Gratuit, Premium $8/mois', apiAccess: false, integration: ['Web'], tip: 'Alternative gratuite à Photoshop pour éditions basiques.' },
+
+    // VIDÉO - GÉNÉRATION
+    { id: 'runway', name: 'Runway Gen-4.5', category: 'Vidéo - Génération', specialty: 'Vidéo pro standard', strengths: ['PRO STANDARD', '4K', 'Motion brush', 'Camera controls'], weaknesses: ['Prix pro'], useCases: ['Production', 'Marketing', 'Ads'], equivalentTo: 'Sora', betterThan: 'Autres en contrôle', pricing: '$15-95/mois', apiAccess: true, integration: ['API'], tip: 'Le standard pro pour production vidéo IA.' },
+    { id: 'sora', name: 'Sora 2', category: 'Vidéo - Génération', specialty: 'Vidéo photoréaliste OpenAI', strengths: ['Photoréalisme top', 'Long clips'], weaknesses: ['$200/mois!', 'Lent', 'Waitlist'], useCases: ['Production haut de gamme'], equivalentTo: 'Runway premium', betterThan: 'Tous en réalisme', pricing: 'ChatGPT Pro $200/mois', apiAccess: false, integration: ['ChatGPT'], tip: 'Réservé aux productions premium, prix prohibitif.' },
+    { id: 'kling', name: 'Kling 2.1', category: 'Vidéo - Génération', specialty: 'Meilleur rapport Q/P', strengths: ['MEILLEUR RAPPORT Q/P', '2 min de vidéo!', 'Très économique'], weaknesses: ['Entreprise chinoise'], useCases: ['Volume', 'Budget', 'Marketing'], equivalentTo: 'Runway budget', betterThan: 'Tous en prix/durée', pricing: '$6.99/mois', apiAccess: true, integration: ['API'], tip: 'INCROYABLE VALUE: 2 minutes de vidéo pour $6.99!' },
+    { id: 'veo', name: 'Veo 3.1', category: 'Vidéo - Génération', specialty: 'Vidéo avec audio Google', strengths: ['Audio synchronisé natif UNIQUE', 'Google quality'], weaknesses: ['Nouveau', 'Gemini required'], useCases: ['Vidéos avec son', 'Marketing'], equivalentTo: 'Runway + audio', betterThan: 'Tous en audio natif', pricing: 'Gemini $19.99/mois', apiAccess: true, integration: ['Google AI'], tip: 'SEUL avec audio synchronisé natif!' },
+    { id: 'pika', name: 'Pika 2.5', category: 'Vidéo - Génération', specialty: 'Vidéo rapide et fun', strengths: ['Ultra rapide', 'Lip sync', 'Effets fun'], weaknesses: ['Moins pro'], useCases: ['Social', 'Fun', 'Rapide'], equivalentTo: 'Kling', betterThan: 'Autres en vitesse', pricing: '$8-58/mois', apiAccess: true, integration: ['API'], tip: 'Le plus rapide pour vidéos social media.' },
+    { id: 'luma-ray', name: 'Luma Ray3', category: 'Vidéo - Génération', specialty: 'Vidéo HDR cinematic', strengths: ['HDR 4K EXR', 'Cinematic'], weaknesses: ['Niche'], useCases: ['Production film', 'HDR'], equivalentTo: 'Runway premium', betterThan: 'Autres en HDR', pricing: '$30-100/mois', apiAccess: true, integration: ['API'], tip: 'Pour productions cinématiques HDR.' },
+    { id: 'hailuo', name: 'Hailuo 2.3', category: 'Vidéo - Génération', specialty: 'Vidéo économique', strengths: ['Très économique', 'Bonne qualité'], weaknesses: ['Entreprise chinoise'], useCases: ['Volume', 'Tests'], equivalentTo: 'Kling', betterThan: 'Premium en prix', pricing: 'Très économique', apiAccess: true, integration: ['API'], tip: 'Alternative économique à Kling.' },
+    { id: 'vidu', name: 'Vidu 2.0', category: 'Vidéo - Génération', specialty: 'Génération rapide 10s', strengths: ['10s génération rapide', 'Bon rapport Q/P'], weaknesses: ['Durée limitée', 'Entreprise chinoise'], useCases: ['Clips courts', 'Social media'], equivalentTo: 'Pika', betterThan: 'Lents en vitesse', pricing: 'Économique', apiAccess: true, integration: ['API'], tip: 'Ultra rapide pour des clips de 10 secondes.' },
+    { id: 'stable-video', name: 'Stable Video', category: 'Vidéo - Génération', specialty: 'Vidéo open source', strengths: ['Open source', 'Self-host', 'Gratuit'], weaknesses: ['Moins performant', 'Requiert GPU'], useCases: ['Self-host', 'Volume gratuit'], equivalentTo: 'Runway open', betterThan: 'Payants en prix', pricing: 'Gratuit', apiAccess: true, integration: ['ComfyUI', 'Self-host'], tip: 'Pour générer des vidéos sans frais API.' },
+    { id: 'luma-dream-machine', name: 'Luma Dream Machine', category: 'Vidéo - Génération', specialty: 'Vidéo rapide et accessible', strengths: ['Rapide', 'Bon marché', 'Simple'], weaknesses: ['Qualité moyenne'], useCases: ['Prototypes', 'Tests rapides'], equivalentTo: 'Pika lite', betterThan: 'Lents en vitesse', pricing: 'Gratuit limité, $30/mois', apiAccess: true, integration: ['API'], tip: 'Bon pour tester des concepts rapidement.' },
+
+    // VIDÉO - AVATARS
+    { id: 'heygen', name: 'HeyGen', category: 'Vidéo - Avatars', specialty: 'Avatars multilingues', strengths: ['175 langues', 'Lip sync parfait', 'Traduction vidéo'], weaknesses: ['Prix'], useCases: ['Marketing international', 'Training'], equivalentTo: 'Synthesia', betterThan: 'Synthesia en langues', pricing: '$29-149/mois', apiAccess: true, integration: ['API'], tip: 'Parfait pour créer des vidéos en plusieurs langues.' },
+    { id: 'synthesia', name: 'Synthesia', category: 'Vidéo - Avatars', specialty: 'Avatars enterprise', strengths: ['Enterprise standard', 'Avatars pro'], weaknesses: ['Prix enterprise'], useCases: ['Corporate', 'Training', 'E-learning'], equivalentTo: 'HeyGen', betterThan: 'Autres en enterprise', pricing: '$29-249/mois', apiAccess: true, integration: ['API'], tip: 'Standard enterprise pour vidéos corporate.' },
+    { id: 'd-id', name: 'D-ID', category: 'Vidéo - Avatars', specialty: 'Talking photos', strengths: ['Photos qui parlent', 'Simple'], weaknesses: ['Moins réaliste'], useCases: ['Fun', 'Démos'], equivalentTo: 'HeyGen lite', betterThan: 'Autres pour photos', pricing: '$6-108/mois', apiAccess: true, integration: ['API'], tip: 'Pour faire parler des photos rapidement.' },
+    { id: 'colossyan', name: 'Colossyan', category: 'Vidéo - Avatars', specialty: 'E-learning focus', strengths: ['E-learning optimisé', 'Avatars pédagogiques', 'Templates formation'], weaknesses: ['Niche e-learning'], useCases: ['Formation', 'E-learning', 'Onboarding'], equivalentTo: 'Synthesia e-learning', betterThan: 'Généralistes pour formation', pricing: '$30-100/mois', apiAccess: true, integration: ['API', 'LMS'], tip: 'Spécialisé pour créer des vidéos de formation.' },
+    { id: 'deepbrain', name: 'DeepBrain AI Studios', category: 'Vidéo - Avatars', specialty: 'Présentateurs AI', strengths: ['Présentateurs réalistes', 'Multi-langues', 'Templates news'], weaknesses: ['Prix'], useCases: ['News', 'Présentations', 'Corporate'], equivalentTo: 'Synthesia', betterThan: 'Autres pour présentateurs', pricing: '$30-180/mois', apiAccess: true, integration: ['API'], tip: 'Pour créer des vidéos style présentateur TV.' },
+
+    // 3D
+    { id: 'meshy', name: 'Meshy AI', category: '3D', specialty: '3D rapide', strengths: ['Rapide', 'Text/image to 3D'], weaknesses: ['Qualité moyenne'], useCases: ['Prototypes', 'Gaming'], equivalentTo: 'Tripo', betterThan: 'Lent en vitesse', pricing: '$20-60/mois', apiAccess: true, integration: ['API'], tip: 'Le plus rapide pour prototypes 3D.' },
+    { id: 'tripo', name: 'Tripo AI 2.5', category: '3D', specialty: '3D game-ready', strengths: ['Auto-rigging', 'Game-ready meshes', 'Animations'], weaknesses: ['Moins photoréaliste'], useCases: ['Jeux', 'Animation'], equivalentTo: 'Meshy', betterThan: 'Meshy pour games', pricing: '$15-50/mois', apiAccess: true, integration: ['API'], tip: 'Pour assets de jeu avec rigging automatique.' },
+    { id: 'rodin', name: 'Rodin/Hyper3D', category: '3D', specialty: '3D photoréaliste', strengths: ['PHOTORÉALISME #1', '4K PBR textures', 'Qualité pro'], weaknesses: ['Prix', 'Plus lent'], useCases: ['Production', 'E-commerce 3D'], equivalentTo: 'Hunyuan payant', betterThan: 'Tous en qualité', pricing: '$50-200/mois', apiAccess: true, integration: ['API'], tip: 'Pour du 3D qualité production.' },
+    { id: 'hunyuan3d', name: 'Hunyuan 3D', category: '3D', specialty: '3D gratuit qualité', strengths: ['GRATUIT!', 'Qualité proche Rodin', 'ComfyUI'], weaknesses: ['Requiert setup'], useCases: ['Budget', 'Self-host 3D'], equivalentTo: 'Rodin', betterThan: 'Tous en gratuit', pricing: 'Gratuit!', apiAccess: true, integration: ['ComfyUI', 'Self-host'], tip: 'GRATUIT avec qualité proche de Rodin payant!' },
+    { id: 'spline', name: 'Spline AI', category: '3D', specialty: '3D web interactif', strengths: ['Web 3D', 'Interactif', 'No-code'], weaknesses: ['Pas pour assets'], useCases: ['Web', 'Landing pages'], equivalentTo: 'Three.js no-code', betterThan: 'Code pour web 3D simple', pricing: 'Gratuit limité', apiAccess: true, integration: ['Web embed'], tip: 'Pour ajouter du 3D interactif sur les sites clients.' },
+    { id: 'csm-ai', name: 'CSM AI', category: '3D', specialty: 'Characters 3D', strengths: ['Personnages 3D', 'Stylisés', 'Animation ready'], weaknesses: ['Niche characters'], useCases: ['Personnages jeux', 'Avatars 3D'], equivalentTo: 'Meshy characters', betterThan: 'Généralistes pour personnages', pricing: 'Variable', apiAccess: true, integration: ['API', 'Unity'], tip: 'Spécialisé pour créer des personnages 3D stylisés.' },
+    { id: 'luma-genie', name: 'Luma Genie', category: '3D', specialty: 'NeRF et scans 3D', strengths: ['NeRF', 'Scans 3D depuis photos', 'Photogrammétrie'], weaknesses: ['Requiert bonnes photos'], useCases: ['Scan objets réels', 'NeRF', 'Photogrammétrie'], equivalentTo: 'Polycam', betterThan: 'Modélisation manuelle', pricing: 'Gratuit limité', apiAccess: true, integration: ['API', 'Mobile'], tip: 'Pour scanner des objets réels en 3D depuis ton téléphone.' },
+
+    // AUTOMATISATION
+    { id: 'n8n', name: 'n8n', category: 'Automatisation', specialty: 'Workflow automation self-host', strengths: ['TON OUTIL!', 'Self-host gratuit', 'AI nodes', 'Flexible', 'No vendor lock-in'], weaknesses: ['Setup initial', 'Moins d\'apps que Zapier'], useCases: ['Tout automation', 'AI workflows', 'Custom'], equivalentTo: 'Make', betterThan: 'Zapier en flexibilité et prix', pricing: 'Gratuit self-host, cloud $20+/mois', apiAccess: true, integration: ['1000+ apps', 'HTTP', 'Code'], tip: 'TON OUTIL PRINCIPAL. Self-host pour contrôle total.' },
+    { id: 'make', name: 'Make', category: 'Automatisation', specialty: 'Automation visuelle', strengths: ['Visual builder', '1800+ apps', 'Abordable'], weaknesses: ['Moins flexible que n8n', 'Pas self-host'], useCases: ['Automation standard', 'Non-dev'], equivalentTo: 'n8n cloud', betterThan: 'Zapier en prix', pricing: '$9-29+/mois', apiAccess: true, integration: ['1800+ apps'], tip: 'Alternative si tu veux du cloud managé.' },
+    { id: 'zapier', name: 'Zapier', category: 'Automatisation', specialty: 'Automation mass market', strengths: ['6000+ apps', 'Simple', 'Standard'], weaknesses: ['TRÈS CHER', 'Moins flexible'], useCases: ['Simple automation', 'Non-technique'], equivalentTo: 'Make premium', betterThan: 'Autres en apps', worseThan: 'n8n en tout sauf apps', pricing: '$20-600+/mois', apiAccess: true, integration: ['6000+ apps'], tip: 'Éviter si possible, prix prohibitif. Préférer n8n.' },
+    { id: 'activepieces', name: 'Activepieces', category: 'Automatisation', specialty: 'Alternative open source', strengths: ['Open source', 'Simple', 'Moderne'], weaknesses: ['Moins mature'], useCases: ['Alternative n8n'], equivalentTo: 'n8n lite', betterThan: 'Zapier en prix', pricing: 'Gratuit self-host', apiAccess: true, integration: ['100+ apps'], tip: 'Alternative plus simple à n8n.' },
+    { id: 'pipedream', name: 'Pipedream', category: 'Automatisation', specialty: 'Dev-friendly automation', strengths: ['Dev-friendly', 'Code-first', 'Gratuit généreux', 'API native'], weaknesses: ['Requiert code', 'Moins visuel'], useCases: ['Devs', 'API integrations', 'Custom workflows'], equivalentTo: 'n8n pour devs', betterThan: 'Zapier pour devs', pricing: 'Gratuit généreux, $19+/mois', apiAccess: true, integration: ['Code', 'APIs', 'npm'], tip: 'Excellent si tu préfères coder tes automations.' },
+
+    // AGENTS & DEV
+    { id: 'langchain', name: 'LangChain', category: 'Agents & Dev', specialty: 'Framework agents LLM', strengths: ['Framework référence', 'Agents', 'RAG', 'Chains', 'Écosystème riche'], weaknesses: ['Complexe', 'Abstraction lourde'], useCases: ['Agents custom', 'RAG', 'Dev AI'], equivalentTo: 'LlamaIndex', betterThan: 'Code from scratch', pricing: 'Gratuit open source', apiAccess: true, integration: ['Python', 'JS', 'n8n via code'], tip: 'Le framework standard pour construire des agents.' },
+    { id: 'llamaindex', name: 'LlamaIndex', category: 'Agents & Dev', specialty: 'RAG optimisé', strengths: ['RAG optimisé', 'Plus simple que LangChain', 'Documents'], weaknesses: ['Moins d\'agents'], useCases: ['RAG', 'Search', 'Documents'], equivalentTo: 'LangChain RAG', betterThan: 'LangChain pour RAG simple', pricing: 'Gratuit open source', apiAccess: true, integration: ['Python', 'API'], tip: 'Préférer à LangChain si tu fais du RAG.' },
+    { id: 'flowise', name: 'Flowise', category: 'Agents & Dev', specialty: 'LangChain visual', strengths: ['LangChain no-code', 'Self-host gratuit', 'Intégration n8n'], weaknesses: ['Limité vs code'], useCases: ['RAG no-code', 'Chatbots'], equivalentTo: 'LangChain GUI', betterThan: 'Code pour non-devs', pricing: 'Gratuit self-host', apiAccess: true, integration: ['n8n', 'API'], tip: 'PARFAIT avec n8n pour créer des chatbots RAG.' },
+    { id: 'crewai', name: 'CrewAI', category: 'Agents & Dev', specialty: 'Multi-agents', strengths: ['Multi-agents', 'Orchestration équipes', 'Simple'], weaknesses: ['Nouveau'], useCases: ['Équipes d\'agents', 'Workflows complexes'], equivalentTo: 'AutoGPT structuré', betterThan: 'AutoGPT en fiabilité', pricing: 'Gratuit open source', apiAccess: true, integration: ['Python'], tip: 'Pour orchestrer plusieurs agents qui collaborent.' },
+    { id: 'autogpt', name: 'AutoGPT', category: 'Agents & Dev', specialty: 'Agent autonome', strengths: ['Agent autonome', 'Pionnier', 'Expérimental'], weaknesses: ['Instable', 'Coûteux en tokens', 'Expérimental'], useCases: ['Research', 'Expérimentation', 'Tâches autonomes'], equivalentTo: 'CrewAI expérimental', betterThan: 'Scripts manuels', pricing: 'Gratuit open source', apiAccess: true, integration: ['Python', 'Plugins'], tip: 'Pionnier des agents autonomes, plus expérimental que production.' },
+    { id: 'semantic-kernel', name: 'Semantic Kernel', category: 'Agents & Dev', specialty: 'Framework Microsoft', strengths: ['Enterprise Microsoft', '.NET/Python', 'Azure intégré', 'Skills system'], weaknesses: ['Écosystème Microsoft'], useCases: ['Enterprise .NET', 'Azure apps', 'Copilots'], equivalentTo: 'LangChain Microsoft', betterThan: 'LangChain pour .NET', pricing: 'Gratuit open source', apiAccess: true, integration: ['Azure', '.NET', 'Python'], tip: 'Si tu développes en .NET ou sur Azure.' },
+
+    // VECTOR DB
+    { id: 'pinecone', name: 'Pinecone', category: 'Vector DB', specialty: 'Vector DB managed', strengths: ['Managed/serverless', 'Simple', 'Standard prod'], weaknesses: ['Prix à scale', 'Lock-in'], useCases: ['RAG production', 'Semantic search'], equivalentTo: 'Qdrant cloud', betterThan: 'Self-host en simplicité', pricing: 'Gratuit limité, usage-based', apiAccess: true, integration: ['n8n', 'LangChain', 'API'], tip: 'Le plus simple pour démarrer RAG.' },
+    { id: 'qdrant', name: 'Qdrant', category: 'Vector DB', specialty: 'Vector DB open source', strengths: ['Open source', 'Self-host', 'Performant', 'Filtres riches'], weaknesses: ['Setup self-host'], useCases: ['Self-host RAG', 'Production'], equivalentTo: 'Pinecone self-host', betterThan: 'Pinecone en contrôle', pricing: 'Gratuit self-host', apiAccess: true, integration: ['n8n', 'LangChain', 'API'], tip: 'RECOMMANDÉ pour self-host. Performant et gratuit.' },
+    { id: 'supabase-vector', name: 'Supabase pgvector', category: 'Vector DB', specialty: 'Vector DB SQL', strengths: ['Intégré Supabase', 'SQL', 'Économique', 'Full-stack'], weaknesses: ['Moins spécialisé'], useCases: ['Apps Supabase', 'SQL + vectors'], equivalentTo: 'Postgres + vectors', betterThan: 'Standalone pour full-stack', pricing: 'Gratuit limité', apiAccess: true, integration: ['Supabase', 'n8n', 'SQL'], tip: 'Parfait si tu utilises déjà Supabase.' },
+    { id: 'chroma', name: 'Chroma', category: 'Vector DB', specialty: 'Vector DB dev-friendly', strengths: ['Dev-friendly', 'Simple', 'Local'], weaknesses: ['Moins prod-ready'], useCases: ['Dev', 'Prototypes', 'Local'], equivalentTo: 'Qdrant simple', betterThan: 'Complexe pour dev', pricing: 'Gratuit', apiAccess: true, integration: ['Python', 'LangChain'], tip: 'Le plus simple pour prototyper du RAG.' },
+    { id: 'weaviate', name: 'Weaviate', category: 'Vector DB', specialty: 'Vector DB GraphQL', strengths: ['GraphQL native', 'Modules ML', 'Multi-modal', 'Hybride'], weaknesses: ['Plus complexe'], useCases: ['Search avancé', 'Multi-modal', 'GraphQL'], equivalentTo: 'Qdrant avancé', betterThan: 'Autres en features', pricing: 'Gratuit self-host, cloud usage-based', apiAccess: true, integration: ['GraphQL', 'Python', 'LangChain'], tip: 'Si tu veux GraphQL et recherche hybride texte+vecteurs.' },
+    { id: 'milvus', name: 'Milvus', category: 'Vector DB', specialty: 'Vector DB scale massive', strengths: ['Scale massive', 'Enterprise', 'Billion+ vectors'], weaknesses: ['Complexe', 'Overkill pour petit'], useCases: ['Enterprise', 'Très gros volumes'], equivalentTo: 'Pinecone enterprise', betterThan: 'Autres en scale', pricing: 'Gratuit self-host', apiAccess: true, integration: ['Python', 'LangChain'], tip: 'Quand tu as des milliards de vecteurs.' },
+
+    // DATA PROCESSING
+    { id: 'unstructured', name: 'Unstructured.io', category: 'Data Processing', specialty: 'Extraction documents', strengths: ['PDFs complexes', 'Tables', 'OCR', 'Essentiel RAG'], weaknesses: ['Prix à volume'], useCases: ['RAG', 'Document processing'], equivalentTo: 'LlamaParse', betterThan: 'PyPDF pour complexe', pricing: 'Gratuit limité, usage-based', apiAccess: true, integration: ['API', 'Python', 'n8n'], tip: 'ESSENTIEL pour extraire du contenu de PDFs complexes.' },
+    { id: 'llamaparse', name: 'LlamaParse', category: 'Data Processing', specialty: 'Documents pour LlamaIndex', strengths: ['Intégré LlamaIndex', 'Simple'], weaknesses: ['Moins polyvalent'], useCases: ['LlamaIndex RAG'], equivalentTo: 'Unstructured', betterThan: 'Basic parsers', pricing: 'Gratuit limité', apiAccess: true, integration: ['LlamaIndex'], tip: 'Si tu utilises LlamaIndex pour ton RAG.' },
+
+    // CODE - IDE
+    { id: 'cursor', name: 'Cursor', category: 'Code IDE', specialty: 'IDE AI-first', strengths: ['STANDARD 2025', 'Contexte projet', 'Composer', 'Claude/GPT intégré'], weaknesses: ['Pas gratuit'], useCases: ['Dev quotidien', 'Tout code'], equivalentTo: 'VS Code + Copilot++', betterThan: 'Copilot en contexte', pricing: '$20/mois', apiAccess: false, integration: ['Extensions VS Code'], tip: 'L\'IDE de référence pour coder avec IA.' },
+    { id: 'github-copilot', name: 'GitHub Copilot', category: 'Code IDE', specialty: 'Completion code', strengths: ['Intégré IDEs', 'GitHub context', 'Standard'], weaknesses: ['Moins de contexte'], useCases: ['Completion', 'Suggestion'], equivalentTo: 'Cursor lite', betterThan: 'Pas d\'AI', pricing: '$10-19/mois', apiAccess: true, integration: ['VS Code', 'JetBrains', 'Vim'], tip: 'Bon si tu restes sur VS Code standard.' },
+    { id: 'windsurf', name: 'Windsurf', category: 'Code IDE', specialty: 'Alternative Cursor', strengths: ['Alternative Cursor', 'Codeium powered'], weaknesses: ['Moins mature'], useCases: ['Alternative'], equivalentTo: 'Cursor', betterThan: 'Copilot', pricing: 'Gratuit limité', apiAccess: false, integration: ['VS Code base'], tip: 'Alternative gratuite à Cursor.' },
+    { id: 'cline', name: 'Cline', category: 'Code IDE', specialty: 'Extension VS Code agentic', strengths: ['Extension VS Code', 'Agentic', 'Flexible'], weaknesses: ['Extension seulement'], useCases: ['VS Code users', 'Agentic coding'], equivalentTo: 'Cursor extension', betterThan: 'Copilot en agentic', pricing: 'Gratuit + API', apiAccess: true, integration: ['VS Code'], tip: 'Ajoute des capacités agents à VS Code.' },
+    { id: 'continue', name: 'Continue', category: 'Code IDE', specialty: 'Copilot open source', strengths: ['Open source', 'Customizable', 'Multi-LLM', 'Self-host'], weaknesses: ['Setup requis'], useCases: ['Alternative Copilot', 'Self-host', 'Privacy'], equivalentTo: 'Copilot open', betterThan: 'Copilot en customisation', pricing: 'Gratuit', apiAccess: true, integration: ['VS Code', 'JetBrains'], tip: 'Alternative open source à Copilot, tu choisis ton LLM.' },
+    { id: 'roo-code', name: 'Roo Code', category: 'Code IDE', specialty: 'Nouveau IDE AI', strengths: ['Nouveau', 'Prometteur', 'Innovation'], weaknesses: ['Très nouveau', 'Moins testé'], useCases: ['Early adopters', 'Innovation'], equivalentTo: 'Cursor alternative', betterThan: 'À évaluer', pricing: 'Variable', apiAccess: false, integration: ['IDE natif'], tip: 'À surveiller, nouveau contender dans les IDE AI.' },
+
+    // CODE - CLI
+    { id: 'claude-code', name: 'Claude Code', category: 'Code CLI', specialty: 'Agent coding terminal', strengths: ['Agent terminal', 'Multi-fichiers', '200K context', 'Agentic'], weaknesses: ['API pricing'], useCases: ['Refactoring', 'Projets complexes'], equivalentTo: 'Cursor CLI', betterThan: 'IDE pour gros refactors', pricing: 'API Claude pricing', apiAccess: true, integration: ['Terminal', 'Git'], tip: 'Excellent pour refactorer des projets entiers.' },
+
+    // CODE - PLATFORM
+    { id: 'replit', name: 'Replit Agent', category: 'Code Platform', specialty: 'Apps from prompt', strengths: ['Apps complètes from prompt', 'Déploiement intégré', 'Simple'], weaknesses: ['Moins de contrôle'], useCases: ['Prototypes rapides', 'MVPs'], equivalentTo: 'Bolt.new', betterThan: 'Code from scratch', pricing: '$25-99/mois', apiAccess: false, integration: ['Replit'], tip: 'Pour prototyper une app en quelques minutes.' },
+    { id: 'bolt', name: 'Bolt.new', category: 'Code Platform', specialty: 'Apps instant', strengths: ['Apps instant', 'Full-stack'], weaknesses: ['Nouveau'], useCases: ['Prototypes', 'Demos'], equivalentTo: 'Replit', betterThan: 'Templates', pricing: 'Usage-based', apiAccess: false, integration: ['Web'], tip: 'Alternative Replit pour prototypes rapides.' },
+    { id: 'v0', name: 'v0.dev', category: 'Code Platform', specialty: 'UI React generation', strengths: ['UI React/Next.js', 'shadcn/ui', 'Vercel'], weaknesses: ['UI seulement'], useCases: ['Composants React', 'Landing pages'], equivalentTo: 'Aucun direct', betterThan: 'Figma to code', pricing: '$20/mois', apiAccess: false, integration: ['Vercel', 'React'], tip: 'Génère des composants React de qualité.' },
+    { id: 'lovable', name: 'Lovable', category: 'Code Platform', specialty: 'Apps from description', strengths: ['Apps from description', 'Full-stack', 'Déploiement'], weaknesses: ['Nouveau', 'Contrôle limité'], useCases: ['MVPs', 'Prototypes', 'Apps simples'], equivalentTo: 'Bolt.new', betterThan: 'Code manuel pour MVPs', pricing: 'Variable', apiAccess: false, integration: ['Web'], tip: 'Pour créer des apps complètes à partir d\'une description.' },
+
+    // PRODUCTIVITÉ
+    { id: 'notion-ai', name: 'Notion AI', category: 'Productivité', specialty: 'AI dans workspace', strengths: ['Contexte workspace', 'Q&A docs', 'Intégré'], weaknesses: ['Notion required'], useCases: ['Documentation', 'Knowledge base'], equivalentTo: 'Aucun intégré', betterThan: 'ChatGPT pour docs internes', pricing: '$10/membre/mois', apiAccess: false, integration: ['Notion'], tip: 'Parfait pour documenter tes process.' },
+    { id: 'gamma', name: 'Gamma', category: 'Productivité', specialty: 'Présentations AI', strengths: ['Présentations from text', 'Design moderne', 'Rapide'], weaknesses: ['Moins de contrôle'], useCases: ['Pitchs', 'Présentations clients'], equivalentTo: 'Beautiful.ai', betterThan: 'PowerPoint pour rapidité', pricing: 'Gratuit limité, $10-20/mois', apiAccess: false, integration: ['Export PDF/PPT'], tip: 'Crée des présentations clients en minutes.' },
+    { id: 'notebooklm', name: 'NotebookLM', category: 'Productivité', specialty: 'Analyse sources', strengths: ['GRATUIT!', 'Sources citées', 'Audio Overview génial'], weaknesses: ['Google seulement'], useCases: ['Research', 'Analyse docs', 'Podcasts de tes docs'], equivalentTo: 'Perplexity pour docs', betterThan: 'Tous en gratuit + sources', pricing: 'Gratuit!', apiAccess: false, integration: ['Google'], tip: 'GÉNIAL et GRATUIT! Transforme tes docs en podcasts.' },
+    { id: 'otter', name: 'Otter.ai', category: 'Productivité', specialty: 'Transcription meetings', strengths: ['Temps réel', 'Speaker ID', 'Search'], weaknesses: ['Anglais principalement'], useCases: ['Meetings', 'Interviews'], equivalentTo: 'Fireflies', betterThan: 'Whisper pour meetings', pricing: '$17-40/mois', apiAccess: true, integration: ['Zoom', 'Meet', 'Teams'], tip: 'Pour transcrire automatiquement tes calls clients.' },
+    { id: 'fireflies', name: 'Fireflies.ai', category: 'Productivité', specialty: 'Meeting assistant', strengths: ['CRM sync', 'Action items', 'Intégrations'], weaknesses: ['Prix'], useCases: ['Sales calls', 'Meetings'], equivalentTo: 'Otter', betterThan: 'Otter pour CRM', pricing: '$19-39/mois', apiAccess: true, integration: ['CRM', 'Zoom', 'Slack'], tip: 'Sync automatique avec ton CRM.' },
+    { id: 'beautiful-ai', name: 'Beautiful.ai', category: 'Productivité', specialty: 'Slides pro automatiques', strengths: ['Design automatique', 'Templates pro', 'Brand kit'], weaknesses: ['Moins flexible'], useCases: ['Présentations', 'Pitchs', 'Corporate'], equivalentTo: 'Gamma', betterThan: 'PowerPoint en design auto', pricing: '$12-50/mois', apiAccess: false, integration: ['Export', 'PowerPoint'], tip: 'Design automatique qui reste professionnel.' },
+    { id: 'mem', name: 'Mem', category: 'Productivité', specialty: 'Notes AI', strengths: ['Notes AI', 'Connexions auto', 'Search intelligent'], weaknesses: ['Niche'], useCases: ['Notes', 'Second brain', 'Knowledge'], equivalentTo: 'Notion AI pour notes', betterThan: 'Notes classiques', pricing: '$15-25/mois', apiAccess: false, integration: ['Web', 'Mobile'], tip: 'Pour créer un second cerveau avec connexions automatiques.' },
+    { id: 'craft', name: 'Craft', category: 'Productivité', specialty: 'Documents élégants', strengths: ['Design élégant', 'Collaboration', 'Apple ecosystem'], weaknesses: ['Prix', 'Moins d\'AI'], useCases: ['Docs élégants', 'Collaboration'], equivalentTo: 'Notion élégant', betterThan: 'Docs classiques en design', pricing: 'Gratuit limité, $8-15/mois', apiAccess: false, integration: ['Apple', 'Export'], tip: 'Pour des documents vraiment beaux, surtout sur Mac.' },
+
+    // MARKETING
+    { id: 'jasper', name: 'Jasper', category: 'Marketing', specialty: 'Copywriting enterprise', strengths: ['Templates', 'Brand voice', 'Enterprise'], weaknesses: ['Cher'], useCases: ['Marketing content', 'Ads'], equivalentTo: 'Copy.ai', betterThan: 'ChatGPT pour marketing', pricing: '$49-125/mois', apiAccess: true, integration: ['API', 'Chrome'], tip: 'Si tu as besoin de templates marketing structurés.' },
+    { id: 'copyai', name: 'Copy.ai', category: 'Marketing', specialty: 'GTM content', strengths: ['GTM workflows', 'Sales content', 'Gratuit limité'], weaknesses: ['Moins enterprise'], useCases: ['Sales copy', 'Emails'], equivalentTo: 'Jasper', betterThan: 'ChatGPT pour sales', pricing: 'Gratuit limité, $49/mois', apiAccess: true, integration: ['API'], tip: 'Bon pour générer des variations de cold emails.' },
+    { id: 'writer', name: 'Writer', category: 'Marketing', specialty: 'Enterprise content platform', strengths: ['Enterprise', 'Brand consistency', 'Governance', 'Custom AI'], weaknesses: ['Prix enterprise'], useCases: ['Enterprise content', 'Brand', 'Compliance'], equivalentTo: 'Jasper enterprise', betterThan: 'Jasper en governance', pricing: 'Enterprise', apiAccess: true, integration: ['API', 'Enterprise'], tip: 'Pour grandes entreprises avec besoin de gouvernance.' },
+    { id: 'writesonic', name: 'Writesonic', category: 'Marketing', specialty: 'SEO content', strengths: ['SEO optimisé', 'Blog articles', 'Affordable'], weaknesses: ['Qualité variable'], useCases: ['SEO', 'Blog', 'Content marketing'], equivalentTo: 'Copy.ai SEO', betterThan: 'ChatGPT pour SEO', pricing: 'Gratuit limité, $19-99/mois', apiAccess: true, integration: ['API', 'WordPress'], tip: 'Pour du contenu SEO à moindre coût.' },
+
+    // AGENTS BROWSER
+    { id: 'claude-computer-use', name: 'Claude Computer Use', category: 'Agents Browser', specialty: 'Automation web AI', strengths: ['Automation web', 'Vision + action'], weaknesses: ['Beta', 'Lent'], useCases: ['Web automation', 'Testing'], equivalentTo: 'Browserbase', betterThan: 'Scripts pour tâches complexes', pricing: 'API Claude', apiAccess: true, integration: ['API'], tip: 'Pour automatiser des tâches web complexes.' },
+    { id: 'browserbase', name: 'Browserbase', category: 'Agents Browser', specialty: 'Browsers cloud AI', strengths: ['Browsers cloud', 'Scale', 'Headless'], weaknesses: ['Prix à scale'], useCases: ['Scraping scale', 'Testing'], equivalentTo: 'Apify browsers', betterThan: 'Local pour scale', pricing: 'Usage-based', apiAccess: true, integration: ['API', 'Playwright'], tip: 'Pour scaler ton scraping coaches.' },
+    { id: 'apify', name: 'Apify', category: 'Agents Browser', specialty: 'Scraping plateforme', strengths: ['POUR TON SCRAPING COACHES!', 'Actors ready-made', 'Proxies', 'Scale'], weaknesses: ['Prix actors premium'], useCases: ['Google Maps scraping', 'Web scraping'], equivalentTo: 'Bright Data', betterThan: 'Custom scraping', pricing: '$49+/mois', apiAccess: true, integration: ['n8n', 'API', 'Webhooks'], tip: 'ESSENTIEL pour ton scraping Google Maps coaches!' },
+    { id: 'brightdata', name: 'Bright Data', category: 'Agents Browser', specialty: 'Proxies enterprise', strengths: ['Proxies premium', 'Unblocking', 'Enterprise'], weaknesses: ['Très cher'], useCases: ['Scraping difficile', 'Anti-bot'], equivalentTo: 'Apify enterprise', betterThan: 'Proxies gratuits', pricing: 'Enterprise pricing', apiAccess: true, integration: ['API'], tip: 'Si les sites bloquent, proxies premium.' },
+    { id: 'playwright', name: 'Playwright/Puppeteer', category: 'Agents Browser', specialty: 'Automation browser code', strengths: ['Gratuit', 'Full control', 'Standard industrie', 'Multi-browser'], weaknesses: ['Requiert code', 'Maintenance'], useCases: ['Testing', 'Scraping custom', 'Automation'], equivalentTo: 'Selenium moderne', betterThan: 'Selenium en DX', pricing: 'Gratuit', apiAccess: true, integration: ['Node.js', 'Python', 'n8n via code'], tip: 'Gratuit et puissant si tu sais coder. Playwright > Puppeteer.' }
+];
+
+// ============ APP LOGIC ============
+let currentTab = 'llms';
+let expandedCard = null;
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    updateCounts();
+    renderGrid();
+    setupEventListeners();
+    updateCategoryFilter();
+});
+
+function updateCounts() {
+    document.getElementById('llm-total').textContent = llmData.length;
+    document.getElementById('tools-total').textContent = toolsData.length;
+    document.getElementById('llm-count').textContent = llmData.length;
+    document.getElementById('tools-count').textContent = toolsData.length;
+}
+
+function setupEventListeners() {
+    // Tabs
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            currentTab = tab.dataset.tab;
+            expandedCard = null;
+            updateCategoryFilter();
+            renderGrid();
+        });
+    });
+
+    // Search
+    document.getElementById('search').addEventListener('input', renderGrid);
+
+    // Category filter
+    document.getElementById('category-filter').addEventListener('change', renderGrid);
+}
+
+function updateCategoryFilter() {
+    const data = currentTab === 'llms' ? llmData : toolsData;
+    const categories = [...new Set(data.map(item => item.category))].sort();
+    const select = document.getElementById('category-filter');
+    select.innerHTML = '<option value="">Toutes les catégories</option>' +
+        categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+}
+
+function renderGrid() {
+    const data = currentTab === 'llms' ? llmData : toolsData;
+    const searchTerm = document.getElementById('search').value.toLowerCase();
+    const categoryFilter = document.getElementById('category-filter').value;
+
+    const filtered = data.filter(item => {
+        const matchesSearch = !searchTerm ||
+            item.name.toLowerCase().includes(searchTerm) ||
+            (item.provider && item.provider.toLowerCase().includes(searchTerm)) ||
+            (item.specialty && item.specialty.toLowerCase().includes(searchTerm)) ||
+            item.category.toLowerCase().includes(searchTerm) ||
+            item.strengths.some(s => s.toLowerCase().includes(searchTerm)) ||
+            (item.bestFor && item.bestFor.some(b => b.toLowerCase().includes(searchTerm))) ||
+            (item.useCases && item.useCases.some(u => u.toLowerCase().includes(searchTerm)));
+
+        const matchesCategory = !categoryFilter || item.category === categoryFilter;
+
+        return matchesSearch && matchesCategory;
+    });
+
+    document.getElementById('results-count').textContent = filtered.length;
+
+    const grid = document.getElementById('grid');
+    grid.innerHTML = filtered.map(item => createCard(item)).join('');
+
+    // Add click handlers
+    grid.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('click', () => toggleCard(card.dataset.id));
+    });
+}
+
+function createCard(item) {
+    const isLLM = currentTab === 'llms';
+    const isExpanded = expandedCard === item.id;
+
+    const tierClass = item.tier ? `badge-tier-${item.tier.toLowerCase()}` : '';
+
+    return `
+        <div class="card ${isExpanded ? 'expanded' : ''}" data-id="${item.id}">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">${item.name}</div>
+                    <div class="card-provider">${isLLM ? item.provider : item.specialty}</div>
+                </div>
+                <div class="card-pricing">
+                    <div class="price">${item.pricing || 'N/A'}</div>
+                    ${item.apiPricing ? `<div class="api-price">${item.apiPricing}</div>` : ''}
+                </div>
+            </div>
+
+            <div class="badges">
+                <span class="badge badge-category">${item.category}</span>
+                ${item.tier ? `<span class="badge ${tierClass}">${item.tier}</span>` : ''}
+                <span class="badge ${item.apiAccess ? 'badge-api' : 'badge-no-api'}">${item.apiAccess ? 'API ✓' : 'No API'}</span>
+            </div>
+
+            <div class="tags">
+                ${item.strengths.slice(0, 3).map(s => `<span class="tag">${s}</span>`).join('')}
+            </div>
+
+            <div class="expanded-content">
+                ${item.contextWindow ? `<div class="expand-section"><h4>Context Window</h4><span class="context-window">${item.contextWindow}</span></div>` : ''}
+
+                <div class="expand-section">
+                    <h4>Forces</h4>
+                    <ul>${item.strengths.map(s => `<li>${s}</li>`).join('')}</ul>
+                </div>
+
+                ${item.weaknesses && item.weaknesses.length ? `
+                <div class="expand-section">
+                    <h4>Faiblesses</h4>
+                    <ul>${item.weaknesses.map(w => `<li class="weakness">${w}</li>`).join('')}</ul>
+                </div>
+                ` : ''}
+
+                <div class="expand-section">
+                    <h4>Cas d'usage</h4>
+                    <ul>${(isLLM ? item.bestFor : item.useCases).map(u => `<li>${u}</li>`).join('')}</ul>
+                </div>
+
+                ${item.equivalentTo || item.betterThan || item.worseThan ? `
+                <div class="expand-section">
+                    <h4>Comparaisons</h4>
+                    ${item.equivalentTo ? `<div class="comparison">≈ Équivalent à <strong>${item.equivalentTo}</strong></div>` : ''}
+                    ${item.betterThan ? `<div class="comparison">✓ Meilleur que <strong>${item.betterThan}</strong></div>` : ''}
+                    ${item.worseThan ? `<div class="comparison">✗ Moins bon que <strong>${item.worseThan}</strong></div>` : ''}
+                </div>
+                ` : ''}
+
+                ${item.integration ? `
+                <div class="expand-section">
+                    <h4>Intégrations</h4>
+                    <div class="tags">${item.integration.map(i => `<span class="tag">${i}</span>`).join('')}</div>
+                </div>
+                ` : ''}
+
+                ${item.tip ? `<div class="tip-box">${item.tip}</div>` : ''}
+            </div>
+        </div>
+    `;
+}
+
+function toggleCard(id) {
+    expandedCard = expandedCard === id ? null : id;
+    renderGrid();
+}
+
+function openModal() {
+    document.getElementById('modal').classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('modal').classList.remove('active');
+}
+
+// Close modal on overlay click
+document.getElementById('modal').addEventListener('click', (e) => {
+    if (e.target.id === 'modal') closeModal();
+});
+</script>
+</body>
+</html>

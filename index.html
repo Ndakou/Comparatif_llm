@@ -60,6 +60,10 @@
                         Outils IA
                         <span class="nav-tab__count" id="tools-count">0</span>
                     </button>
+                    <button class="nav-tab" data-tab="benchmark" role="tab" aria-selected="false">
+                        <span class="nav-tab__icon">📊</span>
+                        Benchmark
+                    </button>
                 </nav>
 
                 <!-- Search & Filters -->
@@ -111,6 +115,51 @@
                     </div>
                     <div id="items-grid" class="items-grid">
                         <!-- Dynamically populated -->
+                    </div>
+                </section>
+
+                <!-- Benchmark Section (Hidden by default) -->
+                <section id="benchmark-section" class="benchmark-section hidden" aria-label="Benchmark">
+                    <!-- Benchmark Filter -->
+                    <div class="benchmark-filter">
+                        <label for="benchmark-category">Filtrer par competence:</label>
+                        <select id="benchmark-category" class="filter-select">
+                            <option value="all">Toutes les competences</option>
+                        </select>
+                        <label for="benchmark-sort">Trier par:</label>
+                        <select id="benchmark-sort" class="filter-select">
+                            <option value="overall">Score global</option>
+                            <option value="reasoning">Raisonnement</option>
+                            <option value="coding">Code</option>
+                            <option value="math">Mathematiques</option>
+                            <option value="writing">Redaction</option>
+                            <option value="speed">Vitesse</option>
+                            <option value="cost">Rapport qualite/prix</option>
+                        </select>
+                    </div>
+
+                    <!-- Benchmark Chart -->
+                    <div class="benchmark-chart-container">
+                        <h3 class="benchmark-chart__title">📊 Scores par competence</h3>
+                        <div id="benchmark-chart" class="benchmark-chart">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+
+                    <!-- Use Case Rankings -->
+                    <div class="usecase-rankings">
+                        <h3 class="usecase-rankings__title">🏆 Classement par cas d'usage</h3>
+                        <div id="usecase-rankings-grid" class="usecase-rankings-grid">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+
+                    <!-- Price/Performance -->
+                    <div class="price-performance">
+                        <h3 class="price-performance__title">💰 Meilleur rapport qualite/prix</h3>
+                        <div id="price-performance-list" class="price-performance-list">
+                            <!-- Dynamically populated -->
+                        </div>
                     </div>
                 </section>
 

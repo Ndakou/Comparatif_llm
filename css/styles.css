@@ -1403,6 +1403,360 @@ button {
 }
 
 /* ============================================
+   BENCHMARK SECTION
+   ============================================ */
+.benchmark-section {
+  margin-top: var(--space-xl);
+}
+
+.benchmark-filter {
+  display: flex;
+  gap: var(--space-md);
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: var(--space-xl);
+  padding: var(--space-lg);
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+}
+
+.benchmark-filter label {
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
+}
+
+.benchmark-chart-container {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  margin-bottom: var(--space-2xl);
+  border: 1px solid var(--border-color);
+}
+
+.benchmark-chart__title {
+  font-size: var(--font-xl);
+  font-weight: 600;
+  margin-bottom: var(--space-xl);
+  text-align: center;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.benchmark-chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.benchmark-row {
+  display: grid;
+  grid-template-columns: 200px 1fr 60px;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.benchmark-row:last-child {
+  border-bottom: none;
+}
+
+.benchmark-row__name {
+  font-weight: 500;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.benchmark-row__provider {
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+}
+
+.benchmark-row__bar-container {
+  height: 24px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  position: relative;
+}
+
+.benchmark-row__bar {
+  height: 100%;
+  border-radius: var(--radius-sm);
+  transition: width 0.5s ease;
+  position: relative;
+}
+
+.benchmark-row__bar--excellent {
+  background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan));
+}
+
+.benchmark-row__bar--good {
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+}
+
+.benchmark-row__bar--average {
+  background: linear-gradient(90deg, var(--accent-orange), var(--accent-orange-light));
+}
+
+.benchmark-row__bar--low {
+  background: linear-gradient(90deg, var(--accent-red), var(--accent-orange));
+}
+
+.benchmark-row__score {
+  font-weight: 600;
+  font-size: var(--font-md);
+  text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.benchmark-row__score--excellent { color: var(--accent-green); }
+.benchmark-row__score--good { color: var(--accent-blue); }
+.benchmark-row__score--average { color: var(--accent-orange); }
+.benchmark-row__score--low { color: var(--accent-red); }
+
+/* Benchmark Legend */
+.benchmark-legend {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-xl);
+  margin-top: var(--space-lg);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--border-color);
+}
+
+.benchmark-legend__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+}
+
+.benchmark-legend__color {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-sm);
+}
+
+.benchmark-legend__color--excellent { background: var(--accent-green); }
+.benchmark-legend__color--good { background: var(--accent-blue); }
+.benchmark-legend__color--average { background: var(--accent-orange); }
+.benchmark-legend__color--low { background: var(--accent-red); }
+
+/* Use Case Rankings */
+.usecase-rankings {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  margin-bottom: var(--space-2xl);
+  border: 1px solid var(--border-color);
+}
+
+.usecase-rankings__title {
+  font-size: var(--font-xl);
+  font-weight: 600;
+  margin-bottom: var(--space-xl);
+  text-align: center;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.usecase-rankings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-lg);
+}
+
+.usecase-card {
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-normal);
+}
+
+.usecase-card:hover {
+  border-color: var(--accent-purple);
+  transform: translateY(-2px);
+}
+
+.usecase-card__title {
+  font-size: var(--font-md);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-xs);
+}
+
+.usecase-card__description {
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+  margin-bottom: var(--space-md);
+}
+
+.usecase-card__ranking {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.usecase-card__rank {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-sm);
+}
+
+.usecase-card__rank-number {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: var(--font-xs);
+}
+
+.usecase-card__rank-number--1 {
+  background: linear-gradient(135deg, #ffd700, #ffb347);
+  color: #1a1a2e;
+}
+
+.usecase-card__rank-number--2 {
+  background: linear-gradient(135deg, #c0c0c0, #a8a8a8);
+  color: #1a1a2e;
+}
+
+.usecase-card__rank-number--3 {
+  background: linear-gradient(135deg, #cd7f32, #b87333);
+  color: white;
+}
+
+.usecase-card__rank-number--other {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.usecase-card__rank-name {
+  color: var(--text-primary);
+}
+
+/* Price Performance */
+.price-performance {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  border: 1px solid var(--border-color);
+}
+
+.price-performance__title {
+  font-size: var(--font-xl);
+  font-weight: 600;
+  margin-bottom: var(--space-xl);
+  text-align: center;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.price-performance-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-md);
+}
+
+.price-performance-item {
+  background: var(--bg-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  transition: all var(--transition-normal);
+}
+
+.price-performance-item:hover {
+  border-color: var(--accent-green);
+}
+
+.price-performance-item__rank {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: var(--font-sm);
+  flex-shrink: 0;
+}
+
+.price-performance-item__info {
+  flex: 1;
+}
+
+.price-performance-item__name {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.price-performance-item__note {
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+}
+
+.price-performance-item__score {
+  font-weight: 700;
+  font-size: var(--font-lg);
+  color: var(--accent-green);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Responsive Benchmark */
+@media (max-width: 768px) {
+  .benchmark-row {
+    grid-template-columns: 1fr;
+    gap: var(--space-sm);
+  }
+
+  .benchmark-row__name {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .benchmark-row__score {
+    text-align: left;
+  }
+
+  .benchmark-filter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .benchmark-legend {
+    flex-wrap: wrap;
+    gap: var(--space-md);
+  }
+
+  .usecase-rankings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================
    PRINT STYLES
    ============================================ */
 @media print {

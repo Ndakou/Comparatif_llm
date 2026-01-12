@@ -802,6 +802,36 @@
       "useCases": ["Usage local", "Tests"],
       "integrations": ["Local API"], "pricing": "Gratuit",
       "difficulty": "debutant", "docUrl": "https://lmstudio.ai", "tags": ["local", "gui"], "isNew": false
+    },
+    {
+      "id": "vapi", "name": "VAPI", "provider": "VAPI AI", "categories": ["conversation", "audio", "productivity"],
+      "type": "voice-assistant", "description": "Plateforme leader pour creer des assistants vocaux IA. Latence ultra-basse, multi-LLM, integrations telephonie.",
+      "strengths": ["Latence <500ms", "Multi-LLM (GPT, Claude, etc.)", "Integrations telephonie (Twilio, Vonage)", "Workflows avances", "Analytics temps reel", "Voix naturelles"],
+      "weaknesses": ["Courbe apprentissage API", "Cout a l'echelle"],
+      "useCases": ["Assistants telephoniques", "Support client vocal", "Prise de RDV automatique", "Qualification leads", "Sondages vocaux"],
+      "integrations": ["Twilio", "Vonage", "Make", "n8n", "Zapier", "OpenAI", "Anthropic", "ElevenLabs", "PlayHT"],
+      "pricing": "Pay per minute - $0.05/min",
+      "difficulty": "intermediaire", "docUrl": "https://docs.vapi.ai", "tags": ["voice", "phone", "assistant", "realtime"], "isNew": true
+    },
+    {
+      "id": "bland-ai", "name": "Bland AI", "provider": "Bland", "categories": ["conversation", "audio"],
+      "type": "voice-assistant", "description": "IA pour appels telephoniques automatises. Ideal pour ventes et support.",
+      "strengths": ["Appels sortants automatises", "Scripts personnalisables", "Transfert vers humain", "CRM integrations"],
+      "weaknesses": ["Focus telephonie uniquement"],
+      "useCases": ["Cold calling", "Relances", "Confirmation RDV", "Enquetes"],
+      "integrations": ["Salesforce", "HubSpot", "Zapier"],
+      "pricing": "$0.09/min",
+      "difficulty": "intermediaire", "docUrl": "https://bland.ai", "tags": ["phone", "sales", "outbound"], "isNew": true
+    },
+    {
+      "id": "retell-ai", "name": "Retell AI", "provider": "Retell", "categories": ["conversation", "audio"],
+      "type": "voice-assistant", "description": "Agents vocaux conversationnels avec latence ultra-basse.",
+      "strengths": ["Latence 800ms", "Conversations naturelles", "Multi-langues", "SDK simple"],
+      "weaknesses": ["Moins de features que VAPI"],
+      "useCases": ["Support client", "Assistants vocaux", "IVR intelligent"],
+      "integrations": ["Twilio", "Daily.co", "OpenAI"],
+      "pricing": "$0.07-0.12/min",
+      "difficulty": "intermediaire", "docUrl": "https://retellai.com", "tags": ["voice", "conversational"], "isNew": true
     }
   ],
   "examples": [
@@ -824,7 +854,8 @@
     {"categoryId": "conversation", "title": "Transcrire 20h interviews", "situation": "Interviews utilisateurs pour projet UX.", "solution": "Whisper transcription + Claude analyse patterns.", "result": "Transcriptions + synthese insights en quelques heures.", "tools": ["whisper", "claude-sonnet-4-5"]},
     {"categoryId": "opensource", "title": "LLM prive RGPD", "situation": "Entreprise ne peut pas envoyer donnees externes.", "solution": "Llama 4 ou Qwen 3 sur infrastructure avec Ollama.", "result": "Assistant 100% on-premise, conforme.", "tools": ["llama-4-maverick", "ollama"]},
     {"categoryId": "productivity", "title": "Automatiser notes reunions", "situation": "Equipe oublie actions et decisions.", "solution": "Fathom pour notes auto avec actions items.", "result": "Notes structurees, follow-ups auto.", "tools": ["fathom"]},
-    {"categoryId": "productivity", "title": "Transformer docs en podcast", "situation": "Rapport 100 pages a digerer rapidement.", "solution": "NotebookLM pour analyse et generation podcast.", "result": "Podcast resume en 20 min, gratuit.", "tools": ["notebooklm"]}
+    {"categoryId": "productivity", "title": "Transformer docs en podcast", "situation": "Rapport 100 pages a digerer rapidement.", "solution": "NotebookLM pour analyse et generation podcast.", "result": "Podcast resume en 20 min, gratuit.", "tools": ["notebooklm"]},
+    {"categoryId": "conversation", "title": "Assistant telephonique 24/7", "situation": "PME recoit 200 appels/jour, manque de personnel.", "solution": "VAPI avec Claude pour comprendre et repondre aux questions clients.", "result": "80% appels traites automatiquement, disponibilite 24/7.", "tools": ["vapi", "claude-sonnet-4-5", "elevenlabs"]}
   ],
   "quickGuide": {
     "byUseCase": [
@@ -853,7 +884,248 @@
       {"component": "Recherche web", "recommendation": "Perplexity API"},
       {"component": "Images", "recommendation": "DALL-E 3 API / FLUX"},
       {"component": "Audio TTS", "recommendation": "ElevenLabs"},
-      {"component": "Transcription", "recommendation": "Whisper"}
+      {"component": "Transcription", "recommendation": "Whisper"},
+      {"component": "Voice Assistant", "recommendation": "VAPI / ElevenLabs"}
+    ]
+  },
+  "benchmarks": {
+    "categories": [
+      {"id": "reasoning", "name": "Raisonnement", "icon": "🧠", "description": "Capacite a resoudre des problemes complexes"},
+      {"id": "coding", "name": "Code", "icon": "💻", "description": "Performance en generation et debug de code"},
+      {"id": "math", "name": "Mathematiques", "icon": "🔢", "description": "Resolution de problemes mathematiques"},
+      {"id": "writing", "name": "Redaction", "icon": "✍️", "description": "Qualite de generation de texte"},
+      {"id": "multilingual", "name": "Multilingue", "icon": "🌍", "description": "Support des langues non-anglaises"},
+      {"id": "speed", "name": "Vitesse", "icon": "⚡", "description": "Rapidite de generation"},
+      {"id": "context", "name": "Contexte", "icon": "📚", "description": "Capacite a gerer de longs contextes"},
+      {"id": "cost", "name": "Cout", "icon": "💰", "description": "Rapport qualite/prix"},
+      {"id": "multimodal", "name": "Multimodal", "icon": "🖼️", "description": "Traitement images/audio/video"},
+      {"id": "instruction", "name": "Suivi Instructions", "icon": "📋", "description": "Precision du suivi des consignes"}
+    ],
+    "llmScores": [
+      {
+        "id": "gpt-5-2",
+        "scores": {"reasoning": 98, "coding": 92, "math": 99, "writing": 95, "multilingual": 90, "speed": 60, "context": 95, "cost": 30, "multimodal": 95, "instruction": 96},
+        "highlights": ["AIME 2025 parfait", "400K contexte"],
+        "bestFor": ["Recherche", "Analyse complexe", "Maths"]
+      },
+      {
+        "id": "gpt-5-1",
+        "scores": {"reasoning": 92, "coding": 88, "math": 90, "writing": 92, "multilingual": 88, "speed": 80, "context": 85, "cost": 45, "multimodal": 90, "instruction": 93},
+        "highlights": ["Adaptive reasoning"],
+        "bestFor": ["Usage general", "Chatbots"]
+      },
+      {
+        "id": "gpt-4o",
+        "scores": {"reasoning": 85, "coding": 82, "math": 80, "writing": 88, "multilingual": 85, "speed": 90, "context": 75, "cost": 70, "multimodal": 92, "instruction": 88},
+        "highlights": ["Multimodal natif", "Rapide"],
+        "bestFor": ["Chatbots", "Vision", "Polyvalent"]
+      },
+      {
+        "id": "gpt-4o-mini",
+        "scores": {"reasoning": 70, "coding": 68, "math": 65, "writing": 75, "multilingual": 72, "speed": 95, "context": 75, "cost": 95, "multimodal": 80, "instruction": 78},
+        "highlights": ["Ultra economique"],
+        "bestFor": ["Volume eleve", "Taches simples"]
+      },
+      {
+        "id": "o1",
+        "scores": {"reasoning": 96, "coding": 90, "math": 97, "writing": 80, "multilingual": 82, "speed": 30, "context": 85, "cost": 35, "multimodal": 60, "instruction": 85},
+        "highlights": ["Chain of thought"],
+        "bestFor": ["Maths", "Logique", "Algorithmes"]
+      },
+      {
+        "id": "o3",
+        "scores": {"reasoning": 99, "coding": 92, "math": 99, "writing": 82, "multilingual": 84, "speed": 25, "context": 85, "cost": 25, "multimodal": 65, "instruction": 88},
+        "highlights": ["Benchmarks records"],
+        "bestFor": ["Recherche", "Problemes scientifiques"]
+      },
+      {
+        "id": "claude-opus-4-5",
+        "scores": {"reasoning": 96, "coding": 98, "math": 92, "writing": 97, "multilingual": 92, "speed": 55, "context": 88, "cost": 35, "multimodal": 88, "instruction": 98},
+        "highlights": ["SWE-bench 80.9%", "Meilleur code"],
+        "bestFor": ["Code", "Analyse", "Redaction technique"]
+      },
+      {
+        "id": "claude-sonnet-4-5",
+        "scores": {"reasoning": 90, "coding": 95, "math": 85, "writing": 94, "multilingual": 90, "speed": 85, "context": 88, "cost": 65, "multimodal": 85, "instruction": 95},
+        "highlights": ["Best coding daily", "30h autonomie"],
+        "bestFor": ["Dev quotidien", "Workflows", "Automatisation"]
+      },
+      {
+        "id": "claude-sonnet-4",
+        "scores": {"reasoning": 85, "coding": 90, "math": 80, "writing": 90, "multilingual": 88, "speed": 85, "context": 88, "cost": 65, "multimodal": 82, "instruction": 92},
+        "highlights": ["Equilibre qualite/prix"],
+        "bestFor": ["Usage quotidien", "Code"]
+      },
+      {
+        "id": "claude-haiku-3-5",
+        "scores": {"reasoning": 68, "coding": 72, "math": 60, "writing": 75, "multilingual": 78, "speed": 98, "context": 88, "cost": 92, "multimodal": 70, "instruction": 80},
+        "highlights": ["Ultra rapide"],
+        "bestFor": ["Classification", "Volume", "Taches simples"]
+      },
+      {
+        "id": "gemini-3-pro",
+        "scores": {"reasoning": 97, "coding": 88, "math": 94, "writing": 90, "multilingual": 92, "speed": 70, "context": 99, "cost": 75, "multimodal": 95, "instruction": 90},
+        "highlights": ["1501 Elo record", "2M contexte"],
+        "bestFor": ["Long contexte", "Recherche", "Multimodal"]
+      },
+      {
+        "id": "gemini-2-5-flash",
+        "scores": {"reasoning": 82, "coding": 78, "math": 75, "writing": 82, "multilingual": 88, "speed": 95, "context": 95, "cost": 90, "multimodal": 90, "instruction": 85},
+        "highlights": ["1M contexte", "Rapide"],
+        "bestFor": ["Documents longs", "Video/Audio"]
+      },
+      {
+        "id": "gemini-2-flash",
+        "scores": {"reasoning": 78, "coding": 75, "math": 72, "writing": 80, "multilingual": 85, "speed": 92, "context": 95, "cost": 90, "multimodal": 88, "instruction": 82},
+        "highlights": ["Multimodal"],
+        "bestFor": ["Google ecosystem", "Documents"]
+      },
+      {
+        "id": "llama-4-scout",
+        "scores": {"reasoning": 85, "coding": 80, "math": 78, "writing": 82, "multilingual": 80, "speed": 75, "context": 100, "cost": 100, "multimodal": 85, "instruction": 80},
+        "highlights": ["10M contexte!", "Open source"],
+        "bestFor": ["Analyse massive", "Self-hosting"]
+      },
+      {
+        "id": "llama-4-maverick",
+        "scores": {"reasoning": 88, "coding": 85, "math": 82, "writing": 85, "multilingual": 82, "speed": 85, "context": 90, "cost": 100, "multimodal": 88, "instruction": 85},
+        "highlights": ["Bat GPT-4o", "Open source"],
+        "bestFor": ["Production", "Fine-tuning"]
+      },
+      {
+        "id": "llama-3-3-70b",
+        "scores": {"reasoning": 78, "coding": 75, "math": 70, "writing": 78, "multilingual": 75, "speed": 80, "context": 75, "cost": 100, "multimodal": 60, "instruction": 78},
+        "highlights": ["Communaute active"],
+        "bestFor": ["Self-hosting", "Fine-tuning"]
+      },
+      {
+        "id": "mistral-large-3",
+        "scores": {"reasoning": 88, "coding": 85, "math": 82, "writing": 90, "multilingual": 98, "speed": 85, "context": 75, "cost": 75, "multimodal": 80, "instruction": 88},
+        "highlights": ["Meilleur francais", "RGPD"],
+        "bestFor": ["France/EU", "Multilingue"]
+      },
+      {
+        "id": "mistral-large-2",
+        "scores": {"reasoning": 82, "coding": 80, "math": 75, "writing": 85, "multilingual": 95, "speed": 85, "context": 75, "cost": 75, "multimodal": 75, "instruction": 85},
+        "highlights": ["Europe", "Francais"],
+        "bestFor": ["Apps francaises", "RGPD"]
+      },
+      {
+        "id": "deepseek-v3-2",
+        "scores": {"reasoning": 95, "coding": 92, "math": 98, "writing": 82, "multilingual": 75, "speed": 85, "context": 75, "cost": 98, "multimodal": 70, "instruction": 85},
+        "highlights": ["Gold IMO/IOI", "Prix imbattable"],
+        "bestFor": ["Maths", "Competitions", "Code"]
+      },
+      {
+        "id": "deepseek-v3",
+        "scores": {"reasoning": 82, "coding": 88, "math": 85, "writing": 78, "multilingual": 70, "speed": 90, "context": 75, "cost": 99, "multimodal": 65, "instruction": 82},
+        "highlights": ["Excellent code", "Tres economique"],
+        "bestFor": ["Dev budget", "Prototypage"]
+      },
+      {
+        "id": "deepseek-r1",
+        "scores": {"reasoning": 92, "coding": 85, "math": 95, "writing": 75, "multilingual": 70, "speed": 50, "context": 75, "cost": 95, "multimodal": 60, "instruction": 80},
+        "highlights": ["95% o1 a 5% prix"],
+        "bestFor": ["Maths", "Logique", "Budget"]
+      },
+      {
+        "id": "grok-3",
+        "scores": {"reasoning": 82, "coding": 78, "math": 75, "writing": 85, "multilingual": 80, "speed": 85, "context": 75, "cost": 70, "multimodal": 75, "instruction": 82},
+        "highlights": ["Temps reel X/Twitter"],
+        "bestFor": ["Actualites", "Social media"]
+      },
+      {
+        "id": "qwen-3-72b",
+        "scores": {"reasoning": 80, "coding": 85, "math": 78, "writing": 80, "multilingual": 90, "speed": 80, "context": 75, "cost": 100, "multimodal": 75, "instruction": 80},
+        "highlights": ["Open source", "Multilingue"],
+        "bestFor": ["Self-hosting", "Asie"]
+      },
+      {
+        "id": "perplexity-sonar",
+        "scores": {"reasoning": 75, "coding": 60, "math": 60, "writing": 80, "multilingual": 80, "speed": 80, "context": 75, "cost": 80, "multimodal": 70, "instruction": 85},
+        "highlights": ["Recherche web", "Citations"],
+        "bestFor": ["Recherche", "Fact-checking"]
+      },
+      {
+        "id": "cohere-command-r-plus",
+        "scores": {"reasoning": 80, "coding": 70, "math": 68, "writing": 85, "multilingual": 92, "speed": 85, "context": 75, "cost": 70, "multimodal": 65, "instruction": 88},
+        "highlights": ["RAG optimise", "Entreprise"],
+        "bestFor": ["RAG", "Support multilingue"]
+      }
+    ],
+    "useCaseRankings": [
+      {
+        "useCase": "Raisonnement complexe",
+        "description": "Problemes multi-etapes, logique avancee",
+        "ranking": ["o3", "gpt-5-2", "claude-opus-4-5", "gemini-3-pro", "deepseek-v3-2"]
+      },
+      {
+        "useCase": "Generation de code",
+        "description": "Ecriture, debug, refactoring de code",
+        "ranking": ["claude-opus-4-5", "claude-sonnet-4-5", "deepseek-v3-2", "gpt-5-2", "claude-sonnet-4"]
+      },
+      {
+        "useCase": "Mathematiques",
+        "description": "Calculs, preuves, problemes olympiade",
+        "ranking": ["o3", "gpt-5-2", "deepseek-v3-2", "o1", "gemini-3-pro"]
+      },
+      {
+        "useCase": "Redaction creative",
+        "description": "Articles, histoires, copywriting",
+        "ranking": ["claude-opus-4-5", "gpt-5-2", "claude-sonnet-4-5", "gpt-4o", "mistral-large-3"]
+      },
+      {
+        "useCase": "Chatbot quotidien",
+        "description": "Assistant conversationnel general",
+        "ranking": ["claude-sonnet-4-5", "gpt-4o", "gemini-2-5-flash", "gpt-5-1", "claude-sonnet-4"]
+      },
+      {
+        "useCase": "Analyse documents longs",
+        "description": "Traitement de documents 100+ pages",
+        "ranking": ["llama-4-scout", "gemini-3-pro", "gemini-2-5-flash", "gpt-5-2", "claude-opus-4-5"]
+      },
+      {
+        "useCase": "Budget serre",
+        "description": "Meilleur rapport qualite/prix",
+        "ranking": ["deepseek-v3", "claude-haiku-3-5", "gpt-4o-mini", "gemini-2-5-flash", "deepseek-r1"]
+      },
+      {
+        "useCase": "Self-hosting prive",
+        "description": "Deploiement on-premise",
+        "ranking": ["llama-4-maverick", "llama-4-scout", "qwen-3-72b", "llama-3-3-70b", "mistral-large-3"]
+      },
+      {
+        "useCase": "Multilingue/Francais",
+        "description": "Support langues non-anglaises",
+        "ranking": ["mistral-large-3", "mistral-large-2", "cohere-command-r-plus", "gemini-3-pro", "claude-opus-4-5"]
+      },
+      {
+        "useCase": "Vision/Images",
+        "description": "Analyse et comprehension d'images",
+        "ranking": ["gpt-5-2", "gemini-3-pro", "gpt-4o", "gemini-2-5-flash", "claude-opus-4-5"]
+      },
+      {
+        "useCase": "Temps reel/Actualites",
+        "description": "Informations en temps reel",
+        "ranking": ["grok-3", "perplexity-sonar", "gemini-3-pro", "gpt-5-1", "claude-sonnet-4-5"]
+      },
+      {
+        "useCase": "RAG/Knowledge Base",
+        "description": "Retrieval Augmented Generation",
+        "ranking": ["cohere-command-r-plus", "claude-sonnet-4-5", "gemini-3-pro", "gpt-4o", "llama-4-maverick"]
+      }
+    ],
+    "pricePerformance": [
+      {"id": "deepseek-v3", "score": 98, "note": "Imbattable en rapport qualite/prix"},
+      {"id": "deepseek-v3-2", "score": 95, "note": "Performances premium a prix budget"},
+      {"id": "claude-haiku-3-5", "score": 92, "note": "Ultra rapide et economique"},
+      {"id": "gpt-4o-mini", "score": 90, "note": "Fiable et abordable"},
+      {"id": "gemini-2-5-flash", "score": 88, "note": "Long contexte economique"},
+      {"id": "llama-4-maverick", "score": 95, "note": "Gratuit si self-hosted"},
+      {"id": "claude-sonnet-4-5", "score": 85, "note": "Meilleur equilibre production"},
+      {"id": "mistral-large-3", "score": 82, "note": "Europe/Francais optimal"},
+      {"id": "gpt-4o", "score": 78, "note": "Polyvalent accessible"},
+      {"id": "gemini-3-pro", "score": 80, "note": "Long contexte premium"}
     ]
   }
 }

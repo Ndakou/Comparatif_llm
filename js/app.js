@@ -47,7 +47,14 @@ const elements = {
   comparatorBtn: document.getElementById('comparator-btn'),
   comparatorCount: document.getElementById('comparator-count'),
   modalOverlay: document.getElementById('modal-overlay'),
-  modalContent: document.getElementById('modal-content')
+  modalContent: document.getElementById('modal-content'),
+  // Benchmark elements
+  benchmarkSection: document.getElementById('benchmark-section'),
+  benchmarkCategory: document.getElementById('benchmark-category'),
+  benchmarkSort: document.getElementById('benchmark-sort'),
+  benchmarkChart: document.getElementById('benchmark-chart'),
+  usecaseRankingsGrid: document.getElementById('usecase-rankings-grid'),
+  pricePerformanceList: document.getElementById('price-performance-list')
 };
 
 // ============================================
@@ -186,7 +193,31 @@ function handleTabChange(tab) {
   if (elements.tierFilter) elements.tierFilter.value = '';
   if (elements.difficultyFilter) elements.difficultyFilter.value = '';
 
-  renderCategories();
+  // Handle benchmark tab
+  if (tab === 'benchmark') {
+    showBenchmarkSection();
+  } else {
+    hideBenchmarkSection();
+    renderCategories();
+  }
+}
+
+function showBenchmarkSection() {
+  // Hide other sections
+  if (elements.categoriesGrid) elements.categoriesGrid.classList.add('hidden');
+  if (elements.itemsSection) elements.itemsSection.classList.add('hidden');
+  document.querySelector('.controls')?.classList.add('hidden');
+
+  // Show benchmark section
+  if (elements.benchmarkSection) {
+    elements.benchmarkSection.classList.remove('hidden');
+    renderBenchmark();
+  }
+}
+
+function hideBenchmarkSection() {
+  if (elements.benchmarkSection) elements.benchmarkSection.classList.add('hidden');
+  document.querySelector('.controls')?.classList.remove('hidden');
 }
 
 // ============================================
@@ -827,6 +858,200 @@ function goBack() {
 
 // Make goBack globally available
 window.goBack = goBack;
+
+// ============================================
+// BENCHMARK RENDERING
+// ============================================
+
+function renderBenchmark() {
+  if (!state.data?.benchmarks) return;
+
+  populateBenchmarkFilters();
+  renderBenchmarkChart();
+  renderUseCaseRankings();
+  renderPricePerformance();
+  setupBenchmarkListeners();
+}
+
+function populateBenchmarkFilters() {
+  if (elements.benchmarkCategory && state.data.benchmarks.categories) {
+    const options = state.data.benchmarks.categories.map(cat =>
+      `<option value="${cat.id}">${cat.icon} ${cat.name}</option>`
+    ).join('');
+    elements.benchmarkCategory.innerHTML = `<option value="all">Toutes les competences</option>${options}`;
+  }
+}
+
+function setupBenchmarkListeners() {
+  if (elements.benchmarkSort) {
+    elements.benchmarkSort.removeEventListener('change', handleBenchmarkSortChange);
+    elements.benchmarkSort.addEventListener('change', handleBenchmarkSortChange);
+  }
+  if (elements.benchmarkCategory) {
+    elements.benchmarkCategory.removeEventListener('change', handleBenchmarkCategoryChange);
+    elements.benchmarkCategory.addEventListener('change', handleBenchmarkCategoryChange);
+  }
+}
+
+function handleBenchmarkSortChange() {
+  renderBenchmarkChart();
+}
+
+function handleBenchmarkCategoryChange() {
+  renderBenchmarkChart();
+}
+
+function renderBenchmarkChart() {
+  if (!elements.benchmarkChart || !state.data.benchmarks?.llmScores) return;
+
+  const sortBy = elements.benchmarkSort?.value || 'overall';
+  const filterCategory = elements.benchmarkCategory?.value || 'all';
+
+  // Get scores and sort
+  let scores = state.data.benchmarks.llmScores.map(item => {
+    const llm = state.data.llms.find(l => l.id === item.id);
+    let score;
+
+    if (sortBy === 'overall') {
+      // Calculate average of all scores
+      const values = Object.values(item.scores);
+      score = Math.round(values.reduce((a, b) => a + b, 0) / values.length);
+    } else {
+      score = item.scores[sortBy] || 0;
+    }
+
+    return {
+      ...item,
+      llm,
+      sortScore: score,
+      displayScore: score
+    };
+  });
+
+  // Filter by category if selected
+  if (filterCategory !== 'all') {
+    scores = scores.filter(item => item.scores[filterCategory] !== undefined);
+    scores.forEach(item => {
+      item.displayScore = item.scores[filterCategory];
+      item.sortScore = item.scores[filterCategory];
+    });
+  }
+
+  // Sort by score
+  scores.sort((a, b) => b.sortScore - a.sortScore);
+
+  // Render chart
+  const chartHTML = scores.map((item, index) => {
+    const scoreClass = getScoreClass(item.displayScore);
+    const barClass = getBarClass(item.displayScore);
+
+    return `
+      <div class="benchmark-row">
+        <div class="benchmark-row__name">
+          <span>${item.llm?.name || item.id}</span>
+          <span class="benchmark-row__provider">${item.llm?.provider || ''}</span>
+        </div>
+        <div class="benchmark-row__bar-container">
+          <div class="benchmark-row__bar benchmark-row__bar--${barClass}" style="width: ${item.displayScore}%"></div>
+        </div>
+        <span class="benchmark-row__score benchmark-row__score--${scoreClass}">${item.displayScore}</span>
+      </div>
+    `;
+  }).join('');
+
+  // Add legend
+  const legendHTML = `
+    <div class="benchmark-legend">
+      <div class="benchmark-legend__item">
+        <div class="benchmark-legend__color benchmark-legend__color--excellent"></div>
+        <span>Excellent (90+)</span>
+      </div>
+      <div class="benchmark-legend__item">
+        <div class="benchmark-legend__color benchmark-legend__color--good"></div>
+        <span>Bon (75-89)</span>
+      </div>
+      <div class="benchmark-legend__item">
+        <div class="benchmark-legend__color benchmark-legend__color--average"></div>
+        <span>Moyen (60-74)</span>
+      </div>
+      <div class="benchmark-legend__item">
+        <div class="benchmark-legend__color benchmark-legend__color--low"></div>
+        <span>Faible (<60)</span>
+      </div>
+    </div>
+  `;
+
+  elements.benchmarkChart.innerHTML = chartHTML + legendHTML;
+}
+
+function getScoreClass(score) {
+  if (score >= 90) return 'excellent';
+  if (score >= 75) return 'good';
+  if (score >= 60) return 'average';
+  return 'low';
+}
+
+function getBarClass(score) {
+  if (score >= 90) return 'excellent';
+  if (score >= 75) return 'good';
+  if (score >= 60) return 'average';
+  return 'low';
+}
+
+function renderUseCaseRankings() {
+  if (!elements.usecaseRankingsGrid || !state.data.benchmarks?.useCaseRankings) return;
+
+  const rankings = state.data.benchmarks.useCaseRankings;
+
+  const html = rankings.map(useCase => {
+    const rankingHTML = useCase.ranking.map((llmId, index) => {
+      const llm = state.data.llms.find(l => l.id === llmId);
+      const rankClass = index < 3 ? `usecase-card__rank-number--${index + 1}` : 'usecase-card__rank-number--other';
+
+      return `
+        <div class="usecase-card__rank">
+          <span class="usecase-card__rank-number ${rankClass}">${index + 1}</span>
+          <span class="usecase-card__rank-name">${llm?.name || llmId}</span>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="usecase-card">
+        <h4 class="usecase-card__title">${useCase.useCase}</h4>
+        <p class="usecase-card__description">${useCase.description}</p>
+        <div class="usecase-card__ranking">
+          ${rankingHTML}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  elements.usecaseRankingsGrid.innerHTML = html;
+}
+
+function renderPricePerformance() {
+  if (!elements.pricePerformanceList || !state.data.benchmarks?.pricePerformance) return;
+
+  const items = state.data.benchmarks.pricePerformance;
+
+  const html = items.map((item, index) => {
+    const llm = state.data.llms.find(l => l.id === item.id);
+
+    return `
+      <div class="price-performance-item">
+        <div class="price-performance-item__rank">${index + 1}</div>
+        <div class="price-performance-item__info">
+          <div class="price-performance-item__name">${llm?.name || item.id}</div>
+          <div class="price-performance-item__note">${item.note}</div>
+        </div>
+        <div class="price-performance-item__score">${item.score}</div>
+      </div>
+    `;
+  }).join('');
+
+  elements.pricePerformanceList.innerHTML = html;
+}
 
 // ============================================
 // INITIALIZATION

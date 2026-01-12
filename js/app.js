@@ -243,8 +243,17 @@ function handleFilterChange() {
   state.filters.tier = elements.tierFilter?.value || '';
   state.filters.difficulty = elements.difficultyFilter?.value || '';
 
-  if (state.currentCategory) {
+  // Si un filtre est actif, afficher les items filtrés même sans catégorie sélectionnée
+  if (state.filters.tier || state.filters.difficulty || state.filters.category) {
+    state.currentCategory = state.currentCategory || 'filter';
     renderItems();
+  } else if (state.currentCategory && state.currentCategory !== 'filter') {
+    // Si une catégorie est sélectionnée (pas via filtre), rafraîchir
+    renderItems();
+  } else {
+    // Aucun filtre et aucune catégorie - retour aux catégories
+    state.currentCategory = null;
+    renderCategories();
   }
 }
 
@@ -349,6 +358,16 @@ function renderItems() {
   if (state.currentCategory === 'search') {
     items = filterItems(allItems);
     categoryName = `Resultats de recherche`;
+  } else if (state.currentCategory === 'filter') {
+    items = filterItems(allItems);
+    const filterLabels = [];
+    if (state.filters.tier) filterLabels.push(state.filters.tier.charAt(0).toUpperCase() + state.filters.tier.slice(1));
+    if (state.filters.difficulty) filterLabels.push(state.filters.difficulty.charAt(0).toUpperCase() + state.filters.difficulty.slice(1));
+    if (state.filters.category) {
+      const cat = state.data.categories.find(c => c.id === state.filters.category);
+      if (cat) filterLabels.push(cat.name);
+    }
+    categoryName = `🔎 Filtres: ${filterLabels.join(', ') || 'Tous'}`;
   } else {
     items = allItems.filter(item => item.categories.includes(state.currentCategory));
     items = filterItems(items);

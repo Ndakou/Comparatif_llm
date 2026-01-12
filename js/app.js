@@ -525,12 +525,19 @@ function updateActiveFiltersUI() {
 }
 
 function countActiveFilters() {
+  // Defensive: ensure filter arrays are defined
+  const competencies = state.filters.competencies || [];
+  const tiers = state.filters.tiers || [];
+  const difficulties = state.filters.difficulties || [];
+  const accessTypes = state.filters.accessTypes || [];
+  const contextSizes = state.filters.contextSizes || [];
+
   let count = 0;
-  count += state.filters.competencies.length;
-  count += state.filters.tiers.length;
-  count += state.filters.difficulties.length;
-  count += state.filters.accessTypes.length;
-  count += state.filters.contextSizes.length;
+  count += competencies.length;
+  count += tiers.length;
+  count += difficulties.length;
+  count += accessTypes.length;
+  count += contextSizes.length;
   if (state.filters.minScore > 0) count++;
   if (state.filters.category) count++;
   if (state.filters.useCase) count++;
@@ -540,33 +547,40 @@ function countActiveFilters() {
 function renderActiveFiltersTags() {
   if (!elements.activeFiltersTags) return;
 
+  // Defensive: ensure filter arrays are defined
+  const competencies = state.filters.competencies || [];
+  const tiers = state.filters.tiers || [];
+  const difficulties = state.filters.difficulties || [];
+  const accessTypes = state.filters.accessTypes || [];
+  const contextSizes = state.filters.contextSizes || [];
+
   const tags = [];
 
   // Add competency tags
-  state.filters.competencies.forEach(comp => {
+  competencies.forEach(comp => {
     const label = COMPETENCY_LABELS[comp];
     tags.push({ type: 'competencies', value: comp, label: `${label?.emoji || ''} ${label?.name || comp}` });
   });
 
   // Add tier tags
-  state.filters.tiers.forEach(tier => {
+  tiers.forEach(tier => {
     tags.push({ type: 'tiers', value: tier, label: getTierLabel(tier) });
   });
 
   // Add difficulty tags
-  state.filters.difficulties.forEach(diff => {
+  difficulties.forEach(diff => {
     tags.push({ type: 'difficulties', value: diff, label: getDifficultyLabel(diff) });
   });
 
   // Add access type tags
   const accessLabels = { api: '🔌 API', opensource: '🌐 Open Source', free: '🆓 Gratuit' };
-  state.filters.accessTypes.forEach(access => {
+  accessTypes.forEach(access => {
     tags.push({ type: 'accessTypes', value: access, label: accessLabels[access] || access });
   });
 
   // Add context size tags
   const contextLabels = { small: '≤32K', medium: '32K-128K', large: '128K-1M', xlarge: '>1M' };
-  state.filters.contextSizes.forEach(ctx => {
+  contextSizes.forEach(ctx => {
     tags.push({ type: 'contextSizes', value: ctx, label: `📚 ${contextLabels[ctx]}` });
   });
 

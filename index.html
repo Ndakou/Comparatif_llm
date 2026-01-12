@@ -30,7 +30,17 @@
     <div class="app">
         <!-- Header -->
         <header class="header">
-            <h1 class="header__logo">AI Reference Hub</h1>
+            <div class="header__top">
+                <h1 class="header__logo">AI Reference Hub</h1>
+                <div class="header__actions">
+                    <button id="theme-toggle" class="theme-toggle" aria-label="Changer de theme" title="Mode clair/sombre">
+                        <span class="theme-toggle__icon">🌙</span>
+                    </button>
+                    <button id="settings-btn" class="settings-btn" aria-label="Preferences" title="Preferences">
+                        <span class="settings-btn__icon">⚙️</span>
+                    </button>
+                </div>
+            </div>
             <p class="header__subtitle">Reference exhaustive des LLMs et outils IA pour workflows n8n - MR Tech Lab</p>
             <div class="header__meta">
                 <div class="meta-item">
@@ -81,6 +91,9 @@
                     <div class="filter-group">
                         <select id="category-filter" class="filter-select" aria-label="Filtrer par categorie">
                             <option value="">Toutes les categories</option>
+                        </select>
+                        <select id="usecase-filter" class="filter-select" aria-label="Filtrer par cas d'usage">
+                            <option value="">Tous les cas d'usage</option>
                         </select>
                         <select id="tier-filter" class="filter-select" aria-label="Filtrer par tier">
                             <option value="">Tous les tiers</option>
@@ -163,9 +176,30 @@
                     </div>
                 </section>
 
+                <!-- News Section -->
+                <section class="news-section">
+                    <div class="news-section__header">
+                        <h2 class="news-section__title">📰 Actualités IA</h2>
+                        <span class="news-section__badge">Janvier 2025</span>
+                    </div>
+                    <div id="news-ticker" class="news-ticker">
+                        <!-- Dynamically populated -->
+                    </div>
+                    <div id="news-grid" class="news-grid">
+                        <!-- Dynamically populated -->
+                    </div>
+                </section>
+
                 <!-- Examples Section -->
                 <section class="examples-section">
-                    <h2 class="examples-section__title">💡 Exemples Concrets d'Utilisation</h2>
+                    <div class="examples-section__header">
+                        <h2 class="examples-section__title">💡 Exemples Concrets d'Utilisation</h2>
+                        <div class="examples-filter">
+                            <select id="examples-category-filter" class="filter-select filter-select--sm" aria-label="Filtrer exemples">
+                                <option value="">Toutes categories</option>
+                            </select>
+                        </div>
+                    </div>
                     <div id="examples-grid" class="examples-grid">
                         <!-- Dynamically populated -->
                     </div>
@@ -194,10 +228,10 @@
 
         <!-- Footer -->
         <footer class="footer">
-            <p>AI Reference Hub v2.0 - Cree par <a href="#">MR Tech Lab</a></p>
+            <p>AI Reference Hub v3.2 - Cree par <a href="#">MR Tech Lab</a></p>
             <p>Donnees mises a jour regulierement. Derniere mise a jour: Janvier 2025</p>
             <p style="margin-top: 1rem; font-size: 0.85rem;">
-                Raccourcis: <code>/</code> pour rechercher, <code>Esc</code> pour fermer
+                Raccourcis: <code>/</code> pour rechercher, <code>Esc</code> pour fermer, <code>T</code> changer theme
             </p>
         </footer>
 

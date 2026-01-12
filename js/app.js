@@ -1,6 +1,6 @@
 /**
  * AI Reference Hub - Main Application
- * Version: 3.1.0 - Phase 2: Animations, Responsive & Enhanced Comparator
+ * Version: 3.2.0 - Phase 3: Use Cases, News, Themes & User Preferences
  * Author: MR Tech Lab
  */
 
@@ -17,18 +17,83 @@ const state = {
     category: '',
     tier: '',
     difficulty: '',
+    useCase: '', // Phase 3: Use case filter
     // Phase 1: Enhanced filters
-    competencies: [], // Multi-select checkboxes
-    minScore: 0, // Score slider
-    accessType: [], // ['api', 'free', 'opensource']
-    contextSize: '' // Small/Medium/Large/Huge
+    competencies: [],
+    minScore: 0,
+    accessType: [],
+    contextSize: ''
   },
   comparison: [],
-  maxComparison: 4, // Increased for better comparison
+  maxComparison: 4,
   favorites: JSON.parse(localStorage.getItem('ai-hub-favorites') || '[]'),
-  // Cache for computed badges
-  badgesCache: {}
+  badgesCache: {},
+  // Phase 3: User preferences
+  preferences: JSON.parse(localStorage.getItem('ai-hub-preferences') || '{}'),
+  theme: localStorage.getItem('ai-hub-theme') || 'dark',
+  examplesFilter: ''
 };
+
+// ============================================
+// NEWS DATA (Updated regularly)
+// ============================================
+
+const NEWS_DATA = [
+  {
+    id: 'news-1',
+    date: '2025-01-10',
+    title: 'Claude Opus 4.5 bat tous les records',
+    summary: 'Anthropic lance Claude Opus 4.5 avec un score SWE-bench de 80.9%, nouveau record mondial pour la génération de code.',
+    category: 'release',
+    icon: '🏆',
+    link: '#claude-opus-4-5'
+  },
+  {
+    id: 'news-2',
+    date: '2025-01-08',
+    title: 'GPT-5.2 : 400K tokens de contexte',
+    summary: 'OpenAI dévoile GPT-5.2 avec une fenêtre de contexte de 400K tokens et un score parfait sur AIME 2025.',
+    category: 'release',
+    icon: '🚀',
+    link: '#gpt-5-2'
+  },
+  {
+    id: 'news-3',
+    date: '2025-01-05',
+    title: 'DeepSeek V3.2 : médaille d\'or IMO',
+    summary: 'DeepSeek décroche la médaille d\'or aux Olympiades Internationales de Mathématiques avec son modèle V3.2.',
+    category: 'achievement',
+    icon: '🥇',
+    link: '#deepseek-v3-2'
+  },
+  {
+    id: 'news-4',
+    date: '2025-01-03',
+    title: 'Llama 4 Scout : 10M tokens !',
+    summary: 'Meta lance Llama 4 Scout avec une fenêtre de contexte record de 10 millions de tokens.',
+    category: 'release',
+    icon: '📚',
+    link: '#llama-4-scout'
+  },
+  {
+    id: 'news-5',
+    date: '2025-01-02',
+    title: 'Sora disponible en API',
+    summary: 'OpenAI ouvre enfin l\'accès API à Sora pour la génération vidéo professionnelle.',
+    category: 'api',
+    icon: '🎬',
+    link: '#sora'
+  },
+  {
+    id: 'news-6',
+    date: '2024-12-28',
+    title: 'Gemini 3 Deep Think rival o3',
+    summary: 'Google lance Gemini 3 Deep Think, un modèle de raisonnement concurrent direct d\'o3.',
+    category: 'release',
+    icon: '🧠',
+    link: '#gemini-3-deep-think'
+  }
+];
 
 // ============================================
 // BADGE DEFINITIONS
@@ -75,11 +140,13 @@ const elements = {
   categoryFilter: document.getElementById('category-filter'),
   tierFilter: document.getElementById('tier-filter'),
   difficultyFilter: document.getElementById('difficulty-filter'),
+  usecaseFilter: document.getElementById('usecase-filter'), // Phase 3
   categoriesGrid: document.getElementById('categories-grid'),
   itemsSection: document.getElementById('items-section'),
   itemsGrid: document.getElementById('items-grid'),
   itemsSectionTitle: document.getElementById('items-section-title'),
   examplesGrid: document.getElementById('examples-grid'),
+  examplesCategoryFilter: document.getElementById('examples-category-filter'), // Phase 3
   quickGuideList: document.getElementById('quick-guide-list'),
   quickGuideStack: document.getElementById('quick-guide-stack'),
   comparatorBtn: document.getElementById('comparator-btn'),
@@ -92,7 +159,12 @@ const elements = {
   benchmarkSort: document.getElementById('benchmark-sort'),
   benchmarkChart: document.getElementById('benchmark-chart'),
   usecaseRankingsGrid: document.getElementById('usecase-rankings-grid'),
-  pricePerformanceList: document.getElementById('price-performance-list')
+  pricePerformanceList: document.getElementById('price-performance-list'),
+  // Phase 3 elements
+  themeToggle: document.getElementById('theme-toggle'),
+  settingsBtn: document.getElementById('settings-btn'),
+  newsTicker: document.getElementById('news-ticker'),
+  newsGrid: document.getElementById('news-grid')
 };
 
 // ============================================
@@ -127,9 +199,13 @@ function showError(message) {
 // ============================================
 
 function initializeApp() {
+  // Apply saved theme first
+  applyTheme(state.theme);
+
   updateCounts();
   populateFilters();
   renderCategories();
+  renderNews(); // Phase 3
   renderExamples();
   renderQuickGuide();
   setupEventListeners();
@@ -153,6 +229,22 @@ function populateFilters() {
       `<option value="${cat.id}">${cat.emoji} ${cat.name}</option>`
     ).join('');
     elements.categoryFilter.innerHTML = `<option value="">Toutes les categories</option>${options}`;
+  }
+
+  // Phase 3: Use case filter
+  if (elements.usecaseFilter && state.data.benchmarks?.useCaseRankings) {
+    const useCases = state.data.benchmarks.useCaseRankings.map(uc =>
+      `<option value="${uc.useCase}">${uc.useCase}</option>`
+    ).join('');
+    elements.usecaseFilter.innerHTML = `<option value="">Tous les cas d'usage</option>${useCases}`;
+  }
+
+  // Phase 3: Examples category filter
+  if (elements.examplesCategoryFilter) {
+    const options = state.data.categories.map(cat =>
+      `<option value="${cat.id}">${cat.emoji} ${cat.name}</option>`
+    ).join('');
+    elements.examplesCategoryFilter.innerHTML = `<option value="">Toutes categories</option>${options}`;
   }
 }
 
@@ -182,6 +274,26 @@ function setupEventListeners() {
     elements.difficultyFilter.addEventListener('change', handleFilterChange);
   }
 
+  // Phase 3: Use case filter
+  if (elements.usecaseFilter) {
+    elements.usecaseFilter.addEventListener('change', handleUseCaseFilterChange);
+  }
+
+  // Phase 3: Examples category filter
+  if (elements.examplesCategoryFilter) {
+    elements.examplesCategoryFilter.addEventListener('change', handleExamplesFilterChange);
+  }
+
+  // Phase 3: Theme toggle
+  if (elements.themeToggle) {
+    elements.themeToggle.addEventListener('click', toggleTheme);
+  }
+
+  // Phase 3: Settings button
+  if (elements.settingsBtn) {
+    elements.settingsBtn.addEventListener('click', openSettings);
+  }
+
   // Comparator
   if (elements.comparatorBtn) {
     elements.comparatorBtn.addEventListener('click', openComparator);
@@ -207,6 +319,10 @@ function handleKeyboard(e) {
   if (e.key === '/' && e.target.tagName !== 'INPUT') {
     e.preventDefault();
     elements.searchInput?.focus();
+  }
+  // Phase 3: Theme toggle shortcut
+  if ((e.key === 't' || e.key === 'T') && e.target.tagName !== 'INPUT' && !e.ctrlKey && !e.metaKey) {
+    toggleTheme();
   }
 }
 
@@ -618,34 +734,52 @@ function setupItemCardListeners() {
 function renderExamples() {
   if (!elements.examplesGrid) return;
 
-  // Show examples for current category or all if none selected
-  const examples = state.currentCategory
-    ? state.data.examples.filter(ex => ex.categoryId === state.currentCategory)
-    : state.data.examples.slice(0, 6);
+  // Phase 3: Support examples filter
+  let examples = state.data.examples;
+
+  // Filter by selected category (from examples filter dropdown)
+  if (state.examplesFilter) {
+    examples = examples.filter(ex => ex.categoryId === state.examplesFilter);
+  } else if (state.currentCategory) {
+    examples = examples.filter(ex => ex.categoryId === state.currentCategory);
+  } else {
+    examples = examples.slice(0, 8); // Show more by default
+  }
+
+  // Get category info for styling
+  const getCategoryColor = (catId) => {
+    const cat = state.data.categories.find(c => c.id === catId);
+    return cat?.color || '#a855f7';
+  };
+
+  const getCategoryEmoji = (catId) => {
+    const cat = state.data.categories.find(c => c.id === catId);
+    return cat?.emoji || '💡';
+  };
 
   elements.examplesGrid.innerHTML = examples.map(example => `
-    <div class="example-card">
+    <div class="example-card" style="--example-color: ${getCategoryColor(example.categoryId)}">
       <div class="example-card__header">
-        <div class="example-card__icon">💡</div>
+        <div class="example-card__icon">${getCategoryEmoji(example.categoryId)}</div>
         <h4 class="example-card__title">${example.title}</h4>
       </div>
       <div class="example-card__content">
         <div class="example-card__step">
-          <div class="example-card__step-label example-card__step-label--situation">Situation</div>
+          <div class="example-card__step-label example-card__step-label--situation">📋 Situation</div>
           <p class="example-card__step-text">${example.situation}</p>
         </div>
         <div class="example-card__step">
-          <div class="example-card__step-label example-card__step-label--solution">Solution</div>
+          <div class="example-card__step-label example-card__step-label--solution">💡 Solution</div>
           <p class="example-card__step-text">${example.solution}</p>
         </div>
         <div class="example-card__step">
-          <div class="example-card__step-label example-card__step-label--result">Resultat</div>
+          <div class="example-card__step-label example-card__step-label--result">✅ Résultat</div>
           <p class="example-card__step-text">${example.result}</p>
         </div>
         <div class="example-card__tools">
           ${example.tools.map(toolId => {
             const tool = [...state.data.llms, ...state.data.tools].find(t => t.id === toolId);
-            return tool ? `<span class="example-card__tool">${tool.name}</span>` : '';
+            return tool ? `<span class="example-card__tool" onclick="openItemModal('${toolId}')">${tool.name}</span>` : '';
           }).join('')}
         </div>
       </div>
@@ -1855,6 +1989,337 @@ function renderPricePerformance() {
 
   elements.pricePerformanceList.innerHTML = html;
 }
+
+// ============================================
+// PHASE 3: USE CASE FILTERING
+// ============================================
+
+function handleUseCaseFilterChange(e) {
+  state.filters.useCase = e.target.value;
+  if (state.filters.useCase) {
+    // Find LLMs that are in this use case ranking
+    const useCase = state.data.benchmarks?.useCaseRankings?.find(
+      uc => uc.useCase === state.filters.useCase
+    );
+    if (useCase) {
+      state.currentCategory = null;
+      renderItemsByUseCase(useCase);
+    }
+  } else {
+    renderCategories();
+  }
+}
+
+function renderItemsByUseCase(useCase) {
+  // Hide categories, show items section
+  if (elements.categoriesGrid) elements.categoriesGrid.classList.add('hidden');
+  if (elements.itemsSection) elements.itemsSection.classList.remove('hidden');
+
+  if (elements.itemsSectionTitle) {
+    elements.itemsSectionTitle.innerHTML = `
+      <span class="items-section__icon">🎯</span>
+      ${useCase.useCase}
+      <span class="items-section__desc">${useCase.description || ''}</span>
+    `;
+  }
+
+  // Get items from ranking
+  const rankedLLMs = useCase.ranking
+    .map(id => state.data.llms.find(l => l.id === id))
+    .filter(Boolean);
+
+  if (elements.itemsGrid) {
+    const html = rankedLLMs.map((item, index) => {
+      return renderItemCard(item, index + 1);
+    }).join('');
+
+    elements.itemsGrid.innerHTML = html || '<p class="no-results">Aucun résultat</p>';
+    elements.resultsCount.textContent = rankedLLMs.length;
+  }
+}
+
+function renderItemCard(item, rank = null) {
+  const isLLM = state.data.llms.some(l => l.id === item.id);
+  const badges = isLLM ? calculateBadges(item.id) : [];
+  const isInComparison = state.comparison.includes(item.id);
+  const isFavorite = state.favorites.includes(item.id);
+
+  return `
+    <article class="item-card" data-id="${item.id}">
+      ${rank ? `<div class="item-card__rank">#${rank}</div>` : ''}
+      <div class="item-card__header">
+        <div class="item-card__title-row">
+          <h3 class="item-card__name">${item.name}</h3>
+          ${item.tier ? `<span class="badge badge--${item.tier}">${getTierLabel(item.tier)}</span>` : ''}
+        </div>
+        <p class="item-card__provider">${item.provider}</p>
+      </div>
+
+      ${badges.length > 0 ? `
+        <div class="item-card__badges">
+          ${renderBadges(badges, 4)}
+        </div>
+      ` : ''}
+
+      ${isLLM ? renderMiniScores(item.id) : ''}
+
+      <p class="item-card__description">${item.description}</p>
+
+      <div class="item-card__tags">
+        ${(item.strengths || []).slice(0, 2).map(s =>
+          `<span class="item-card__tag">${s}</span>`
+        ).join('')}
+      </div>
+
+      <div class="item-card__footer">
+        <div class="item-card__specs">
+          ${item.specs?.contextWindow ? `<span class="spec">📚 ${item.specs.contextWindow}</span>` : ''}
+          ${item.specs?.speed ? `<span class="spec">⚡ ${item.specs.speed}</span>` : ''}
+        </div>
+        <div class="item-card__actions">
+          <button class="btn btn--icon ${isFavorite ? 'btn--active' : ''}"
+                  onclick="toggleFavorite('${item.id}')"
+                  title="${isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}">
+            ${isFavorite ? '⭐' : '☆'}
+          </button>
+          <button class="btn btn--icon ${isInComparison ? 'btn--active' : ''}"
+                  onclick="toggleComparison('${item.id}')"
+                  title="${isInComparison ? 'Retirer du comparateur' : 'Ajouter au comparateur'}">
+            ⚖️
+          </button>
+        </div>
+      </div>
+
+      <button class="item-card__details-btn" onclick="openItemModal('${item.id}')">
+        Voir détails →
+      </button>
+    </article>
+  `;
+}
+
+// ============================================
+// PHASE 3: NEWS SECTION
+// ============================================
+
+function renderNews() {
+  renderNewsTicker();
+  renderNewsGrid();
+}
+
+function renderNewsTicker() {
+  if (!elements.newsTicker) return;
+
+  const tickerContent = NEWS_DATA.map(news => `
+    <span class="news-ticker__item">
+      <span class="news-ticker__icon">${news.icon}</span>
+      <span class="news-ticker__text">${news.title}</span>
+    </span>
+  `).join('<span class="news-ticker__separator">•</span>');
+
+  elements.newsTicker.innerHTML = `
+    <div class="news-ticker__track">
+      ${tickerContent}
+      ${tickerContent}
+    </div>
+  `;
+}
+
+function renderNewsGrid() {
+  if (!elements.newsGrid) return;
+
+  const html = NEWS_DATA.slice(0, 4).map(news => `
+    <article class="news-card" onclick="handleNewsClick('${news.link}')">
+      <div class="news-card__header">
+        <span class="news-card__icon">${news.icon}</span>
+        <span class="news-card__date">${formatDate(news.date)}</span>
+      </div>
+      <h3 class="news-card__title">${news.title}</h3>
+      <p class="news-card__summary">${news.summary}</p>
+      <span class="news-card__category news-card__category--${news.category}">${getCategoryLabel(news.category)}</span>
+    </article>
+  `).join('');
+
+  elements.newsGrid.innerHTML = html;
+}
+
+function formatDate(dateStr) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+}
+
+function getCategoryLabel(category) {
+  const labels = {
+    release: '🚀 Sortie',
+    achievement: '🏆 Record',
+    api: '🔌 API',
+    update: '📦 Mise à jour'
+  };
+  return labels[category] || category;
+}
+
+function handleNewsClick(link) {
+  if (link.startsWith('#')) {
+    const itemId = link.substring(1);
+    openItemModal(itemId);
+  }
+}
+
+// Make handleNewsClick global
+window.handleNewsClick = handleNewsClick;
+
+// ============================================
+// PHASE 3: EXAMPLES FILTERING
+// ============================================
+
+function handleExamplesFilterChange(e) {
+  state.examplesFilter = e.target.value;
+  renderExamples();
+}
+
+// ============================================
+// PHASE 3: THEME MANAGEMENT
+// ============================================
+
+function toggleTheme() {
+  state.theme = state.theme === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('ai-hub-theme', state.theme);
+  applyTheme(state.theme);
+  showToast(`Theme ${state.theme === 'dark' ? 'sombre' : 'clair'} active`);
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+
+  // Update theme toggle icon
+  if (elements.themeToggle) {
+    const icon = elements.themeToggle.querySelector('.theme-toggle__icon');
+    if (icon) {
+      icon.textContent = theme === 'dark' ? '🌙' : '☀️';
+    }
+  }
+}
+
+// ============================================
+// PHASE 3: SETTINGS / PREFERENCES
+// ============================================
+
+function openSettings() {
+  const modalHTML = `
+    <div class="modal__header">
+      <h2 class="modal__title">⚙️ Préférences</h2>
+      <button class="modal__close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="settings-content">
+      <div class="settings-section">
+        <h3 class="settings-section__title">🎨 Apparence</h3>
+        <div class="settings-option">
+          <span class="settings-option__label">Thème</span>
+          <div class="settings-option__control">
+            <button class="theme-btn ${state.theme === 'dark' ? 'active' : ''}" onclick="setTheme('dark')">
+              🌙 Sombre
+            </button>
+            <button class="theme-btn ${state.theme === 'light' ? 'active' : ''}" onclick="setTheme('light')">
+              ☀️ Clair
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3 class="settings-section__title">⭐ Favoris</h3>
+        <div class="settings-option">
+          <span class="settings-option__label">${state.favorites.length} favoris enregistrés</span>
+          <button class="btn btn--sm btn--secondary" onclick="exportFavorites()">
+            📥 Exporter
+          </button>
+        </div>
+        ${state.favorites.length > 0 ? `
+          <div class="favorites-list">
+            ${state.favorites.map(id => {
+              const item = [...state.data.llms, ...state.data.tools].find(i => i.id === id);
+              return item ? `
+                <div class="favorite-item">
+                  <span>${item.name}</span>
+                  <button class="btn btn--icon btn--sm" onclick="toggleFavorite('${id}'); openSettings();">×</button>
+                </div>
+              ` : '';
+            }).join('')}
+          </div>
+        ` : '<p class="settings-empty">Aucun favori pour le moment</p>'}
+      </div>
+
+      <div class="settings-section">
+        <h3 class="settings-section__title">📊 Statistiques</h3>
+        <div class="settings-stats">
+          <div class="stat-item">
+            <span class="stat-value">${state.data.llms.length}</span>
+            <span class="stat-label">LLMs</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">${state.data.tools.length}</span>
+            <span class="stat-label">Outils</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">${state.data.examples?.length || 0}</span>
+            <span class="stat-label">Exemples</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3 class="settings-section__title">⌨️ Raccourcis clavier</h3>
+        <div class="shortcuts-list">
+          <div class="shortcut-item">
+            <kbd>/</kbd> <span>Rechercher</span>
+          </div>
+          <div class="shortcut-item">
+            <kbd>Esc</kbd> <span>Fermer modal</span>
+          </div>
+          <div class="shortcut-item">
+            <kbd>T</kbd> <span>Changer thème</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-footer">
+        <p>AI Reference Hub v3.2 - MR Tech Lab</p>
+        <p>Données: Janvier 2025</p>
+      </div>
+    </div>
+  `;
+
+  openModal(modalHTML);
+}
+
+function setTheme(theme) {
+  state.theme = theme;
+  localStorage.setItem('ai-hub-theme', theme);
+  applyTheme(theme);
+  openSettings(); // Refresh modal
+}
+
+function exportFavorites() {
+  const favorites = state.favorites.map(id => {
+    const item = [...state.data.llms, ...state.data.tools].find(i => i.id === id);
+    return item ? { id: item.id, name: item.name, provider: item.provider } : null;
+  }).filter(Boolean);
+
+  const dataStr = JSON.stringify(favorites, null, 2);
+  const dataBlob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(dataBlob);
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'ai-hub-favorites.json';
+  link.click();
+
+  URL.revokeObjectURL(url);
+  showToast('Favoris exportés');
+}
+
+// Make settings functions global
+window.setTheme = setTheme;
+window.exportFavorites = exportFavorites;
 
 // ============================================
 // INITIALIZATION

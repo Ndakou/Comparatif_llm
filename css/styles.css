@@ -1492,12 +1492,24 @@ button {
 }
 
 .examples-grid {
-  display: grid;
+  display: grid !important;
+  visibility: visible !important;
+  opacity: 1 !important;
   grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
   gap: var(--space-6);
 }
 
+/* Empêcher le masquage du container */
+.examples-grid.hidden {
+  display: grid !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
 .example-card {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
   background: var(--bg-void);
   border-radius: var(--radius-xl);
   padding: var(--space-6);

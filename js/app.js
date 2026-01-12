@@ -1253,6 +1253,12 @@ function renderExamples() {
     return;
   }
 
+  // ✅ FORCER LA VISIBILITÉ DU CONTAINER
+  elements.examplesGrid.style.display = 'grid';
+  elements.examplesGrid.style.visibility = 'visible';
+  elements.examplesGrid.style.opacity = '1';
+  elements.examplesGrid.classList.remove('hidden');
+
   // Vérifier que les données existent
   if (!state.data?.examples || !Array.isArray(state.data.examples)) {
     console.warn('⚠️ renderExamples: Pas de données exemples');
@@ -4138,6 +4144,15 @@ function handleExamplesFilterChange(e) {
   const newValue = e.target.value;
   console.log('🔄 Changement filtre exemples:', newValue || 'Toutes catégories');
   state.examplesFilter = newValue;
+
+  // ✅ FORCER LA VISIBILITÉ AVANT LE RENDU
+  if (elements.examplesGrid) {
+    elements.examplesGrid.style.display = 'grid';
+    elements.examplesGrid.style.visibility = 'visible';
+    elements.examplesGrid.style.opacity = '1';
+    elements.examplesGrid.classList.remove('hidden');
+  }
+
   renderExamples();
 }
 

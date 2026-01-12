@@ -2951,6 +2951,30 @@ function cleanupMemory() {
 
   // Clear DOM cache periodically
   clearDomCache();
+
+  // Force garbage collection hint (if available)
+  if (window.gc) {
+    window.gc();
+  }
+}
+
+// Periodic memory cleanup to prevent leaks (every 5 minutes)
+let memoryCleanupInterval = null;
+
+function startPeriodicCleanup() {
+  if (memoryCleanupInterval) return;
+  memoryCleanupInterval = setInterval(() => {
+    if (!document.hidden) {
+      clearDomCache();
+    }
+  }, 300000); // 5 minutes
+}
+
+function stopPeriodicCleanup() {
+  if (memoryCleanupInterval) {
+    clearInterval(memoryCleanupInterval);
+    memoryCleanupInterval = null;
+  }
 }
 
 // Initialize performance optimizations
@@ -2961,10 +2985,26 @@ function initPerformanceOptimizations() {
   // Card animations on scroll
   setTimeout(() => initCardAnimations(), 100);
 
-  // Cleanup on page hide
+  // Start periodic memory cleanup
+  startPeriodicCleanup();
+
+  // Cleanup and pause animations on page hide
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
       cleanupMemory();
+      stopPeriodicCleanup();
+      // Pause CSS animations when page is hidden to save CPU/GPU
+      document.body.style.setProperty('--animation-play-state', 'paused');
+      document.querySelectorAll('.news-ticker__track').forEach(el => {
+        el.style.animationPlayState = 'paused';
+      });
+    } else {
+      // Resume animations when page is visible
+      startPeriodicCleanup();
+      document.body.style.setProperty('--animation-play-state', 'running');
+      document.querySelectorAll('.news-ticker__track').forEach(el => {
+        el.style.animationPlayState = 'running';
+      });
     }
   });
 

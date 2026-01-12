@@ -544,7 +544,9 @@ button {
   border-radius: var(--radius-xl);
   padding: var(--space-8);
   cursor: pointer;
-  transition: all var(--duration-normal) var(--ease-smooth);
+  transition: transform var(--duration-normal) var(--ease-smooth),
+              box-shadow var(--duration-normal) var(--ease-smooth),
+              border-color var(--duration-normal) var(--ease-smooth);
   position: relative;
   overflow: hidden;
 }
@@ -728,7 +730,9 @@ button {
   border-radius: var(--radius-xl);
   padding: var(--space-6);
   cursor: pointer;
-  transition: all var(--duration-normal) var(--ease-smooth);
+  transition: transform var(--duration-normal) var(--ease-smooth),
+              box-shadow var(--duration-normal) var(--ease-smooth),
+              border-color var(--duration-normal) var(--ease-smooth);
   position: relative;
   overflow: hidden;
 }
@@ -6594,36 +6598,31 @@ select:focus-visible {
   animation: gradientShift 3s ease infinite;
 }
 
-/* Enhanced card hover effects */
+/* Enhanced card hover effects - OPTIMIZED for performance */
 .item-card {
   transition:
     transform var(--duration-normal) var(--ease-smooth),
     box-shadow var(--duration-normal) var(--ease-smooth),
     border-color var(--duration-normal) var(--ease-smooth);
+  will-change: auto; /* Only activate GPU when needed */
 }
 
 .item-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow:
-    var(--shadow-xl),
-    0 0 40px rgba(168, 85, 247, 0.15),
-    0 0 80px rgba(59, 130, 246, 0.1);
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-xl);
+  will-change: transform;
 }
 
-/* Category card hover with 3D tilt */
+/* Category card hover - simplified for performance */
 .category-card {
   transition:
     transform var(--duration-normal) var(--ease-smooth),
     box-shadow var(--duration-normal) var(--ease-smooth);
-  transform-style: preserve-3d;
-  perspective: 1000px;
 }
 
 .category-card:hover {
-  transform: translateY(-10px) rotateX(5deg);
-  box-shadow:
-    var(--shadow-xl),
-    0 20px 40px rgba(0, 0, 0, 0.3);
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-xl);
 }
 
 /* Modal animations */

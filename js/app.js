@@ -1242,18 +1242,35 @@ function setupItemCardListeners() {
 // ============================================
 
 function renderExamples() {
-  if (!elements.examplesGrid) return;
+  if (!elements.examplesGrid) {
+    console.warn('⚠️ renderExamples: Container #examples-grid introuvable');
+    return;
+  }
+
+  // Vérifier que les données existent
+  if (!state.data?.examples || !Array.isArray(state.data.examples)) {
+    console.warn('⚠️ renderExamples: Pas de données exemples');
+    elements.examplesGrid.innerHTML = `
+      <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+        <p style="color: var(--text-secondary);">Chargement des exemples...</p>
+      </div>
+    `;
+    return;
+  }
+
+  console.log('🔍 renderExamples appelé - Filter:', state.examplesFilter, '- Total exemples:', state.data.examples.length);
 
   // Phase 3: Support examples filter
-  let examples = state.data.examples;
+  let examples = [...state.data.examples]; // Copie pour éviter mutation
 
-  // Filter by selected category (from examples filter dropdown)
-  if (state.examplesFilter) {
+  // Filter by selected category (from examples filter dropdown UNIQUEMENT)
+  if (state.examplesFilter && state.examplesFilter !== '') {
     examples = examples.filter(ex => ex.categoryId === state.examplesFilter);
-  } else if (state.currentCategory) {
-    examples = examples.filter(ex => ex.categoryId === state.currentCategory);
+    console.log('📊 Filtrage par catégorie:', state.examplesFilter, '- Résultats:', examples.length);
   } else {
-    examples = examples.slice(0, 8); // Show more by default
+    // Quand "Toutes catégories" est sélectionné, afficher les 8 premiers
+    examples = examples.slice(0, 8);
+    console.log('📊 Affichage par défaut (8 premiers):', examples.length);
   }
 
   // Get category info for styling
@@ -1274,6 +1291,22 @@ function renderExamples() {
     avance: { label: 'Avancé', class: 'difficulty--hard', icon: '🟠' },
     expert: { label: 'Expert', class: 'difficulty--expert', icon: '🔴' }
   };
+
+  // Gérer le cas où aucun exemple n'est trouvé
+  if (examples.length === 0) {
+    console.log('📭 Aucun exemple trouvé pour cette catégorie');
+    elements.examplesGrid.innerHTML = `
+      <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
+        <p style="color: var(--text-secondary); font-size: 1.125rem;">
+          Aucun exemple disponible pour cette catégorie
+        </p>
+      </div>
+    `;
+    return;
+  }
+
+  console.log('✅ Rendu de', examples.length, 'exemples');
 
   elements.examplesGrid.innerHTML = examples.map((example, idx) => {
     const difficulty = difficultyLabels[example.difficulty] || difficultyLabels.intermediaire;
@@ -4096,7 +4129,9 @@ window.handleNewsClick = handleNewsClick;
 // ============================================
 
 function handleExamplesFilterChange(e) {
-  state.examplesFilter = e.target.value;
+  const newValue = e.target.value;
+  console.log('🔄 Changement filtre exemples:', newValue || 'Toutes catégories');
+  state.examplesFilter = newValue;
   renderExamples();
 }
 

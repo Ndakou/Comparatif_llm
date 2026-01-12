@@ -1,6 +1,6 @@
 /**
  * AI Reference Hub - Main Application
- * Version: 2.0.0
+ * Version: 3.0.0 - Enhanced with Phase 1 Features
  * Author: MR Tech Lab
  */
 
@@ -16,11 +16,49 @@ const state = {
   filters: {
     category: '',
     tier: '',
-    difficulty: ''
+    difficulty: '',
+    // Phase 1: Enhanced filters
+    competencies: [], // Multi-select checkboxes
+    minScore: 0, // Score slider
+    accessType: [], // ['api', 'free', 'opensource']
+    contextSize: '' // Small/Medium/Large/Huge
   },
   comparison: [],
-  maxComparison: 3,
-  favorites: JSON.parse(localStorage.getItem('ai-hub-favorites') || '[]')
+  maxComparison: 4, // Increased for better comparison
+  favorites: JSON.parse(localStorage.getItem('ai-hub-favorites') || '[]'),
+  // Cache for computed badges
+  badgesCache: {}
+};
+
+// ============================================
+// BADGE DEFINITIONS
+// ============================================
+
+const BADGE_DEFINITIONS = {
+  top3: { emoji: '🏆', label: 'Top 3', color: '#ffd700', description: 'Dans le top 3 d\'une compétence' },
+  free: { emoji: '🆓', label: 'Gratuit', color: '#22c55e', description: 'Utilisation gratuite' },
+  opensource: { emoji: '🔓', label: 'Open Source', color: '#64748b', description: 'Code source ouvert' },
+  fast: { emoji: '⚡', label: 'Rapide', color: '#3b82f6', description: 'Temps de réponse ultra-rapide' },
+  bestValue: { emoji: '💰', label: 'Meilleur QP', color: '#f97316', description: 'Meilleur rapport qualité/prix' },
+  new: { emoji: '🆕', label: 'Nouveau', color: '#a855f7', description: 'Modèle récent' },
+  trending: { emoji: '🔥', label: 'Tendance', color: '#ef4444', description: 'Très populaire' },
+  recommended: { emoji: '⭐', label: 'Recommandé', color: '#eab308', description: 'Recommandé pour certains cas' },
+  longContext: { emoji: '📚', label: 'Long Contexte', color: '#06b6d4', description: 'Grande fenêtre de contexte' },
+  multimodal: { emoji: '🎨', label: 'Multimodal', color: '#ec4899', description: 'Images, audio, vidéo' }
+};
+
+// Competency labels for filters
+const COMPETENCY_LABELS = {
+  reasoning: { name: 'Raisonnement', emoji: '🧠' },
+  coding: { name: 'Code', emoji: '💻' },
+  math: { name: 'Maths', emoji: '🔢' },
+  writing: { name: 'Rédaction', emoji: '✍️' },
+  multilingual: { name: 'Multilingue', emoji: '🌍' },
+  speed: { name: 'Vitesse', emoji: '⚡' },
+  context: { name: 'Contexte', emoji: '📚' },
+  cost: { name: 'Coût', emoji: '💰' },
+  multimodal: { name: 'Multimodal', emoji: '🎨' },
+  instruction: { name: 'Instructions', emoji: '📝' }
 };
 
 // ============================================
@@ -406,13 +444,15 @@ function renderItemCard(item) {
   const isInComparison = state.comparison.includes(item.id);
   const isFavorite = state.favorites.includes(item.id);
 
+  // Calculate dynamic badges for LLMs
+  const dynamicBadges = isLLM ? calculateBadges(item.id) : [];
+
   return `
-    <div class="item-card" data-id="${item.id}">
+    <div class="item-card ${isInComparison ? 'item-card--in-comparison' : ''} ${isFavorite ? 'item-card--favorite' : ''}" data-id="${item.id}">
       <div class="item-card__header">
         <div class="item-card__info">
           <h3 class="item-card__name">
             ${item.name}
-            ${item.isNew ? '<span class="item-card__new-badge">NEW</span>' : ''}
           </h3>
           <p class="item-card__provider">${item.provider}</p>
         </div>
@@ -428,6 +468,13 @@ function renderItemCard(item) {
         `}
       </div>
 
+      <!-- Dynamic Badges Section -->
+      ${dynamicBadges.length > 0 ? `
+        <div class="item-card__dynamic-badges">
+          ${renderBadges(dynamicBadges, 4)}
+        </div>
+      ` : ''}
+
       <div class="item-card__badges">
         ${item.tier ? `<span class="badge badge--${item.tier}">${getTierLabel(item.tier)}</span>` : ''}
         ${item.apiAvailable !== undefined ?
@@ -438,9 +485,17 @@ function renderItemCard(item) {
 
       <p class="item-card__description">${item.description}</p>
 
+      <!-- Mini Scores for LLMs -->
+      ${isLLM ? renderMiniScores(item.id) : ''}
+
       <div class="item-card__tags">
         ${item.tags.slice(0, 5).map(tag => `<span class="tag">${tag}</span>`).join('')}
       </div>
+
+      <!-- Quick action to open detailed modal -->
+      <button class="item-card__details-btn" data-action="details" data-id="${item.id}" onclick="event.stopPropagation(); openItemModal('${item.id}')">
+        📊 Voir détails
+      </button>
 
       <!-- Expanded Content -->
       <div class="item-card__expanded">
@@ -787,6 +842,210 @@ window.removeFromComparison = removeFromComparison;
 window.exportComparison = exportComparison;
 
 // ============================================
+// DETAILED ITEM MODAL
+// ============================================
+
+function openItemModal(itemId) {
+  const allItems = [...state.data.llms, ...state.data.tools];
+  const item = allItems.find(i => i.id === itemId);
+  if (!item) return;
+
+  const isLLM = state.data.llms.some(l => l.id === itemId);
+  const badges = isLLM ? calculateBadges(itemId) : [];
+  const scores = isLLM ? getScoreForLLM(itemId) : null;
+  const benchmarkData = state.data.benchmarks?.llmScores?.find(b => b.id === itemId);
+
+  // Find related use cases where this LLM is recommended
+  const relatedUseCases = state.data.benchmarks?.useCaseRankings?.filter(
+    r => r.ranking.includes(itemId)
+  ) || [];
+
+  const modalHTML = `
+    <div class="modal__header">
+      <div class="modal__header-content">
+        <h2 class="modal__title">${item.name}</h2>
+        <p class="modal__subtitle">${item.provider}</p>
+      </div>
+      <button class="modal__close" onclick="closeModal()">&times;</button>
+    </div>
+
+    <div class="modal__body">
+      <!-- Badges Row -->
+      <div class="modal__badges">
+        ${badges.length > 0 ? renderBadges(badges, 10) : ''}
+        ${item.tier ? `<span class="badge badge--${item.tier}">${getTierLabel(item.tier)}</span>` : ''}
+        ${item.apiAvailable ? '<span class="badge badge--api">API</span>' : ''}
+      </div>
+
+      <!-- Main Content Grid -->
+      <div class="modal__grid">
+        <!-- Left Column: Description & Specs -->
+        <div class="modal__column">
+          <p class="modal__description">${item.description}</p>
+
+          ${item.specs ? `
+            <div class="modal__section">
+              <h3 class="modal__section-title">📋 Spécifications Techniques</h3>
+              <div class="specs-grid specs-grid--detailed">
+                <div class="spec-item">
+                  <span class="spec-item__label">Fenêtre Contexte</span>
+                  <span class="spec-item__value">${item.specs.contextWindow}</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-item__label">Vitesse</span>
+                  <span class="spec-item__value">${item.specs.speed}</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-item__label">Prix Input</span>
+                  <span class="spec-item__value">${item.specs.inputPrice}</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-item__label">Prix Output</span>
+                  <span class="spec-item__value">${item.specs.outputPrice}</span>
+                </div>
+              </div>
+            </div>
+          ` : ''}
+
+          ${item.strengths ? `
+            <div class="modal__section">
+              <h3 class="modal__section-title">✅ Points Forts</h3>
+              <ul class="modal__list modal__list--strengths">
+                ${item.strengths.map(s => `<li>${s}</li>`).join('')}
+              </ul>
+            </div>
+          ` : ''}
+
+          ${item.weaknesses ? `
+            <div class="modal__section">
+              <h3 class="modal__section-title">⚠️ Limites</h3>
+              <ul class="modal__list modal__list--weaknesses">
+                ${item.weaknesses.map(w => `<li>${w}</li>`).join('')}
+              </ul>
+            </div>
+          ` : ''}
+        </div>
+
+        <!-- Right Column: Radar Chart & Scores -->
+        <div class="modal__column">
+          ${isLLM && scores ? `
+            <div class="modal__section">
+              <h3 class="modal__section-title">📊 Profil de Compétences</h3>
+              <div class="radar-container">
+                ${renderRadarChart(itemId, 250)}
+              </div>
+
+              <!-- Score Details -->
+              <div class="score-details">
+                ${Object.entries(scores).map(([key, value]) => {
+                  const comp = COMPETENCY_LABELS[key] || { emoji: '📊', name: key };
+                  const barClass = value >= 90 ? 'excellent' : value >= 75 ? 'good' : value >= 60 ? 'average' : 'low';
+                  return `
+                    <div class="score-row">
+                      <span class="score-row__label">${comp.emoji} ${comp.name}</span>
+                      <div class="score-row__bar">
+                        <div class="score-row__fill score-row__fill--${barClass}" style="width: ${value}%"></div>
+                      </div>
+                      <span class="score-row__value">${value}</span>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          ${benchmarkData?.highlights ? `
+            <div class="modal__section">
+              <h3 class="modal__section-title">🌟 Points Clés</h3>
+              <div class="highlights">
+                ${benchmarkData.highlights.map(h => `<span class="highlight-tag">${h}</span>`).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          ${benchmarkData?.bestFor ? `
+            <div class="modal__section">
+              <h3 class="modal__section-title">🎯 Idéal Pour</h3>
+              <div class="best-for">
+                ${benchmarkData.bestFor.map(b => `<span class="best-for-tag">${b}</span>`).join('')}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+
+      <!-- Use Cases Section -->
+      ${item.useCases ? `
+        <div class="modal__section modal__section--full">
+          <h3 class="modal__section-title">💼 Cas d'Usage</h3>
+          <div class="use-cases-grid">
+            ${item.useCases.map(uc => `<div class="use-case-card">${uc}</div>`).join('')}
+          </div>
+        </div>
+      ` : ''}
+
+      <!-- Related Rankings -->
+      ${relatedUseCases.length > 0 ? `
+        <div class="modal__section modal__section--full">
+          <h3 class="modal__section-title">🏆 Classement par Cas d'Usage</h3>
+          <div class="related-rankings">
+            ${relatedUseCases.map(uc => {
+              const rank = uc.ranking.indexOf(itemId) + 1;
+              const rankClass = rank <= 3 ? `rank-${rank}` : 'rank-other';
+              return `
+                <div class="ranking-badge ${rankClass}">
+                  <span class="ranking-badge__position">#${rank}</span>
+                  <span class="ranking-badge__use-case">${uc.useCase}</span>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      ` : ''}
+
+      ${item.comparison ? `
+        <div class="modal__section modal__section--full">
+          <h3 class="modal__section-title">⚖️ Comparaison</h3>
+          <div class="comparison-note">${item.comparison}</div>
+        </div>
+      ` : ''}
+    </div>
+
+    <div class="modal__footer">
+      ${item.docUrl ? `
+        <a href="${item.docUrl}" target="_blank" rel="noopener" class="btn btn--primary">
+          📚 Documentation Officielle
+        </a>
+      ` : ''}
+      <button class="btn btn--secondary" onclick="toggleComparisonFromModal('${item.id}')">
+        ${state.comparison.includes(item.id) ? '✓ Dans Comparateur' : '⚖️ Ajouter au Comparateur'}
+      </button>
+      <button class="btn btn--secondary" onclick="toggleFavoriteFromModal('${item.id}')">
+        ${state.favorites.includes(item.id) ? '★ Favori' : '☆ Ajouter aux Favoris'}
+      </button>
+    </div>
+  `;
+
+  openModal(modalHTML);
+}
+
+function toggleComparisonFromModal(itemId) {
+  toggleComparison(itemId);
+  // Re-open modal to update button state
+  openItemModal(itemId);
+}
+
+function toggleFavoriteFromModal(itemId) {
+  toggleFavorite(itemId);
+  // Re-open modal to update button state
+  openItemModal(itemId);
+}
+
+window.openItemModal = openItemModal;
+window.toggleComparisonFromModal = toggleComparisonFromModal;
+window.toggleFavoriteFromModal = toggleFavoriteFromModal;
+
+// ============================================
 // HELPERS
 // ============================================
 
@@ -863,6 +1122,238 @@ toastStyles.textContent = `
   }
 `;
 document.head.appendChild(toastStyles);
+
+// ============================================
+// BADGE CALCULATION SYSTEM
+// ============================================
+
+function calculateBadges(llmId) {
+  // Return cached badges if available
+  if (state.badgesCache[llmId]) {
+    return state.badgesCache[llmId];
+  }
+
+  const badges = [];
+  const llm = state.data.llms.find(l => l.id === llmId);
+  if (!llm) return badges;
+
+  const benchmarkData = state.data.benchmarks?.llmScores?.find(b => b.id === llmId);
+
+  // 🆕 New badge
+  if (llm.isNew) {
+    badges.push('new');
+  }
+
+  // 🆓 Free badge
+  if (llm.specs?.inputPrice?.toLowerCase().includes('gratuit') ||
+      llm.specs?.inputPrice === '$0' ||
+      llm.specs?.outputPrice?.toLowerCase().includes('gratuit')) {
+    badges.push('free');
+  }
+
+  // 🔓 Open Source badge
+  if (llm.categories?.includes('opensource') ||
+      llm.tags?.some(t => t.toLowerCase().includes('opensource') || t.toLowerCase().includes('open source'))) {
+    badges.push('opensource');
+  }
+
+  // ⚡ Fast badge (speed score >= 90)
+  if (benchmarkData?.scores?.speed >= 90) {
+    badges.push('fast');
+  }
+
+  // 💰 Best Value badge (in pricePerformance top 10)
+  const pricePerf = state.data.benchmarks?.pricePerformance;
+  if (pricePerf?.slice(0, 10).some(p => p.id === llmId)) {
+    badges.push('bestValue');
+  }
+
+  // 🏆 Top 3 badge (top 3 in any competency)
+  if (benchmarkData?.scores) {
+    const allScores = state.data.benchmarks.llmScores;
+    const competencies = Object.keys(benchmarkData.scores);
+
+    for (const comp of competencies) {
+      const sorted = [...allScores]
+        .filter(s => s.scores[comp] !== undefined)
+        .sort((a, b) => b.scores[comp] - a.scores[comp]);
+
+      const rank = sorted.findIndex(s => s.id === llmId);
+      if (rank >= 0 && rank < 3) {
+        badges.push('top3');
+        break; // Only add once
+      }
+    }
+  }
+
+  // 🔥 Trending badge (overall score >= 85 and new)
+  if (benchmarkData?.scores) {
+    const avgScore = Object.values(benchmarkData.scores).reduce((a, b) => a + b, 0) / Object.keys(benchmarkData.scores).length;
+    if (avgScore >= 85 && llm.isNew) {
+      badges.push('trending');
+    }
+  }
+
+  // ⭐ Recommended badge (appears in useCaseRankings top 3)
+  const rankings = state.data.benchmarks?.useCaseRankings;
+  if (rankings?.some(r => r.ranking.slice(0, 3).includes(llmId))) {
+    badges.push('recommended');
+  }
+
+  // 📚 Long Context badge (context >= 100K)
+  const contextWindow = llm.specs?.contextWindow;
+  if (contextWindow) {
+    const contextValue = parseContextWindow(contextWindow);
+    if (contextValue >= 100000) {
+      badges.push('longContext');
+    }
+  }
+
+  // 🎨 Multimodal badge
+  if (benchmarkData?.scores?.multimodal >= 80 ||
+      llm.tags?.some(t => t.toLowerCase().includes('multimodal'))) {
+    badges.push('multimodal');
+  }
+
+  // Cache the result
+  state.badgesCache[llmId] = badges;
+  return badges;
+}
+
+function parseContextWindow(contextStr) {
+  if (!contextStr) return 0;
+  const str = contextStr.toString().toUpperCase();
+  const num = parseFloat(str.replace(/[^0-9.]/g, ''));
+
+  if (str.includes('M')) return num * 1000000;
+  if (str.includes('K')) return num * 1000;
+  return num;
+}
+
+function renderBadges(badges, limit = 5) {
+  if (!badges || badges.length === 0) return '';
+
+  const displayBadges = badges.slice(0, limit);
+  const remaining = badges.length - limit;
+
+  let html = displayBadges.map(badgeKey => {
+    const badge = BADGE_DEFINITIONS[badgeKey];
+    if (!badge) return '';
+    return `
+      <span class="llm-badge llm-badge--${badgeKey}"
+            style="--badge-color: ${badge.color}"
+            title="${badge.description}">
+        ${badge.emoji} ${badge.label}
+      </span>
+    `;
+  }).join('');
+
+  if (remaining > 0) {
+    html += `<span class="llm-badge llm-badge--more">+${remaining}</span>`;
+  }
+
+  return html;
+}
+
+// ============================================
+// SCORE VISUALIZATION
+// ============================================
+
+function getScoreForLLM(llmId) {
+  const benchmarkData = state.data.benchmarks?.llmScores?.find(b => b.id === llmId);
+  return benchmarkData?.scores || null;
+}
+
+function renderMiniScores(llmId) {
+  const scores = getScoreForLLM(llmId);
+  if (!scores) return '';
+
+  // Show top 4 scores as mini bars
+  const sortedScores = Object.entries(scores)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4);
+
+  return `
+    <div class="mini-scores">
+      ${sortedScores.map(([key, value]) => {
+        const comp = COMPETENCY_LABELS[key] || { emoji: '📊', name: key };
+        const barClass = value >= 90 ? 'excellent' : value >= 75 ? 'good' : value >= 60 ? 'average' : 'low';
+        return `
+          <div class="mini-score" title="${comp.name}: ${value}/100">
+            <span class="mini-score__label">${comp.emoji}</span>
+            <div class="mini-score__bar">
+              <div class="mini-score__fill mini-score__fill--${barClass}" style="width: ${value}%"></div>
+            </div>
+            <span class="mini-score__value">${value}</span>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderRadarChart(llmId, size = 200) {
+  const scores = getScoreForLLM(llmId);
+  if (!scores) return '<p class="no-data">Pas de données benchmark</p>';
+
+  const categories = Object.keys(scores);
+  const numCats = categories.length;
+  const centerX = size / 2;
+  const centerY = size / 2;
+  const maxRadius = size / 2 - 30;
+
+  // Calculate points for each category
+  const points = categories.map((cat, i) => {
+    const angle = (Math.PI * 2 * i / numCats) - Math.PI / 2;
+    const value = scores[cat] / 100;
+    const x = centerX + maxRadius * value * Math.cos(angle);
+    const y = centerY + maxRadius * value * Math.sin(angle);
+    return { x, y, angle, value, cat, score: scores[cat] };
+  });
+
+  // Create grid circles
+  const gridCircles = [25, 50, 75, 100].map(level => {
+    const r = maxRadius * level / 100;
+    return `<circle cx="${centerX}" cy="${centerY}" r="${r}" class="radar-grid"/>`;
+  }).join('');
+
+  // Create axis lines
+  const axisLines = categories.map((cat, i) => {
+    const angle = (Math.PI * 2 * i / numCats) - Math.PI / 2;
+    const x = centerX + maxRadius * Math.cos(angle);
+    const y = centerY + maxRadius * Math.sin(angle);
+    return `<line x1="${centerX}" y1="${centerY}" x2="${x}" y2="${y}" class="radar-axis"/>`;
+  }).join('');
+
+  // Create labels
+  const labels = categories.map((cat, i) => {
+    const angle = (Math.PI * 2 * i / numCats) - Math.PI / 2;
+    const labelRadius = maxRadius + 20;
+    const x = centerX + labelRadius * Math.cos(angle);
+    const y = centerY + labelRadius * Math.sin(angle);
+    const comp = COMPETENCY_LABELS[cat] || { emoji: '📊', name: cat };
+    return `<text x="${x}" y="${y}" class="radar-label" text-anchor="middle" dominant-baseline="middle">${comp.emoji}</text>`;
+  }).join('');
+
+  // Create polygon
+  const polygonPoints = points.map(p => `${p.x},${p.y}`).join(' ');
+
+  return `
+    <svg viewBox="0 0 ${size} ${size}" class="radar-chart" role="img" aria-label="Graphique radar des compétences">
+      <defs>
+        <linearGradient id="radarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color: var(--accent-primary); stop-opacity: 0.3"/>
+          <stop offset="100%" style="stop-color: var(--accent-secondary); stop-opacity: 0.3"/>
+        </linearGradient>
+      </defs>
+      ${gridCircles}
+      ${axisLines}
+      <polygon points="${polygonPoints}" class="radar-polygon" fill="url(#radarGradient)"/>
+      ${points.map(p => `<circle cx="${p.x}" cy="${p.y}" r="4" class="radar-point" data-score="${p.score}" data-cat="${p.cat}"/>`).join('')}
+      ${labels}
+    </svg>
+  `;
+}
 
 // ============================================
 // BACK NAVIGATION

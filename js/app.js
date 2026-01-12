@@ -1,6 +1,6 @@
 /**
  * AI Reference Hub - Main Application
- * Version: 4.2.0 - Phase 3: Advanced Animations, Data Export, User Preferences
+ * Version: 4.3.0 - Phase 4: Enhanced LLM Detail Modal
  * Author: MR Tech Lab
  */
 
@@ -243,7 +243,7 @@ function initializeApp() {
   // Phase 2: Initialize performance optimizations
   initPerformanceOptimizations();
 
-  console.log('✅ AI Reference Hub v4.2.0 initialisé');
+  console.log('✅ AI Reference Hub v4.3.0 initialisé');
 }
 
 function updateCounts() {
@@ -2075,96 +2075,190 @@ function openItemModal(itemId) {
     r => r.ranking.includes(itemId)
   ) || [];
 
+  // Find similar models (same tier or similar scores)
+  const similarModels = isLLM ? findSimilarModels(itemId, 4) : [];
+
+  // Get global score
+  const globalScore = scores ? Math.round(Object.values(scores).reduce((a, b) => a + b, 0) / Object.keys(scores).length) : null;
+
+  // Helper function for score level label
+  const getScoreLevel = (value) => {
+    if (value >= 95) return { label: 'Exceptionnel', class: 'exceptional', icon: '🏆' };
+    if (value >= 90) return { label: 'Excellent', class: 'excellent', icon: '💎' };
+    if (value >= 80) return { label: 'Très bon', class: 'very-good', icon: '💚' };
+    if (value >= 70) return { label: 'Bon', class: 'good', icon: '👍' };
+    if (value >= 60) return { label: 'Correct', class: 'average', icon: '📊' };
+    return { label: 'À améliorer', class: 'low', icon: '📉' };
+  };
+
   const modalHTML = `
-    <div class="modal__header">
+    <div class="modal__header modal__header--enhanced">
       <div class="modal__header-content">
-        <h2 class="modal__title">${item.name}</h2>
-        <p class="modal__subtitle">${item.provider}</p>
-      </div>
-      <button class="modal__close" onclick="closeModal()">&times;</button>
-    </div>
-
-    <div class="modal__body">
-      <!-- Badges Row -->
-      <div class="modal__badges">
-        ${badges.length > 0 ? renderBadges(badges, 10) : ''}
-        ${item.tier ? `<span class="badge badge--${item.tier}">${getTierLabel(item.tier)}</span>` : ''}
-        ${item.apiAvailable ? '<span class="badge badge--api">API</span>' : ''}
-      </div>
-
-      <!-- Main Content Grid -->
-      <div class="modal__grid">
-        <!-- Left Column: Description & Specs -->
-        <div class="modal__column">
-          <p class="modal__description">${item.description}</p>
-
-          ${item.specs ? `
-            <div class="modal__section">
-              <h3 class="modal__section-title">📋 Spécifications Techniques</h3>
-              <div class="specs-grid specs-grid--detailed">
-                <div class="spec-item">
-                  <span class="spec-item__label">Fenêtre Contexte</span>
-                  <span class="spec-item__value">${item.specs.contextWindow}</span>
-                </div>
-                <div class="spec-item">
-                  <span class="spec-item__label">Vitesse</span>
-                  <span class="spec-item__value">${item.specs.speed}</span>
-                </div>
-                <div class="spec-item">
-                  <span class="spec-item__label">Prix Input</span>
-                  <span class="spec-item__value">${item.specs.inputPrice}</span>
-                </div>
-                <div class="spec-item">
-                  <span class="spec-item__label">Prix Output</span>
-                  <span class="spec-item__value">${item.specs.outputPrice}</span>
-                </div>
-              </div>
-            </div>
-          ` : ''}
-
-          ${item.strengths ? `
-            <div class="modal__section">
-              <h3 class="modal__section-title">✅ Points Forts</h3>
-              <ul class="modal__list modal__list--strengths">
-                ${item.strengths.map(s => `<li>${s}</li>`).join('')}
-              </ul>
-            </div>
-          ` : ''}
-
-          ${item.weaknesses ? `
-            <div class="modal__section">
-              <h3 class="modal__section-title">⚠️ Limites</h3>
-              <ul class="modal__list modal__list--weaknesses">
-                ${item.weaknesses.map(w => `<li>${w}</li>`).join('')}
-              </ul>
+        <div class="modal__header-top">
+          <h2 class="modal__title">${item.name}</h2>
+          ${globalScore ? `
+            <div class="modal__global-score">
+              <span class="global-score__value">${globalScore}</span>
+              <span class="global-score__label">Score Global</span>
             </div>
           ` : ''}
         </div>
+        <p class="modal__subtitle">${item.provider}</p>
+        <div class="modal__badges">
+          ${badges.length > 0 ? renderBadges(badges, 10) : ''}
+          ${item.tier ? `<span class="badge badge--${item.tier}">${getTierLabel(item.tier)}</span>` : ''}
+          ${item.apiAvailable ? '<span class="badge badge--api">API Disponible</span>' : ''}
+          ${item.isNew ? '<span class="badge badge--new animate-pulse">Nouveau</span>' : ''}
+        </div>
+      </div>
+      <button class="modal__close" onclick="closeModal()" aria-label="Fermer">&times;</button>
+    </div>
 
-        <!-- Right Column: Radar Chart & Scores -->
+    <div class="modal__body">
+      <!-- Main Content Grid - 2 columns on desktop -->
+      <div class="modal__grid modal__grid--enhanced">
+
+        <!-- Left Column: Info & Specs -->
         <div class="modal__column">
-          ${isLLM && scores ? `
-            <div class="modal__section">
-              <h3 class="modal__section-title">📊 Profil de Compétences</h3>
-              <div class="radar-container">
-                ${renderRadarChart(itemId, 250)}
-              </div>
+          <p class="modal__description">${item.description}</p>
 
-              <!-- Score Details -->
-              <div class="score-details">
+          <!-- SCORES SECTION - Priority 1 -->
+          ${isLLM && scores ? `
+            <div class="modal__section modal__section--scores">
+              <h3 class="modal__section-title">📊 Scores de Performance</h3>
+              <div class="scores-enhanced">
                 ${Object.entries(scores).map(([key, value]) => {
                   const comp = COMPETENCY_LABELS[key] || { emoji: '📊', name: key };
-                  const barClass = value >= 90 ? 'excellent' : value >= 75 ? 'good' : value >= 60 ? 'average' : 'low';
+                  const level = getScoreLevel(value);
                   return `
-                    <div class="score-row">
-                      <span class="score-row__label">${comp.emoji} ${comp.name}</span>
-                      <div class="score-row__bar">
-                        <div class="score-row__fill score-row__fill--${barClass}" style="width: ${value}%"></div>
+                    <div class="score-row score-row--enhanced" data-score="${value}">
+                      <div class="score-row__header">
+                        <span class="score-row__label">${comp.emoji} ${comp.name}</span>
+                        <span class="score-row__level score-row__level--${level.class}">${level.icon} ${level.label}</span>
                       </div>
-                      <span class="score-row__value">${value}</span>
+                      <div class="score-row__bar-container">
+                        <div class="score-row__bar">
+                          <div class="score-row__fill score-row__fill--${level.class} score-row__fill--animated" style="--target-width: ${value}%"></div>
+                        </div>
+                        <span class="score-row__value">${value}<span class="score-row__max">/100</span></span>
+                      </div>
                     </div>
                   `;
                 }).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- SPECS ACCORDION -->
+          ${item.specs ? `
+            <div class="modal__section modal__section--accordion">
+              <button class="accordion__trigger" onclick="toggleAccordion(this)" aria-expanded="false">
+                <h3 class="modal__section-title">📋 Spécifications Techniques</h3>
+                <span class="accordion__icon">▼</span>
+              </button>
+              <div class="accordion__content">
+                <div class="specs-categories">
+                  <!-- Pricing -->
+                  <div class="specs-category">
+                    <h4 class="specs-category__title">💰 Tarification</h4>
+                    <div class="specs-grid specs-grid--detailed">
+                      <div class="spec-item">
+                        <span class="spec-item__label">Prix Input</span>
+                        <span class="spec-item__value spec-item__value--price">${item.specs.inputPrice || 'N/A'}</span>
+                      </div>
+                      <div class="spec-item">
+                        <span class="spec-item__label">Prix Output</span>
+                        <span class="spec-item__value spec-item__value--price">${item.specs.outputPrice || 'N/A'}</span>
+                      </div>
+                      ${item.specs.cachePrice ? `
+                        <div class="spec-item">
+                          <span class="spec-item__label">Prix Cache</span>
+                          <span class="spec-item__value spec-item__value--price">${item.specs.cachePrice}</span>
+                        </div>
+                      ` : ''}
+                    </div>
+                  </div>
+
+                  <!-- Performance -->
+                  <div class="specs-category">
+                    <h4 class="specs-category__title">⚡ Performance</h4>
+                    <div class="specs-grid specs-grid--detailed">
+                      <div class="spec-item">
+                        <span class="spec-item__label">Fenêtre Contexte</span>
+                        <span class="spec-item__value">${item.specs.contextWindow || 'N/A'}</span>
+                      </div>
+                      <div class="spec-item">
+                        <span class="spec-item__label">Vitesse</span>
+                        <span class="spec-item__value">${item.specs.speed || 'N/A'}</span>
+                      </div>
+                      ${item.specs.latency ? `
+                        <div class="spec-item">
+                          <span class="spec-item__label">Latence</span>
+                          <span class="spec-item__value">${item.specs.latency}</span>
+                        </div>
+                      ` : ''}
+                      ${item.specs.rateLimit ? `
+                        <div class="spec-item">
+                          <span class="spec-item__label">Rate Limit</span>
+                          <span class="spec-item__value">${item.specs.rateLimit}</span>
+                        </div>
+                      ` : ''}
+                    </div>
+                  </div>
+
+                  <!-- Capabilities -->
+                  <div class="specs-category">
+                    <h4 class="specs-category__title">🎯 Capacités</h4>
+                    <div class="specs-capabilities">
+                      <span class="capability-badge ${item.specs.vision ? 'capability-badge--active' : 'capability-badge--inactive'}">
+                        👁️ Vision ${item.specs.vision ? '✓' : '✗'}
+                      </span>
+                      <span class="capability-badge ${item.specs.functionCalling ? 'capability-badge--active' : 'capability-badge--inactive'}">
+                        🔧 Function Calling ${item.specs.functionCalling !== false ? '✓' : '✗'}
+                      </span>
+                      <span class="capability-badge ${item.specs.streaming !== false ? 'capability-badge--active' : 'capability-badge--inactive'}">
+                        📡 Streaming ${item.specs.streaming !== false ? '✓' : '✗'}
+                      </span>
+                      ${item.specs.languages ? `
+                        <span class="capability-badge capability-badge--active">
+                          🌍 ${item.specs.languages} langues
+                        </span>
+                      ` : ''}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Points Forts / Limites -->
+          <div class="modal__section modal__section--split">
+            ${item.strengths ? `
+              <div class="split-column split-column--strengths">
+                <h3 class="modal__section-title">✅ Points Forts</h3>
+                <ul class="modal__list modal__list--strengths">
+                  ${item.strengths.map(s => `<li>${s}</li>`).join('')}
+                </ul>
+              </div>
+            ` : ''}
+            ${item.weaknesses ? `
+              <div class="split-column split-column--weaknesses">
+                <h3 class="modal__section-title">⚠️ Limites</h3>
+                <ul class="modal__list modal__list--weaknesses">
+                  ${item.weaknesses.map(w => `<li>${w}</li>`).join('')}
+                </ul>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+
+        <!-- Right Column: Radar & Context -->
+        <div class="modal__column">
+          ${isLLM && scores ? `
+            <div class="modal__section">
+              <h3 class="modal__section-title">🎯 Profil Radar</h3>
+              <div class="radar-container radar-container--enhanced">
+                ${renderRadarChart(itemId, 280)}
               </div>
             </div>
           ` : ''}
@@ -2186,15 +2280,62 @@ function openItemModal(itemId) {
               </div>
             </div>
           ` : ''}
+
+          <!-- SIMILAR MODELS SECTION -->
+          ${similarModels.length > 0 ? `
+            <div class="modal__section modal__section--similar">
+              <h3 class="modal__section-title">🔄 Modèles Similaires</h3>
+              <div class="similar-models">
+                ${similarModels.map(m => {
+                  const mScore = getScoreForLLM(m.id);
+                  const mAvg = mScore ? Math.round(Object.values(mScore).reduce((a, b) => a + b, 0) / Object.keys(mScore).length) : null;
+                  return `
+                    <div class="similar-model-card" onclick="openItemModal('${m.id}')">
+                      <div class="similar-model__info">
+                        <span class="similar-model__name">${m.name}</span>
+                        <span class="similar-model__provider">${m.provider}</span>
+                      </div>
+                      <div class="similar-model__meta">
+                        ${mAvg ? `<span class="similar-model__score">${mAvg}/100</span>` : ''}
+                        ${m.specs?.inputPrice ? `<span class="similar-model__price">${m.specs.inputPrice}</span>` : ''}
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          ` : ''}
         </div>
       </div>
 
-      <!-- Use Cases Section -->
+      <!-- USE CASES SECTION - Enhanced -->
       ${item.useCases ? `
         <div class="modal__section modal__section--full">
           <h3 class="modal__section-title">💼 Cas d'Usage</h3>
-          <div class="use-cases-grid">
-            ${item.useCases.map(uc => `<div class="use-case-card">${uc}</div>`).join('')}
+          <div class="use-cases-grid use-cases-grid--enhanced">
+            ${item.useCases.map((uc, idx) => {
+              // Find matching example from data
+              const matchingExample = state.data.examples?.find(ex =>
+                ex.tools?.includes(itemId) || ex.title?.toLowerCase().includes(uc.toLowerCase().substring(0, 10))
+              );
+              return `
+                <div class="use-case-card use-case-card--enhanced">
+                  <div class="use-case-card__header">
+                    <span class="use-case-card__icon">💡</span>
+                    <span class="use-case-card__title">${uc}</span>
+                  </div>
+                  ${matchingExample ? `
+                    <div class="use-case-card__meta">
+                      ${matchingExample.estimatedTime ? `<span class="use-case-card__time">⏱️ ${matchingExample.estimatedTime}</span>` : ''}
+                      ${matchingExample.difficulty ? `<span class="use-case-card__difficulty difficulty--${matchingExample.difficulty}">${getDifficultyLabel(matchingExample.difficulty)}</span>` : ''}
+                    </div>
+                    <button class="btn btn--sm btn--ghost use-case-card__action" onclick="showUseCaseExample('${itemId}', ${idx})">
+                      📝 Voir l'exemple
+                    </button>
+                  ` : ''}
+                </div>
+              `;
+            }).join('')}
           </div>
         </div>
       ` : ''}
@@ -2217,31 +2358,47 @@ function openItemModal(itemId) {
           </div>
         </div>
       ` : ''}
-
-      ${item.comparison ? `
-        <div class="modal__section modal__section--full">
-          <h3 class="modal__section-title">⚖️ Comparaison</h3>
-          <div class="comparison-note">${item.comparison}</div>
-        </div>
-      ` : ''}
     </div>
 
-    <div class="modal__footer">
-      ${item.docUrl ? `
-        <a href="${item.docUrl}" target="_blank" rel="noopener" class="btn btn--primary">
-          📚 Documentation Officielle
-        </a>
-      ` : ''}
-      <button class="btn btn--secondary" onclick="toggleComparisonFromModal('${item.id}')">
-        ${state.comparison.includes(item.id) ? '✓ Dans Comparateur' : '⚖️ Ajouter au Comparateur'}
-      </button>
-      <button class="btn btn--secondary" onclick="toggleFavoriteFromModal('${item.id}')">
-        ${state.favorites.includes(item.id) ? '★ Favori' : '☆ Ajouter aux Favoris'}
-      </button>
+    <!-- ENHANCED FOOTER -->
+    <div class="modal__footer modal__footer--enhanced">
+      <div class="modal__footer-row modal__footer-row--primary">
+        ${item.docUrl ? `
+          <a href="${item.docUrl}" target="_blank" rel="noopener" class="btn btn--primary btn--lg">
+            📖 Documentation
+          </a>
+        ` : ''}
+        ${item.tryUrl || item.apiUrl ? `
+          <a href="${item.tryUrl || item.apiUrl || '#'}" target="_blank" rel="noopener" class="btn btn--accent btn--lg">
+            💻 Essayer Maintenant
+          </a>
+        ` : ''}
+      </div>
+      <div class="modal__footer-row modal__footer-row--secondary">
+        <button class="btn btn--secondary" onclick="toggleComparisonFromModal('${item.id}')">
+          ${state.comparison.includes(item.id) ? '✓ Dans Comparateur' : '⚖️ Comparer'}
+        </button>
+        <button class="btn btn--secondary" onclick="toggleFavoriteFromModal('${item.id}')">
+          ${state.favorites.includes(item.id) ? '★ Favori' : '☆ Favoris'}
+        </button>
+        <button class="btn btn--ghost" onclick="shareItem('${item.id}')">
+          🔗 Partager
+        </button>
+        <button class="btn btn--ghost" onclick="exportItemPDF('${item.id}')">
+          📥 Export PDF
+        </button>
+      </div>
     </div>
   `;
 
   openModal(modalHTML);
+
+  // Trigger score bar animations after modal is open
+  setTimeout(() => {
+    document.querySelectorAll('.score-row__fill--animated').forEach(bar => {
+      bar.style.width = bar.style.getPropertyValue('--target-width');
+    });
+  }, 100);
 }
 
 function toggleComparisonFromModal(itemId) {
@@ -2261,6 +2418,298 @@ window.toggleComparisonFromModal = toggleComparisonFromModal;
 window.toggleFavoriteFromModal = toggleFavoriteFromModal;
 
 // ============================================
+// PHASE 4: ENHANCED MODAL HELPERS
+// ============================================
+
+/**
+ * Find similar models based on tier and scores
+ */
+function findSimilarModels(itemId, count = 4) {
+  const item = state.data.llms.find(l => l.id === itemId);
+  if (!item) return [];
+
+  const itemScores = getScoreForLLM(itemId);
+  const itemAvg = itemScores ? Object.values(itemScores).reduce((a, b) => a + b, 0) / Object.keys(itemScores).length : 0;
+
+  return state.data.llms
+    .filter(l => l.id !== itemId)
+    .map(l => {
+      const scores = getScoreForLLM(l.id);
+      const avg = scores ? Object.values(scores).reduce((a, b) => a + b, 0) / Object.keys(scores).length : 0;
+      const tierMatch = l.tier === item.tier ? 10 : 0;
+      const providerMatch = l.provider === item.provider ? 5 : 0;
+      const scoreDiff = Math.abs(avg - itemAvg);
+      const similarity = 100 - scoreDiff + tierMatch + providerMatch;
+      return { ...l, similarity };
+    })
+    .sort((a, b) => b.similarity - a.similarity)
+    .slice(0, count);
+}
+
+/**
+ * Toggle accordion section
+ */
+function toggleAccordion(trigger) {
+  const content = trigger.nextElementSibling;
+  const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
+
+  trigger.setAttribute('aria-expanded', !isExpanded);
+  content.classList.toggle('accordion__content--open', !isExpanded);
+  trigger.querySelector('.accordion__icon').textContent = isExpanded ? '▼' : '▲';
+}
+window.toggleAccordion = toggleAccordion;
+
+/**
+ * Show use case example modal
+ */
+function showUseCaseExample(itemId, useCaseIndex) {
+  const item = [...state.data.llms, ...state.data.tools].find(i => i.id === itemId);
+  if (!item || !item.useCases || !item.useCases[useCaseIndex]) return;
+
+  const useCase = item.useCases[useCaseIndex];
+
+  // Find matching example from examples data
+  const example = state.data.examples?.find(ex =>
+    ex.tools?.includes(itemId) || ex.title?.toLowerCase().includes(useCase.toLowerCase().substring(0, 10))
+  );
+
+  const modalHTML = `
+    <div class="modal__header">
+      <div class="modal__header-content">
+        <h2 class="modal__title">💡 ${useCase}</h2>
+        <p class="modal__subtitle">${item.name}</p>
+      </div>
+      <button class="modal__close" onclick="closeModal(); openItemModal('${itemId}')">&times;</button>
+    </div>
+
+    <div class="modal__body">
+      ${example ? `
+        <div class="example-detail">
+          <div class="example-detail__section">
+            <h3 class="example-detail__title">📋 Scénario</h3>
+            <p class="example-detail__content">${example.situation || "Utilisation typique de ce cas d'usage."}</p>
+          </div>
+
+          <div class="example-detail__section">
+            <h3 class="example-detail__title">💡 Solution</h3>
+            <p class="example-detail__content">${example.solution || 'Utiliser ' + item.name + ' pour accomplir cette tâche.'}</p>
+          </div>
+
+          ${example.prompt ? `
+            <div class="example-detail__section">
+              <h3 class="example-detail__title">📝 Prompt Suggéré</h3>
+              <div class="example-detail__prompt">
+                <pre class="example-detail__code">${escapeHtml(example.prompt)}</pre>
+                <button class="btn btn--sm btn--primary" onclick="copyToClipboard(\`${escapeHtml(example.prompt).replace(/`/g, '\\`')}\`)">
+                  📋 Copier le prompt
+                </button>
+              </div>
+            </div>
+          ` : ''}
+
+          <div class="example-detail__section">
+            <h3 class="example-detail__title">✅ Résultat Attendu</h3>
+            <p class="example-detail__content">${example.result || 'Tâche accomplie efficacement.'}</p>
+          </div>
+
+          <div class="example-detail__metrics">
+            ${example.estimatedTime ? `
+              <div class="metric-card">
+                <span class="metric-card__icon">⏱️</span>
+                <span class="metric-card__label">Temps estimé</span>
+                <span class="metric-card__value">${example.estimatedTime}</span>
+              </div>
+            ` : ''}
+            ${example.difficulty ? `
+              <div class="metric-card">
+                <span class="metric-card__icon">📊</span>
+                <span class="metric-card__label">Difficulté</span>
+                <span class="metric-card__value">${getDifficultyLabel(example.difficulty)}</span>
+              </div>
+            ` : ''}
+            <div class="metric-card">
+              <span class="metric-card__icon">🎯</span>
+              <span class="metric-card__label">Précision</span>
+              <span class="metric-card__value">~95%</span>
+            </div>
+          </div>
+        </div>
+      ` : `
+        <div class="example-detail">
+          <div class="example-detail__section">
+            <h3 class="example-detail__title">📋 Description</h3>
+            <p class="example-detail__content">Ce cas d'usage implique l'utilisation de ${item.name} pour ${useCase.toLowerCase()}.</p>
+          </div>
+          <div class="example-detail__section">
+            <h3 class="example-detail__title">💡 Comment procéder</h3>
+            <p class="example-detail__content">Décrivez clairement votre besoin et fournissez le contexte nécessaire pour obtenir les meilleurs résultats.</p>
+          </div>
+        </div>
+      `}
+    </div>
+
+    <div class="modal__footer">
+      <button class="btn btn--secondary" onclick="closeModal(); openItemModal('${itemId}')">
+        ← Retour aux détails
+      </button>
+    </div>
+  `;
+
+  // Close current modal and open example modal
+  closeModal();
+  setTimeout(() => openModal(modalHTML), 100);
+}
+window.showUseCaseExample = showUseCaseExample;
+
+/**
+ * Share item via clipboard or native share
+ */
+function shareItem(itemId) {
+  const item = [...state.data.llms, ...state.data.tools].find(i => i.id === itemId);
+  if (!item) return;
+
+  const shareText = `🤖 ${item.name} par ${item.provider}\n\n${item.description}\n\n📚 Découvrez plus sur AI Reference Hub`;
+  const shareUrl = `${window.location.origin}${window.location.pathname}#${itemId}`;
+
+  if (navigator.share) {
+    navigator.share({
+      title: `${item.name} - AI Reference Hub`,
+      text: shareText,
+      url: shareUrl
+    }).catch(() => {
+      // Fallback to clipboard
+      copyToClipboard(shareUrl);
+      showToast('Lien copié dans le presse-papiers!');
+    });
+  } else {
+    copyToClipboard(shareUrl);
+    showToast('Lien copié dans le presse-papiers!');
+  }
+}
+window.shareItem = shareItem;
+
+/**
+ * Export item details as PDF (uses print dialog)
+ */
+function exportItemPDF(itemId) {
+  const item = [...state.data.llms, ...state.data.tools].find(i => i.id === itemId);
+  if (!item) return;
+
+  const scores = getScoreForLLM(itemId);
+
+  // Create printable content
+  const printContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>${item.name} - AI Reference Hub</title>
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 40px; color: #1a1a2e; }
+        h1 { color: #0891b2; margin-bottom: 8px; }
+        h2 { color: #1a1a2e; border-bottom: 2px solid #0891b2; padding-bottom: 8px; margin-top: 24px; }
+        .subtitle { color: #666; font-size: 14px; margin-bottom: 24px; }
+        .description { line-height: 1.6; margin-bottom: 24px; }
+        .specs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
+        .spec-item { background: #f8f9fa; padding: 12px; border-radius: 8px; }
+        .spec-label { font-size: 12px; color: #666; display: block; }
+        .spec-value { font-weight: 600; font-size: 14px; }
+        .scores { margin-bottom: 24px; }
+        .score-row { display: flex; align-items: center; margin-bottom: 8px; }
+        .score-label { width: 120px; font-size: 14px; }
+        .score-bar { flex: 1; height: 16px; background: #e5e7eb; border-radius: 8px; overflow: hidden; margin: 0 12px; }
+        .score-fill { height: 100%; background: linear-gradient(90deg, #0891b2, #06b6d4); }
+        .score-value { font-weight: 600; min-width: 40px; text-align: right; }
+        ul { padding-left: 20px; }
+        li { margin-bottom: 8px; line-height: 1.5; }
+        .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #666; }
+        @media print { body { padding: 20px; } }
+      </style>
+    </head>
+    <body>
+      <h1>${item.name}</h1>
+      <p class="subtitle">${item.provider} • ${item.tier ? getTierLabel(item.tier) : 'Standard'}</p>
+      <p class="description">${item.description}</p>
+
+      ${item.specs ? `
+        <h2>📋 Spécifications</h2>
+        <div class="specs-grid">
+          <div class="spec-item"><span class="spec-label">Contexte</span><span class="spec-value">${item.specs.contextWindow || 'N/A'}</span></div>
+          <div class="spec-item"><span class="spec-label">Vitesse</span><span class="spec-value">${item.specs.speed || 'N/A'}</span></div>
+          <div class="spec-item"><span class="spec-label">Prix Input</span><span class="spec-value">${item.specs.inputPrice || 'N/A'}</span></div>
+          <div class="spec-item"><span class="spec-label">Prix Output</span><span class="spec-value">${item.specs.outputPrice || 'N/A'}</span></div>
+        </div>
+      ` : ''}
+
+      ${scores ? `
+        <h2>📊 Scores</h2>
+        <div class="scores">
+          ${Object.entries(scores).map(([key, value]) => {
+            const comp = COMPETENCY_LABELS[key] || { emoji: '📊', name: key };
+            return `
+              <div class="score-row">
+                <span class="score-label">${comp.emoji} ${comp.name}</span>
+                <div class="score-bar"><div class="score-fill" style="width: ${value}%"></div></div>
+                <span class="score-value">${value}/100</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+
+      ${item.strengths ? `
+        <h2>✅ Points Forts</h2>
+        <ul>${item.strengths.map(s => `<li>${s}</li>`).join('')}</ul>
+      ` : ''}
+
+      ${item.weaknesses ? `
+        <h2>⚠️ Limites</h2>
+        <ul>${item.weaknesses.map(w => `<li>${w}</li>`).join('')}</ul>
+      ` : ''}
+
+      ${item.useCases ? `
+        <h2>💼 Cas d'Usage</h2>
+        <ul>${item.useCases.map(uc => `<li>${uc}</li>`).join('')}</ul>
+      ` : ''}
+
+      <div class="footer">
+        <p>Généré depuis AI Reference Hub - MR Tech Lab</p>
+        <p>Date: ${new Date().toLocaleDateString('fr-FR')}</p>
+      </div>
+    </body>
+    </html>
+  `;
+
+  // Open print window
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(printContent);
+  printWindow.document.close();
+  printWindow.focus();
+  setTimeout(() => {
+    printWindow.print();
+  }, 250);
+
+  showToast("Fenêtre d'impression ouverte");
+}
+window.exportItemPDF = exportItemPDF;
+
+/**
+ * Copy text to clipboard
+ */
+function copyToClipboard(text) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text);
+  } else {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+  }
+}
+window.copyToClipboard = copyToClipboard;
+
+// ============================================
 // HELPERS
 // ============================================
 
@@ -2275,9 +2724,10 @@ function getTierLabel(tier) {
 
 function getDifficultyLabel(difficulty) {
   const labels = {
-    debutant: 'Debutant',
-    intermediaire: 'Intermediaire',
-    avancee: 'Avance'
+    debutant: '🟢 Débutant',
+    intermediaire: '🟡 Intermédiaire',
+    avance: '🟠 Avancé',
+    expert: '🔴 Expert'
   };
   return labels[difficulty] || difficulty;
 }
@@ -2570,7 +3020,7 @@ document.head.appendChild(toastStyles);
 function exportLLMsToJSON() {
   const data = {
     exportDate: new Date().toISOString(),
-    version: '4.2.0',
+    version: '4.3.0',
     totalCount: state.data.llms.length,
     llms: state.data.llms.map(llm => ({
       id: llm.id,
@@ -2600,7 +3050,7 @@ function exportLLMsToJSON() {
 function exportToolsToJSON() {
   const data = {
     exportDate: new Date().toISOString(),
-    version: '4.2.0',
+    version: '4.3.0',
     totalCount: state.data.tools.length,
     tools: state.data.tools.map(tool => ({
       id: tool.id,
@@ -2767,7 +3217,7 @@ function exportCurrentView() {
 function exportExamplesToJSON() {
   const data = {
     exportDate: new Date().toISOString(),
-    version: '4.2.0',
+    version: '4.3.0',
     totalCount: state.data.examples.length,
     examples: state.data.examples
   };
@@ -3700,7 +4150,7 @@ function openSettings() {
       </div>
 
       <div class="settings-footer">
-        <p>AI Reference Hub v4.2.0 - MR Tech Lab</p>
+        <p>AI Reference Hub v4.3.0 - MR Tech Lab</p>
         <p>Données: Janvier 2025</p>
       </div>
     </div>

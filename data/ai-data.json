@@ -269,6 +269,286 @@
       "specs": {"contextWindow": "128K", "speed": "Rapide", "inputPrice": "$2.50/M", "outputPrice": "$10/M"},
       "apiAvailable": true, "docUrl": "https://docs.cohere.com", "tags": ["rag", "enterprise"],
       "difficulty": "intermediaire", "isNew": false
+    },
+    {
+      "id": "glm-4", "name": "GLM-4", "provider": "Zhipu AI", "categories": ["polyvalent", "reasoning"],
+      "tier": "standard", "description": "Modele phare chinois de Zhipu AI (Tsinghua). Excellent en chinois et multimodal.",
+      "strengths": ["Meilleur chinois", "Multimodal", "128K contexte", "Raisonnement solide"],
+      "weaknesses": ["Anglais moins bon que GPT-4", "API parfois instable hors Chine"],
+      "useCases": ["Applications chinoises", "Chatbots multilingues", "Analyse documents"],
+      "specs": {"contextWindow": "128K", "speed": "Rapide", "inputPrice": "$0.14/M", "outputPrice": "$0.14/M"},
+      "apiAvailable": true, "docUrl": "https://open.bigmodel.cn", "tags": ["chinese", "multimodal"],
+      "difficulty": "intermediaire", "isNew": true
+    },
+    {
+      "id": "glm-4-plus", "name": "GLM-4 Plus", "provider": "Zhipu AI", "categories": ["reasoning", "code"],
+      "tier": "premium", "description": "Version amelioree de GLM-4 avec raisonnement renforce.",
+      "strengths": ["Raisonnement ameliore", "Code performant", "Long contexte"],
+      "weaknesses": ["Plus couteux"],
+      "useCases": ["Taches complexes", "Code", "Analyse"],
+      "specs": {"contextWindow": "128K", "speed": "Moyenne", "inputPrice": "$0.70/M", "outputPrice": "$0.70/M"},
+      "apiAvailable": true, "docUrl": "https://open.bigmodel.cn", "tags": ["chinese", "reasoning"],
+      "difficulty": "avancee", "isNew": true
+    },
+    {
+      "id": "yi-large", "name": "Yi-Large", "provider": "01.AI", "categories": ["polyvalent", "opensource"],
+      "tier": "standard", "description": "Modele de Kai-Fu Lee. Excellent rapport qualite/prix, multilingue.",
+      "strengths": ["Excellent chinois/anglais", "200K contexte", "Prix competitif", "Open weights"],
+      "weaknesses": ["Moins connu en occident"],
+      "useCases": ["Chatbots", "Traduction", "Analyse"],
+      "specs": {"contextWindow": "200K", "speed": "Rapide", "inputPrice": "$0.20/M", "outputPrice": "$0.20/M"},
+      "apiAvailable": true, "docUrl": "https://platform.01.ai", "tags": ["multilingual", "long-context"],
+      "difficulty": "intermediaire", "isNew": true
+    },
+    {
+      "id": "yi-lightning", "name": "Yi-Lightning", "provider": "01.AI", "categories": ["economique", "polyvalent"],
+      "tier": "budget", "description": "Version rapide et economique de Yi. Top rapport qualite/prix.",
+      "strengths": ["Ultra economique", "Rapide", "Bon multilingue"],
+      "weaknesses": ["Moins puissant que Yi-Large"],
+      "useCases": ["Volume eleve", "Chatbots", "Classification"],
+      "specs": {"contextWindow": "16K", "speed": "Tres rapide", "inputPrice": "$0.03/M", "outputPrice": "$0.03/M"},
+      "apiAvailable": true, "docUrl": "https://platform.01.ai", "tags": ["budget", "fast"],
+      "difficulty": "debutant", "isNew": true
+    },
+    {
+      "id": "phi-4", "name": "Phi-4", "provider": "Microsoft", "categories": ["reasoning", "opensource"],
+      "tier": "standard", "description": "Petit modele (14B) aux performances exceptionnelles. Bat des modeles 10x plus grands.",
+      "strengths": ["Performances/taille record", "Open source", "Raisonnement excellent", "Efficace"],
+      "weaknesses": ["Contexte limite", "Moins polyvalent"],
+      "useCases": ["Edge deployment", "Raisonnement", "Maths"],
+      "specs": {"contextWindow": "16K", "speed": "Tres rapide", "inputPrice": "Gratuit", "outputPrice": "Gratuit"},
+      "apiAvailable": true, "docUrl": "https://azure.microsoft.com/products/phi", "tags": ["small", "efficient", "opensource"],
+      "difficulty": "intermediaire", "isNew": true
+    },
+    {
+      "id": "phi-3-medium", "name": "Phi-3 Medium", "provider": "Microsoft", "categories": ["economique", "opensource"],
+      "tier": "budget", "description": "Modele compact (14B) performant pour le deploiement local.",
+      "strengths": ["Leger", "Rapide", "Open source", "128K contexte"],
+      "weaknesses": ["Moins puissant que grands modeles"],
+      "useCases": ["Mobile", "Edge", "Apps legeres"],
+      "specs": {"contextWindow": "128K", "speed": "Tres rapide", "inputPrice": "Gratuit", "outputPrice": "Gratuit"},
+      "apiAvailable": true, "docUrl": "https://azure.microsoft.com/products/phi", "tags": ["small", "edge"],
+      "difficulty": "intermediaire", "isNew": false
+    },
+    {
+      "id": "gemma-2-27b", "name": "Gemma 2 27B", "provider": "Google", "categories": ["opensource", "polyvalent"],
+      "tier": "standard", "description": "Modele open source de Google. Excellentes performances pour sa taille.",
+      "strengths": ["Open source Google", "Bon equilibre", "Facile a fine-tuner"],
+      "weaknesses": ["Contexte limite"],
+      "useCases": ["Fine-tuning", "Self-hosting", "Recherche"],
+      "specs": {"contextWindow": "8K", "speed": "Rapide", "inputPrice": "Gratuit", "outputPrice": "Gratuit"},
+      "apiAvailable": true, "docUrl": "https://ai.google.dev/gemma", "tags": ["opensource", "google"],
+      "difficulty": "intermediaire", "isNew": false
+    },
+    {
+      "id": "gemma-2-9b", "name": "Gemma 2 9B", "provider": "Google", "categories": ["opensource", "economique"],
+      "tier": "budget", "description": "Version compacte de Gemma 2. Ideal pour deploiement leger.",
+      "strengths": ["Tres leger", "Performant pour taille", "Open source"],
+      "weaknesses": ["Capacites limitees"],
+      "useCases": ["Edge", "Mobile", "Prototypage"],
+      "specs": {"contextWindow": "8K", "speed": "Tres rapide", "inputPrice": "Gratuit", "outputPrice": "Gratuit"},
+      "apiAvailable": true, "docUrl": "https://ai.google.dev/gemma", "tags": ["small", "opensource"],
+      "difficulty": "debutant", "isNew": false
+    },
+    {
+      "id": "mixtral-8x22b", "name": "Mixtral 8x22B", "provider": "Mistral AI", "categories": ["opensource", "code"],
+      "tier": "standard", "description": "MoE open source puissant. 176B params, 44B actifs. Excellent code et multilingue.",
+      "strengths": ["MoE efficace", "Open source", "Excellent code", "Multilingue top"],
+      "weaknesses": ["Ressources importantes"],
+      "useCases": ["Self-hosting pro", "Code", "Multilingue"],
+      "specs": {"contextWindow": "64K", "speed": "Rapide", "inputPrice": "Gratuit", "outputPrice": "Gratuit"},
+      "apiAvailable": true, "docUrl": "https://docs.mistral.ai", "tags": ["moe", "opensource", "code"],
+      "difficulty": "avancee", "isNew": false
+    },
+    {
+      "id": "mixtral-8x7b", "name": "Mixtral 8x7B", "provider": "Mistral AI", "categories": ["opensource", "economique"],
+      "tier": "budget", "description": "MoE compact et efficace. Excellent rapport performance/ressources.",
+      "strengths": ["Leger pour MoE", "Open source", "Bon francais"],
+      "weaknesses": ["Depasse par nouveaux modeles"],
+      "useCases": ["Self-hosting", "Dev", "Apps francaises"],
+      "specs": {"contextWindow": "32K", "speed": "Rapide", "inputPrice": "Gratuit", "outputPrice": "Gratuit"},
+      "apiAvailable": true, "docUrl": "https://docs.mistral.ai", "tags": ["moe", "opensource"],
+      "difficulty": "intermediaire", "isNew": false
+    },
+    {
+      "id": "dbrx", "name": "DBRX", "provider": "Databricks", "categories": ["opensource", "code"],
+      "tier": "standard", "description": "MoE open source de Databricks. 132B params, specialise donnees et code.",
+      "strengths": ["Excellent pour donnees", "Code SQL top", "Open source", "MoE efficace"],
+      "weaknesses": ["Moins generaliste"],
+      "useCases": ["Data engineering", "SQL", "Analytics"],
+      "specs": {"contextWindow": "32K", "speed": "Rapide", "inputPrice": "Gratuit", "outputPrice": "Gratuit"},
+      "apiAvailable": true, "docUrl": "https://www.databricks.com/blog/introducing-dbrx-new-state-art-open-llm", "tags": ["data", "sql", "opensource"],
+      "difficulty": "avancee", "isNew": false
+    },
+    {
+      "id": "jamba-1-5-large", "name": "Jamba 1.5 Large", "provider": "AI21 Labs", "categories": ["polyvalent", "reasoning"],
+      "tier": "standard", "description": "Architecture hybride Mamba-Transformer. 256K contexte natif.",
+      "strengths": ["256K contexte natif", "Architecture innovante", "Rapide sur longs docs"],
+      "weaknesses": ["Moins teste que GPT/Claude"],
+      "useCases": ["Documents tres longs", "Analyse", "RAG"],
+      "specs": {"contextWindow": "256K", "speed": "Rapide", "inputPrice": "$2/M", "outputPrice": "$8/M"},
+      "apiAvailable": true, "docUrl": "https://docs.ai21.com", "tags": ["long-context", "mamba"],
+      "difficulty": "intermediaire", "isNew": true
+    },
+    {
+      "id": "reka-core", "name": "Reka Core", "provider": "Reka", "categories": ["polyvalent", "reasoning"],
+      "tier": "premium", "description": "Modele multimodal avance. Video, audio, images nativement.",
+      "strengths": ["Multimodal natif complet", "Video understanding", "Raisonnement solide"],
+      "weaknesses": ["Moins connu", "Prix eleve"],
+      "useCases": ["Analyse video", "Multimodal avance"],
+      "specs": {"contextWindow": "128K", "speed": "Moyenne", "inputPrice": "$3/M", "outputPrice": "$15/M"},
+      "apiAvailable": true, "docUrl": "https://docs.reka.ai", "tags": ["multimodal", "video"],
+      "difficulty": "avancee", "isNew": true
+    },
+    {
+      "id": "reka-flash", "name": "Reka Flash", "provider": "Reka", "categories": ["polyvalent", "economique"],
+      "tier": "budget", "description": "Version rapide et economique de Reka. Bon multimodal accessible.",
+      "strengths": ["Multimodal economique", "Rapide", "Bon rapport qualite/prix"],
+      "weaknesses": ["Moins puissant que Core"],
+      "useCases": ["Analyse images", "Chatbots multimodaux"],
+      "specs": {"contextWindow": "128K", "speed": "Rapide", "inputPrice": "$0.40/M", "outputPrice": "$2/M"},
+      "apiAvailable": true, "docUrl": "https://docs.reka.ai", "tags": ["multimodal", "budget"],
+      "difficulty": "intermediaire", "isNew": true
+    },
+    {
+      "id": "command-r", "name": "Command R", "provider": "Cohere", "categories": ["recherche", "economique"],
+      "tier": "budget", "description": "Version economique de Command R+. Bon pour RAG a cout reduit.",
+      "strengths": ["RAG efficace", "Economique", "128K contexte"],
+      "weaknesses": ["Moins puissant que R+"],
+      "useCases": ["RAG budget", "Chatbots", "Search"],
+      "specs": {"contextWindow": "128K", "speed": "Rapide", "inputPrice": "$0.15/M", "outputPrice": "$0.60/M"},
+      "apiAvailable": true, "docUrl": "https://docs.cohere.com", "tags": ["rag", "budget"],
+      "difficulty": "debutant", "isNew": false
+    },
+    {
+      "id": "falcon-180b", "name": "Falcon 180B", "provider": "TII", "categories": ["opensource"],
+      "tier": "standard", "description": "Grand modele open source des Emirats. 180B parametres.",
+      "strengths": ["Open source", "Grande capacite", "Licence permissive"],
+      "weaknesses": ["Ressources enormes", "Depasse par nouveaux modeles"],
+      "useCases": ["Recherche", "Self-hosting entreprise"],
+      "specs": {"contextWindow": "8K", "speed": "Lente", "inputPrice": "Gratuit", "outputPrice": "Gratuit"},
+      "apiAvailable": true, "docUrl": "https://falconllm.tii.ae", "tags": ["opensource", "large"],
+      "difficulty": "avancee", "isNew": false
+    },
+    {
+      "id": "internlm2-5", "name": "InternLM 2.5", "provider": "Shanghai AI Lab", "categories": ["opensource", "code"],
+      "tier": "standard", "description": "Modele chinois open source. Excellent en code et raisonnement.",
+      "strengths": ["Open source", "Bon code", "1M contexte", "Multilingue"],
+      "weaknesses": ["Doc principalement chinois"],
+      "useCases": ["Code", "Self-hosting", "Recherche"],
+      "specs": {"contextWindow": "1M", "speed": "Rapide", "inputPrice": "Gratuit", "outputPrice": "Gratuit"},
+      "apiAvailable": true, "docUrl": "https://github.com/InternLM/InternLM", "tags": ["opensource", "code", "long-context"],
+      "difficulty": "avancee", "isNew": true
+    },
+    {
+      "id": "baichuan-4", "name": "Baichuan 4", "provider": "Baichuan", "categories": ["polyvalent"],
+      "tier": "standard", "description": "Modele chinois performant. Bon equilibre generaliste.",
+      "strengths": ["Excellent chinois", "Bon raisonnement", "Prix competitif"],
+      "weaknesses": ["API principalement Chine"],
+      "useCases": ["Apps chinoises", "Chatbots", "Analyse"],
+      "specs": {"contextWindow": "128K", "speed": "Rapide", "inputPrice": "$0.14/M", "outputPrice": "$0.14/M"},
+      "apiAvailable": true, "docUrl": "https://platform.baichuan-ai.com", "tags": ["chinese"],
+      "difficulty": "intermediaire", "isNew": true
+    },
+    {
+      "id": "ernie-4", "name": "ERNIE 4.0", "provider": "Baidu", "categories": ["polyvalent", "recherche"],
+      "tier": "standard", "description": "Modele phare de Baidu. Integre au moteur de recherche.",
+      "strengths": ["Integration Baidu", "Bon chinois", "Recherche web"],
+      "weaknesses": ["Principalement Chine"],
+      "useCases": ["Search chinois", "Apps Baidu"],
+      "specs": {"contextWindow": "128K", "speed": "Rapide", "inputPrice": "$0.17/M", "outputPrice": "$0.17/M"},
+      "apiAvailable": true, "docUrl": "https://cloud.baidu.com/product/wenxinworkshop", "tags": ["chinese", "search"],
+      "difficulty": "intermediaire", "isNew": false
+    },
+    {
+      "id": "claude-3-opus", "name": "Claude 3 Opus", "provider": "Anthropic", "categories": ["reasoning"],
+      "tier": "premium", "description": "Ancienne generation Claude. Encore excellent pour raisonnement.",
+      "strengths": ["Raisonnement solide", "200K contexte", "Bon code"],
+      "weaknesses": ["Depasse par Claude 4"],
+      "useCases": ["Analyse complexe", "Code"],
+      "specs": {"contextWindow": "200K", "speed": "Lente", "inputPrice": "$15/M", "outputPrice": "$75/M"},
+      "apiAvailable": true, "docUrl": "https://docs.anthropic.com", "tags": ["reasoning"],
+      "difficulty": "avancee", "isNew": false
+    },
+    {
+      "id": "gpt-4-turbo", "name": "GPT-4 Turbo", "provider": "OpenAI", "categories": ["polyvalent"],
+      "tier": "standard", "description": "Version optimisee de GPT-4. 128K contexte, plus rapide.",
+      "strengths": ["128K contexte", "Plus rapide que GPT-4", "Fiable"],
+      "weaknesses": ["Depasse par GPT-4o et GPT-5"],
+      "useCases": ["Usage general", "Documents longs"],
+      "specs": {"contextWindow": "128K", "speed": "Rapide", "inputPrice": "$10/M", "outputPrice": "$30/M"},
+      "apiAvailable": true, "docUrl": "https://platform.openai.com/docs", "tags": ["polyvalent"],
+      "difficulty": "intermediaire", "isNew": false
+    },
+    {
+      "id": "o1-mini", "name": "o1-mini", "provider": "OpenAI", "categories": ["reasoning", "economique"],
+      "tier": "standard", "description": "Version compacte de o1. Bon raisonnement a cout reduit.",
+      "strengths": ["Raisonnement solide", "Plus economique que o1", "Code"],
+      "weaknesses": ["Moins puissant que o1 complet"],
+      "useCases": ["Maths", "Code", "Logique"],
+      "specs": {"contextWindow": "128K", "speed": "Moyenne", "inputPrice": "$3/M", "outputPrice": "$12/M"},
+      "apiAvailable": true, "docUrl": "https://platform.openai.com/docs", "tags": ["reasoning", "budget"],
+      "difficulty": "intermediaire", "isNew": false
+    },
+    {
+      "id": "o3-mini", "name": "o3-mini", "provider": "OpenAI", "categories": ["reasoning"],
+      "tier": "standard", "description": "Version economique de o3. Excellent ratio performance/prix pour raisonnement.",
+      "strengths": ["Raisonnement proche o3", "Prix accessible", "Rapide"],
+      "weaknesses": ["Moins puissant que o3 complet"],
+      "useCases": ["Maths", "Code", "Problemes logiques"],
+      "specs": {"contextWindow": "200K", "speed": "Moyenne", "inputPrice": "$1.10/M", "outputPrice": "$4.40/M"},
+      "apiAvailable": true, "docUrl": "https://platform.openai.com/docs", "tags": ["reasoning", "efficient"],
+      "difficulty": "intermediaire", "isNew": true
+    },
+    {
+      "id": "nemotron-4", "name": "Nemotron-4 340B", "provider": "NVIDIA", "categories": ["opensource", "code"],
+      "tier": "standard", "description": "Grand modele NVIDIA. Optimise pour generation de donnees synthetiques.",
+      "strengths": ["Donnees synthetiques", "Open weights", "340B params"],
+      "weaknesses": ["Cas d'usage specifique"],
+      "useCases": ["Data generation", "Fine-tuning data", "Recherche"],
+      "specs": {"contextWindow": "4K", "speed": "Lente", "inputPrice": "Gratuit", "outputPrice": "Gratuit"},
+      "apiAvailable": true, "docUrl": "https://build.nvidia.com", "tags": ["data", "opensource"],
+      "difficulty": "avancee", "isNew": false
+    },
+    {
+      "id": "arctic", "name": "Snowflake Arctic", "provider": "Snowflake", "categories": ["opensource", "code"],
+      "tier": "standard", "description": "MoE de Snowflake. 480B params, optimise pour SQL et donnees.",
+      "strengths": ["SQL excellent", "MoE efficace", "Open source", "Enterprise"],
+      "weaknesses": ["Focus donnees"],
+      "useCases": ["SQL", "Data analytics", "Enterprise"],
+      "specs": {"contextWindow": "4K", "speed": "Rapide", "inputPrice": "Gratuit", "outputPrice": "Gratuit"},
+      "apiAvailable": true, "docUrl": "https://www.snowflake.com/blog/arctic-open-efficient-foundation-language-models-snowflake", "tags": ["sql", "data", "opensource"],
+      "difficulty": "avancee", "isNew": false
+    },
+    {
+      "id": "codestral", "name": "Codestral", "provider": "Mistral AI", "categories": ["code"],
+      "tier": "standard", "description": "Modele Mistral specialise code. 32K contexte, 80+ langages.",
+      "strengths": ["Specialise code", "80+ langages", "Fill-in-the-middle", "Rapide"],
+      "weaknesses": ["Code uniquement"],
+      "useCases": ["Completion code", "Generation code", "Refactoring"],
+      "specs": {"contextWindow": "32K", "speed": "Tres rapide", "inputPrice": "$0.20/M", "outputPrice": "$0.60/M"},
+      "apiAvailable": true, "docUrl": "https://docs.mistral.ai", "tags": ["code", "specialized"],
+      "difficulty": "intermediaire", "isNew": true
+    },
+    {
+      "id": "starcoder2", "name": "StarCoder2", "provider": "BigCode", "categories": ["code", "opensource"],
+      "tier": "budget", "description": "Modele open source specialise code. Entraine sur The Stack v2.",
+      "strengths": ["Open source", "Code performant", "Multilingue code"],
+      "weaknesses": ["Code uniquement"],
+      "useCases": ["Completion code", "Self-hosting"],
+      "specs": {"contextWindow": "16K", "speed": "Rapide", "inputPrice": "Gratuit", "outputPrice": "Gratuit"},
+      "apiAvailable": true, "docUrl": "https://huggingface.co/bigcode", "tags": ["code", "opensource"],
+      "difficulty": "intermediaire", "isNew": false
+    },
+    {
+      "id": "codellama-70b", "name": "Code Llama 70B", "provider": "Meta", "categories": ["code", "opensource"],
+      "tier": "standard", "description": "Version code de Llama. Excellent pour generation et completion.",
+      "strengths": ["Open source", "Specialise code", "Fine-tunable"],
+      "weaknesses": ["Depasse par nouveaux modeles"],
+      "useCases": ["Code", "Self-hosting"],
+      "specs": {"contextWindow": "16K", "speed": "Rapide", "inputPrice": "Gratuit", "outputPrice": "Gratuit"},
+      "apiAvailable": true, "docUrl": "https://ai.meta.com/llama", "tags": ["code", "opensource"],
+      "difficulty": "intermediaire", "isNew": false
     }
   ],
   "tools": [
@@ -1051,6 +1331,162 @@
         "scores": {"reasoning": 80, "coding": 70, "math": 68, "writing": 85, "multilingual": 92, "speed": 85, "context": 75, "cost": 70, "multimodal": 65, "instruction": 88},
         "highlights": ["RAG optimise", "Entreprise"],
         "bestFor": ["RAG", "Support multilingue"]
+      },
+      {
+        "id": "glm-4",
+        "scores": {"reasoning": 82, "coding": 78, "math": 75, "writing": 82, "multilingual": 95, "speed": 85, "context": 75, "cost": 92, "multimodal": 80, "instruction": 82},
+        "highlights": ["Meilleur chinois", "Multimodal"],
+        "bestFor": ["Apps chinoises", "Multilingue"]
+      },
+      {
+        "id": "glm-4-plus",
+        "scores": {"reasoning": 88, "coding": 85, "math": 82, "writing": 85, "multilingual": 95, "speed": 75, "context": 75, "cost": 85, "multimodal": 82, "instruction": 85},
+        "highlights": ["Raisonnement renforce"],
+        "bestFor": ["Taches complexes chinois"]
+      },
+      {
+        "id": "yi-large",
+        "scores": {"reasoning": 82, "coding": 78, "math": 75, "writing": 82, "multilingual": 92, "speed": 85, "context": 88, "cost": 90, "multimodal": 75, "instruction": 82},
+        "highlights": ["200K contexte", "Bilingue"],
+        "bestFor": ["Chatbots multilingues"]
+      },
+      {
+        "id": "yi-lightning",
+        "scores": {"reasoning": 70, "coding": 68, "math": 65, "writing": 72, "multilingual": 85, "speed": 95, "context": 60, "cost": 98, "multimodal": 60, "instruction": 75},
+        "highlights": ["Ultra economique"],
+        "bestFor": ["Volume eleve", "Budget"]
+      },
+      {
+        "id": "phi-4",
+        "scores": {"reasoning": 88, "coding": 82, "math": 90, "writing": 75, "multilingual": 70, "speed": 95, "context": 60, "cost": 100, "multimodal": 60, "instruction": 82},
+        "highlights": ["Record taille/perf", "Maths"],
+        "bestFor": ["Edge", "Raisonnement leger"]
+      },
+      {
+        "id": "phi-3-medium",
+        "scores": {"reasoning": 78, "coding": 75, "math": 78, "writing": 72, "multilingual": 68, "speed": 95, "context": 75, "cost": 100, "multimodal": 55, "instruction": 75},
+        "highlights": ["Compact performant"],
+        "bestFor": ["Mobile", "Edge"]
+      },
+      {
+        "id": "gemma-2-27b",
+        "scores": {"reasoning": 78, "coding": 75, "math": 72, "writing": 78, "multilingual": 75, "speed": 85, "context": 50, "cost": 100, "multimodal": 60, "instruction": 78},
+        "highlights": ["Google open source"],
+        "bestFor": ["Fine-tuning", "Recherche"]
+      },
+      {
+        "id": "gemma-2-9b",
+        "scores": {"reasoning": 68, "coding": 65, "math": 62, "writing": 70, "multilingual": 68, "speed": 95, "context": 50, "cost": 100, "multimodal": 50, "instruction": 70},
+        "highlights": ["Ultra leger"],
+        "bestFor": ["Edge", "Prototypage"]
+      },
+      {
+        "id": "mixtral-8x22b",
+        "scores": {"reasoning": 85, "coding": 88, "math": 80, "writing": 85, "multilingual": 90, "speed": 80, "context": 70, "cost": 100, "multimodal": 60, "instruction": 85},
+        "highlights": ["MoE open source", "Code"],
+        "bestFor": ["Self-hosting pro", "Code"]
+      },
+      {
+        "id": "mixtral-8x7b",
+        "scores": {"reasoning": 75, "coding": 78, "math": 70, "writing": 78, "multilingual": 85, "speed": 88, "context": 65, "cost": 100, "multimodal": 50, "instruction": 78},
+        "highlights": ["MoE compact"],
+        "bestFor": ["Self-hosting leger"]
+      },
+      {
+        "id": "dbrx",
+        "scores": {"reasoning": 80, "coding": 85, "math": 75, "writing": 75, "multilingual": 70, "speed": 82, "context": 65, "cost": 100, "multimodal": 50, "instruction": 78},
+        "highlights": ["SQL excellent"],
+        "bestFor": ["Data", "Analytics"]
+      },
+      {
+        "id": "jamba-1-5-large",
+        "scores": {"reasoning": 82, "coding": 78, "math": 75, "writing": 82, "multilingual": 78, "speed": 85, "context": 95, "cost": 75, "multimodal": 60, "instruction": 80},
+        "highlights": ["256K natif", "Mamba"],
+        "bestFor": ["Documents longs"]
+      },
+      {
+        "id": "reka-core",
+        "scores": {"reasoning": 85, "coding": 75, "math": 72, "writing": 82, "multilingual": 80, "speed": 70, "context": 75, "cost": 60, "multimodal": 92, "instruction": 82},
+        "highlights": ["Video natif"],
+        "bestFor": ["Multimodal avance"]
+      },
+      {
+        "id": "reka-flash",
+        "scores": {"reasoning": 75, "coding": 68, "math": 65, "writing": 75, "multilingual": 75, "speed": 88, "context": 75, "cost": 85, "multimodal": 85, "instruction": 78},
+        "highlights": ["Multimodal economique"],
+        "bestFor": ["Vision budget"]
+      },
+      {
+        "id": "command-r",
+        "scores": {"reasoning": 72, "coding": 65, "math": 60, "writing": 78, "multilingual": 88, "speed": 88, "context": 75, "cost": 90, "multimodal": 55, "instruction": 82},
+        "highlights": ["RAG economique"],
+        "bestFor": ["RAG budget"]
+      },
+      {
+        "id": "falcon-180b",
+        "scores": {"reasoning": 75, "coding": 72, "math": 68, "writing": 75, "multilingual": 70, "speed": 50, "context": 50, "cost": 100, "multimodal": 50, "instruction": 72},
+        "highlights": ["Open source large"],
+        "bestFor": ["Recherche"]
+      },
+      {
+        "id": "internlm2-5",
+        "scores": {"reasoning": 82, "coding": 85, "math": 78, "writing": 78, "multilingual": 85, "speed": 80, "context": 95, "cost": 100, "multimodal": 70, "instruction": 80},
+        "highlights": ["1M contexte", "Code"],
+        "bestFor": ["Long context", "Code"]
+      },
+      {
+        "id": "baichuan-4",
+        "scores": {"reasoning": 80, "coding": 75, "math": 72, "writing": 80, "multilingual": 92, "speed": 85, "context": 75, "cost": 92, "multimodal": 70, "instruction": 80},
+        "highlights": ["Chinois performant"],
+        "bestFor": ["Apps chinoises"]
+      },
+      {
+        "id": "ernie-4",
+        "scores": {"reasoning": 78, "coding": 72, "math": 70, "writing": 78, "multilingual": 90, "speed": 82, "context": 75, "cost": 88, "multimodal": 72, "instruction": 78},
+        "highlights": ["Integration Baidu"],
+        "bestFor": ["Ecosysteme Baidu"]
+      },
+      {
+        "id": "claude-3-opus",
+        "scores": {"reasoning": 92, "coding": 90, "math": 88, "writing": 94, "multilingual": 88, "speed": 50, "context": 88, "cost": 35, "multimodal": 82, "instruction": 94},
+        "highlights": ["Ancienne gen premium"],
+        "bestFor": ["Analyse complexe"]
+      },
+      {
+        "id": "gpt-4-turbo",
+        "scores": {"reasoning": 88, "coding": 85, "math": 82, "writing": 90, "multilingual": 85, "speed": 80, "context": 75, "cost": 55, "multimodal": 85, "instruction": 90},
+        "highlights": ["GPT-4 optimise"],
+        "bestFor": ["Usage general"]
+      },
+      {
+        "id": "o1-mini",
+        "scores": {"reasoning": 88, "coding": 85, "math": 90, "writing": 72, "multilingual": 78, "speed": 70, "context": 75, "cost": 75, "multimodal": 55, "instruction": 80},
+        "highlights": ["Raisonnement compact"],
+        "bestFor": ["Maths budget"]
+      },
+      {
+        "id": "o3-mini",
+        "scores": {"reasoning": 92, "coding": 88, "math": 94, "writing": 75, "multilingual": 80, "speed": 75, "context": 85, "cost": 82, "multimodal": 58, "instruction": 85},
+        "highlights": ["Raisonnement efficace"],
+        "bestFor": ["Logique budget"]
+      },
+      {
+        "id": "codestral",
+        "scores": {"reasoning": 70, "coding": 92, "math": 65, "writing": 60, "multilingual": 75, "speed": 95, "context": 65, "cost": 88, "multimodal": 40, "instruction": 75},
+        "highlights": ["Specialise code"],
+        "bestFor": ["Completion code"]
+      },
+      {
+        "id": "starcoder2",
+        "scores": {"reasoning": 65, "coding": 85, "math": 60, "writing": 55, "multilingual": 70, "speed": 88, "context": 60, "cost": 100, "multimodal": 35, "instruction": 70},
+        "highlights": ["Code open source"],
+        "bestFor": ["Self-hosting code"]
+      },
+      {
+        "id": "codellama-70b",
+        "scores": {"reasoning": 68, "coding": 82, "math": 62, "writing": 58, "multilingual": 65, "speed": 82, "context": 60, "cost": 100, "multimodal": 35, "instruction": 72},
+        "highlights": ["Llama pour code"],
+        "bestFor": ["Code open source"]
       }
     ],
     "useCaseRankings": [

@@ -1179,12 +1179,16 @@ function renderItemCard(item) {
 }
 
 function setupItemCardListeners() {
-  // Card expand/collapse
+  // Card click opens modal
   document.querySelectorAll('.item-card').forEach(card => {
     card.addEventListener('click', (e) => {
-      // Don't toggle if clicking on action buttons or links
-      if (e.target.closest('.item-card__action') || e.target.closest('a')) return;
-      card.classList.toggle('expanded');
+      // Don't open modal if clicking on action buttons, links, or the details button
+      if (e.target.closest('.item-card__action') ||
+          e.target.closest('a') ||
+          e.target.closest('.item-card__details-btn') ||
+          e.target.closest('.btn')) return;
+      const itemId = card.dataset.id;
+      if (itemId) openItemModal(itemId);
     });
   });
 
@@ -1511,7 +1515,7 @@ function openComparator() {
 
   elements.modalContent.innerHTML = modalHTML;
   elements.modalContent.classList.add('comparator-modal');
-  elements.modalOverlay.classList.remove('hidden');
+  elements.modalOverlay.classList.add('active');
   document.body.style.overflow = 'hidden';
 
   // Initialize Chart.js radar chart
@@ -3882,7 +3886,7 @@ function renderItemsByUseCase(useCase) {
 
   if (elements.itemsGrid) {
     const html = rankedLLMs.map((item, index) => {
-      return renderItemCard(item, index + 1);
+      return renderRankedItemCard(item, index + 1);
     }).join('');
 
     elements.itemsGrid.innerHTML = html || '<p class="no-results">Aucun résultat</p>';
@@ -3890,7 +3894,7 @@ function renderItemsByUseCase(useCase) {
   }
 }
 
-function renderItemCard(item, rank = null) {
+function renderRankedItemCard(item, rank = null) {
   const isLLM = state.data.llms.some(l => l.id === item.id);
   const badges = isLLM ? calculateBadges(item.id) : [];
   const isInComparison = state.comparison.includes(item.id);
@@ -3930,19 +3934,19 @@ function renderItemCard(item, rank = null) {
         </div>
         <div class="item-card__actions">
           <button class="btn btn--icon ${isFavorite ? 'btn--active' : ''}"
-                  onclick="toggleFavorite('${item.id}')"
+                  onclick="event.stopPropagation(); toggleFavorite('${item.id}')"
                   title="${isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}">
             ${isFavorite ? '⭐' : '☆'}
           </button>
           <button class="btn btn--icon ${isInComparison ? 'btn--active' : ''}"
-                  onclick="toggleComparison('${item.id}')"
+                  onclick="event.stopPropagation(); toggleComparison('${item.id}')"
                   title="${isInComparison ? 'Retirer du comparateur' : 'Ajouter au comparateur'}">
             ⚖️
           </button>
         </div>
       </div>
 
-      <button class="item-card__details-btn" onclick="openItemModal('${item.id}')">
+      <button class="item-card__details-btn" onclick="event.stopPropagation(); openItemModal('${item.id}')">
         Voir détails →
       </button>
     </article>
